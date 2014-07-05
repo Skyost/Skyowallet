@@ -1,0 +1,27 @@
+name: Skyowallet
+main: fr.skyost.skyowallet.Skyowallet
+description: Simple & lightweight economy plugin.
+version: 0.1
+author: Skyost
+website: http://dev.bukkit.org/bukkit-plugins/skyowallet/
+commands:
+ skyowallet:
+  description: Main command of Skyowallet.
+  aliases: [wallet, economy, econ, eco]
+  usage: /skyowallet [infos | pay <amount> <player | uuid> | set <amount> [player | uuid] | sync | view <player | uuid>].
+permissions:
+ skyowallet.infos:
+  default: true
+  description: Allows you to use /skyowallet infos.
+ skyowallet.pay:
+  default: true
+  description: Allows you to use /skyowallet pay <amount> <player>.
+ skyowallet.set:
+  default: op
+  description: Allows you to use /skyowallet set <amount> [player].
+ skyowallet.sync:
+  default: op
+  description: Allows you to use /skyowallet sync.
+ skyowallet.view:
+  default: op
+  description: Allows you to use /skyowallet view <player>.
