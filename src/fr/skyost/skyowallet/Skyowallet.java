@@ -39,7 +39,9 @@ public class Skyowallet extends JavaPlugin {
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
-			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SyncTask(), 0, config.autoSyncInterval * 20L);
+			if(config.autoSyncInterval >= 1) {
+				Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SyncTask(), 0, config.autoSyncInterval * 20L);
+			}
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
@@ -76,7 +78,7 @@ public class Skyowallet extends JavaPlugin {
 					data.put(Material.valueOf(entry.getKey()), Double.parseDouble(entry.getValue()));
 				}
 				final Mine4Cash extension = new Mine4Cash(this, data, config.mine4CashAutoDropItem);
-				for(final Entry<String, PermissionDefault> entry : extension.permissions().entrySet()) {
+				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
 					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
 				}
 				logger.log(Level.INFO, "Mine4Cash enabled !");
@@ -88,7 +90,7 @@ public class Skyowallet extends JavaPlugin {
 					data.put(entry.getKey(), Double.parseDouble(entry.getValue()));
 				}
 				final CommandsCosts extension = new CommandsCosts(this, data);
-				for(final Entry<String, PermissionDefault> entry : extension.permissions().entrySet()) {
+				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
 					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
 				}
 				logger.log(Level.INFO, "CommandsCosts enabled !");

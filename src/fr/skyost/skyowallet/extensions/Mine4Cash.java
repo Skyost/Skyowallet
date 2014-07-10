@@ -8,7 +8,6 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
@@ -16,7 +15,7 @@ import org.bukkit.plugin.Plugin;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 
-public class Mine4Cash implements SkyowalletExtension, Listener {
+public class Mine4Cash extends SkyowalletExtension {
 	
 	private final HashMap<Material, Double> items;
 	private final boolean autoDropItem;
@@ -28,12 +27,12 @@ public class Mine4Cash implements SkyowalletExtension, Listener {
 	}
 	
 	@Override
-	public final String name() {
+	public final String getName() {
 		return "Mine4Cash";
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> permissions() {
+	public final HashMap<String, PermissionDefault> getPermissions() {
 		final HashMap<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
 		permissions.put("mine4cash.earn", PermissionDefault.TRUE);
 		return permissions;

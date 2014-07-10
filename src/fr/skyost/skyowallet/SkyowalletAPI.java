@@ -157,7 +157,7 @@ public class SkyowalletAPI {
 	/**
 	 * Sync Database with Memory.
 	 * <br>NOTE : files are created after the sync is done. So, if you manually create files, they will not be loaded.
-	 * <br><b>TODO :</b>A few are needed to make this work faster : http://stackoverflow.com/a/10951183/3608831.
+	 * <br><b>TODO :</b>A few things are needed to make this work faster : http://stackoverflow.com/a/10951183/3608831.
 	 * 
 	 * @param sender Used to send informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
 	 */

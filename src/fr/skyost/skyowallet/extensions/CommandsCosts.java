@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
@@ -14,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 
-public class CommandsCosts implements SkyowalletExtension, Listener {
+public class CommandsCosts extends SkyowalletExtension {
 	
 	private final HashMap<String, Double> commands;
 	
@@ -24,12 +23,12 @@ public class CommandsCosts implements SkyowalletExtension, Listener {
 	}
 	
 	@Override
-	public final String name() {
+	public final String getName() {
 		return "CommandsCosts";
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> permissions() {
+	public final HashMap<String, PermissionDefault> getPermissions() {
 		final HashMap<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
 		permissions.put("commandscosts.bypass", PermissionDefault.FALSE);
 		return permissions;
