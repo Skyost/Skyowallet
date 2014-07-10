@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -16,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import fr.skyost.skyowallet.tasks.SyncTask;
 import fr.skyost.skyowallet.utils.Utils;
 
 /**
@@ -26,7 +29,7 @@ import fr.skyost.skyowallet.utils.Utils;
 
 public class SkyowalletAPI {
 	
-	private static final String MYSQL_TABLE = "skyowallet_accounts";
+	private static final String MYSQL_TABLE = "skyowallet_accounts_v2";
 	
 	private static final HashMap<String, SkyowalletAccount> accounts = new HashMap<String, SkyowalletAccount>();
 	private static Statement statement;
@@ -118,6 +121,18 @@ public class SkyowalletAPI {
 	}
 	
 	/**
+	 * Gets the player's account.
+	 * 
+	 * @param player The player.
+	 * 
+	 * @return The account of the specified player if found (null otherwise).
+	 */
+	
+	public static final SkyowalletAccount getAccount(final OfflinePlayer player) {
+		return getAccount(player.getUniqueId().toString());
+	}
+	
+	/**
 	 * Gets the account of the UUID.
 	 * 
 	 * @param uuid The UUID.
@@ -157,7 +172,7 @@ public class SkyowalletAPI {
 	/**
 	 * Sync Database with Memory.
 	 * <br>NOTE : files are created after the sync is done. So, if you manually create files, they will not be loaded.
-	 * <br><b>TODO :</b>A few things are needed to make this work faster : http://stackoverflow.com/a/10951183/3608831.
+	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
 	 * 
 	 * @param sender Used to send informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
 	 */
@@ -186,11 +201,11 @@ public class SkyowalletAPI {
 				if(statement == null) {
 					sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
 					statement = DriverManager.getConnection("jdbc:mysql://" + Skyowallet.config.mySQLHost + ":" + Skyowallet.config.mySQLPort + "/" + Skyowallet.config.mySQLDB, Skyowallet.config.mySQLUser, Skyowallet.config.mySQLPassword).createStatement();
-					statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE + " (UUID VARCHAR(128) NOT NULL, Wallet DOUBLE NOT NULL, LastModificationTime BIGINT NOT NULL, PRIMARY KEY (UUID))");
+					statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE + " (UUID BINARY(16) NOT NULL, Wallet DOUBLE NOT NULL, LastModificationTime BIGINT NOT NULL, PRIMARY KEY (UUID))");
 					sender.sendMessage(prefix + ChatColor.GREEN + "Done !");
 				}
 				final HashMap<String, SkyowalletAccount> remoteAccounts = new HashMap<String, SkyowalletAccount>();
-				final ResultSet result = statement.executeQuery("SELECT * FROM " + MYSQL_TABLE);
+				final ResultSet result = statement.executeQuery("SELECT HEX(UUID) AS UUID, Wallet, LastModificationTime FROM " + MYSQL_TABLE);
 				while(result.next()) {
 					final String uuid = result.getString("UUID");
 					final Double wallet = result.getDouble("Wallet");
@@ -198,7 +213,7 @@ public class SkyowalletAPI {
 					if(uuid == null || wallet == null || lastModificationTime == null) {
 						continue;
 					}
-					remoteAccounts.put(uuid, new SkyowalletAccount(uuid, wallet, lastModificationTime));
+					remoteAccounts.put(uuid, new SkyowalletAccount(UUID.fromString(Utils.uuidAddDashes(uuid)).toString(), wallet, lastModificationTime));
 				}
 				final List<SkyowalletAccount> toSync = new ArrayList<SkyowalletAccount>();
 				for(final SkyowalletAccount account : remoteAccounts.values()) {
@@ -218,7 +233,7 @@ public class SkyowalletAPI {
 				for(final SkyowalletAccount account : toSync) {
 					final double wallet = account.getWallet();
 					final long lastModificationTime = account.getLastModificationTime();
-					statement.executeUpdate("INSERT INTO " + MYSQL_TABLE + "(UUID, Wallet, LastModificationTime) VALUES('" + account.getUUID() + "', " + wallet + ", " + lastModificationTime + ") ON DUPLICATE KEY UPDATE Wallet=" + wallet + ", LastModificationTime=" + lastModificationTime);
+					statement.executeUpdate("INSERT INTO " + MYSQL_TABLE + "(UUID, Wallet, LastModificationTime) VALUES(UNHEX('" + account.getUUID().replace("-", "") + "'), " + wallet + ", " + lastModificationTime + ") ON DUPLICATE KEY UPDATE Wallet=" + wallet + ", LastModificationTime=" + lastModificationTime);
 				}
 				sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
 			}
@@ -251,9 +266,23 @@ public class SkyowalletAPI {
 		private double wallet;
 		private long lastModificationTime;
 		
+		/**
+		 * Constructs a new Skyowallet's account.
+		 * 
+		 * @param uuid The uuid.
+		 */
+		
 		public SkyowalletAccount(final String uuid) {
 			this(uuid, 0.0, Utils.getCurrentTimeInMillis());
 		}
+		
+		/**
+		 * Private constructor used to sync accounts.
+		 * 
+		 * @param uuid The uuid.
+		 * @param wallet The account's wallet.
+		 * @param lastModificationTime The last modification time of the specified account.
+		 */
 		
 		private SkyowalletAccount(final String uuid, final double wallet, final long lastModificationTime) {
 			this.uuid = uuid;
@@ -282,15 +311,29 @@ public class SkyowalletAPI {
 		}
 		
 		/**
-		 * Sets the wallet.
+		 * Sets the wallet. The database will be sync if the user has enabled "sync-each-modification" in the config.
 		 * <br>NOTE : the last modification time field will be updated too.
 		 * 
-		 * @param wallet
+		 * @param wallet The wallet.
 		 */
 		
 		public final void setWallet(final double wallet) {
+			setWallet(wallet, Skyowallet.config.syncEachModification);
+		}
+		
+		/**
+		 * Sets the wallet.
+		 * 
+		 * @param wallet The wallet.
+		 * @param sync If you want to sync the database (asynchronously).
+		 */
+		
+		public final void setWallet(final double wallet, final boolean sync) {
 			this.wallet = wallet;
 			lastModificationTime = Utils.getCurrentTimeInMillis();
+			if(sync) {
+				Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin("Skyowallet"), new SyncTask());
+			}
 		}
 		
 		/**

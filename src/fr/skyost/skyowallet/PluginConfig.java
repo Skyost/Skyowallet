@@ -27,6 +27,8 @@ public class PluginConfig extends Skyoconfig {
 	public int autoSyncInterval = 300;
 	@ConfigOptions(name = "options.warn-offline-mode")
 	public boolean warnOfflineMode = true;
+	@ConfigOptions(name = "options.sync-each-modification")
+	public boolean syncEachModification = false;
 	
 	@ConfigOptions(name = "extensions.mine4cash.enable")
 	public boolean mine4CashEnable = false;

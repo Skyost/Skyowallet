@@ -57,7 +57,7 @@ public class Skyowallet extends JavaPlugin {
 			if(config.enableMetrics) {
 				new MetricsLite(this).start();
 			}
-			if(!Bukkit.getOnlineMode() && config.warnOfflineMode) {
+			if(config.warnOfflineMode && !Bukkit.getOnlineMode()) {
 				final ConsoleCommandSender console = Bukkit.getConsoleSender();
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				console.sendMessage(ChatColor.RED + "!!                                                  !!");

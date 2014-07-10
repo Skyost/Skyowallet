@@ -61,4 +61,8 @@ public class Utils {
 		return null;
 	}
 	
+	public static final String uuidAddDashes(final String uuid) {
+		return uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
+	}
+	
 }

@@ -5,8 +5,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
@@ -42,11 +40,10 @@ public class SkyowalletPay implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		UUID uuid = Utils.uuidTryParse(args[1]);
 		final OfflinePlayer player;
+		final UUID uuid = Utils.uuidTryParse(args[1]);
 		if(uuid == null) {
 			player = Bukkit.getOfflinePlayer(args[1]);
-			uuid = player.getUniqueId();
 		}
 		else {
 			player = Bukkit.getOfflinePlayer(uuid);
@@ -60,13 +57,13 @@ public class SkyowalletPay implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
 		}
-		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount(uuid.toString());
+		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount(player);
 		final double wallet = playerAccount.getWallet() - amount;
 		if(wallet < 0.0) {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
-		playerAccount.setWallet(wallet);
+		playerAccount.setWallet(wallet, false);
 		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player.getUniqueId().toString());
 		targetAccount.setWallet(targetAccount.getWallet() + amount);
 		if(player.isOnline()) {
