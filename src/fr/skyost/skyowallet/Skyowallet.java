@@ -104,7 +104,15 @@ public class Skyowallet extends JavaPlugin {
 	
 	@Override
 	public final void onDisable() {
-		new SyncTask().run();
+		try {
+			new SyncTask().run();
+			if(SkyowalletAPI.statement != null && !SkyowalletAPI.statement.isClosed()) {
+				SkyowalletAPI.statement.close();
+			}
+		}
+		catch(final Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 }

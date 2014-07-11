@@ -32,7 +32,7 @@ public class SkyowalletAPI {
 	private static final String MYSQL_TABLE = "skyowallet_accounts_v2";
 	
 	private static final HashMap<String, SkyowalletAccount> accounts = new HashMap<String, SkyowalletAccount>();
-	private static Statement statement;
+	protected static Statement statement;
 	
 	/**
 	 * Gets the currency name for numbers inferior than 2.
