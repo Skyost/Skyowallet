@@ -1,9 +1,11 @@
 package fr.skyost.skyowallet.extensions;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -12,14 +14,14 @@ import org.bukkit.plugin.Plugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
+import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public class CommandsCosts extends SkyowalletExtension {
 	
-	private final HashMap<String, Double> commands;
+	private ExtensionConfig config;
 	
-	public CommandsCosts(final Plugin plugin, final HashMap<String, Double> commands) {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
-		this.commands = commands;
+	public CommandsCosts(final Plugin plugin) throws InvalidConfigurationException {
+		super(plugin);
 	}
 	
 	@Override
@@ -34,9 +36,22 @@ public class CommandsCosts extends SkyowalletExtension {
 		return permissions;
 	}
 	
+	@Override
+	public final Skyoconfig getConfiguration() {
+		if(config == null) {
+			config = new ExtensionConfig(this.getConfigurationFile());
+		}
+		return config;
+	}
+	
+	@Override
+	public final boolean isEnabled() {
+		return config.enable;
+	}
+	
 	@EventHandler
 	private final void onPlayerCommandPreprocessEvent(final PlayerCommandPreprocessEvent event) {
-		final Double cost = commands.get(event.getMessage().substring(1).split(" ")[0]);
+		final Double cost = Double.valueOf(config.data.get(event.getMessage().substring(1).split(" ")[0]));
 		if(cost != null) {
 			final Player player = event.getPlayer();
 			if(!player.hasPermission("commandscosts.bypass")) {
@@ -50,6 +65,20 @@ public class CommandsCosts extends SkyowalletExtension {
 				account.setWallet(wallet);
 			}
 		}
+	}
+	
+	public class ExtensionConfig extends Skyoconfig {
+		
+		@ConfigOptions(name = "commands-costs.enable")
+		public boolean enable = false;
+		@ConfigOptions(name = "commands-costs.data")
+		public HashMap<String, String> data = new HashMap<String, String>();
+		
+		private ExtensionConfig(final File file) {
+			super(file, Arrays.asList("CommandsCosts Configuration"));
+			data.put("pl", "10.0");
+		}
+		
 	}
 
 }

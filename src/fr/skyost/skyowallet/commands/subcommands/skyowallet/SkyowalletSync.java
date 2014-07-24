@@ -1,4 +1,4 @@
-package fr.skyost.skyowallet.commands.subcommands;
+package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
 import org.bukkit.command.CommandSender;
 import fr.skyost.skyowallet.SkyowalletAPI;
@@ -7,12 +7,12 @@ import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 public class SkyowalletSync implements CommandInterface {
 
 	@Override
-	public final String[] names() {
+	public final String[] getNames() {
 		return new String[]{"sync", "reload"};
 	}
 
 	@Override
-	public final boolean forcePlayer() {
+	public final boolean mustBePlayer() {
 		return false;
 	}
 

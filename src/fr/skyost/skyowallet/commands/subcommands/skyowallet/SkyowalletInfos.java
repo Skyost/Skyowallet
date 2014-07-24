@@ -1,4 +1,4 @@
-package fr.skyost.skyowallet.commands.subcommands;
+package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,12 +13,12 @@ import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 public class SkyowalletInfos implements CommandInterface {
 
 	@Override
-	public final String[] names() {
+	public final String[] getNames() {
 		return new String[]{"infos"};
 	}
 
 	@Override
-	public final boolean forcePlayer() {
+	public final boolean mustBePlayer() {
 		return false;
 	}
 

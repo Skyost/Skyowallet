@@ -1,34 +1,42 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.skyost.skyowallet.commands.SkyowalletCommand;
+import fr.skyost.skyowallet.commands.*;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.commands.subcommands.*;
+import fr.skyost.skyowallet.commands.subcommands.skyowallet.*;
+import fr.skyost.skyowallet.commands.subcommands.bank.*;
 import fr.skyost.skyowallet.events.GlobalEvents;
 import fr.skyost.skyowallet.extensions.CommandsCosts;
 import fr.skyost.skyowallet.extensions.Mine4Cash;
+import fr.skyost.skyowallet.extensions.SkyowalletExtension;
 import fr.skyost.skyowallet.tasks.SyncTask;
 import fr.skyost.skyowallet.utils.MetricsLite;
 import fr.skyost.skyowallet.utils.Skyupdater;
 
 public class Skyowallet extends JavaPlugin {
 	
+	/**
+	 * Skyowallet's config
+	 */
+	
 	protected static PluginConfig config;
+	
+	/**
+	 * Skyowallet's messages.
+	 */
+	
 	public static PluginMessages messages;
 	
 	@Override
@@ -39,16 +47,19 @@ public class Skyowallet extends JavaPlugin {
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
-			if(config.autoSyncInterval >= 1) {
+			if(config.autoSyncInterval > 0) {
 				Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SyncTask(), 0, config.autoSyncInterval * 20L);
 			}
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
 			}
-			final PluginCommand command = this.getCommand("skyowallet");
-			command.setUsage(ChatColor.RED + command.getUsage());
-			command.setExecutor(skyowalletCmd);
+			this.getCommand("skyowallet").setExecutor(skyowalletCmd);
+			final BankCommand bankCmd = new BankCommand();
+			for(final CommandInterface command : new CommandInterface[]{new BankAddOwner(), new BankCreate(), new BankDelete(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankWithdraw()}) {
+				bankCmd.registerSubCommand(command);
+			}
+			this.getCommand("bank").setExecutor(bankCmd);
 			final PluginManager manager = Bukkit.getPluginManager();
 			manager.registerEvents(new GlobalEvents(), this);
 			if(config.enableUpdater) {
@@ -71,29 +82,17 @@ public class Skyowallet extends JavaPlugin {
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			final Logger logger = this.getLogger();
-			if(config.mine4CashEnable) {
-				logger.log(Level.INFO, "Enabling Mine4Cash...");
-				final HashMap<Material, Double> data = new HashMap<Material, Double>();
-				for(final Entry<String, String> entry : config.mine4CashData.entrySet()) {
-					data.put(Material.valueOf(entry.getKey()), Double.parseDouble(entry.getValue()));
+			for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this)}) {
+				if(!extension.isEnabled()) {
+					extension.disable();
+					continue;
 				}
-				final Mine4Cash extension = new Mine4Cash(this, data, config.mine4CashAutoDropItem);
+				final String name = extension.getName();
+				logger.log(Level.INFO, "Enabling " + name + "...");
 				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
 					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
 				}
-				logger.log(Level.INFO, "Mine4Cash enabled !");
-			}
-			if(config.commandsCostsEnable) {
-				logger.log(Level.INFO, "Enabling CommandsCosts...");
-				final HashMap<String, Double> data = new HashMap<String, Double>();
-				for(final Entry<String, String> entry : config.commandsCostsData.entrySet()) {
-					data.put(entry.getKey(), Double.parseDouble(entry.getValue()));
-				}
-				final CommandsCosts extension = new CommandsCosts(this, data);
-				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
-					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
-				}
-				logger.log(Level.INFO, "CommandsCosts enabled !");
+				logger.log(Level.INFO, name + " enabled !");
 			}
 		}
 		catch(final Exception ex) {

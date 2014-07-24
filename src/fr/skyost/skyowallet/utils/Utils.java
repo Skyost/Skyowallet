@@ -9,7 +9,17 @@ import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+
+import fr.skyost.skyowallet.SkyowalletAPI;
+
 public class Utils {
+	
+	public static final OfflinePlayer getPlayerByArgument(final String arg) {
+		final UUID uuid = uuidTryParse(arg);
+		return uuid == null ? Bukkit.getOfflinePlayer(arg) : Bukkit.getOfflinePlayer(uuid);
+	}
 	
 	public static final String getFileContent(final File file, final String lineSeparator) throws IOException {
 		final BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -45,9 +55,29 @@ public class Utils {
 		return Calendar.getInstance().getTimeInMillis();
 	}
 	
+	public static final boolean isValidFileName(final String name) {
+		final File file = new File(SkyowalletAPI.getPlugin().getDataFolder(), name);
+		try {
+			if(file.createNewFile()) {
+				file.delete();
+				return true;
+			}
+		}
+		catch(final Exception ex) {}
+		return false;
+	}
+	
 	public static final Double doubleTryParse(final String string) {
 		try {
 			return Double.parseDouble(string);
+		}
+		catch(final NumberFormatException ex) {}
+		return null;
+	}
+	
+	public static final Long longTryParse(final String string) {
+		try {
+			return Long.parseLong(string);
 		}
 		catch(final NumberFormatException ex) {}
 		return null;

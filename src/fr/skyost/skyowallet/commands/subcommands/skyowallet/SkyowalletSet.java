@@ -1,8 +1,5 @@
-package fr.skyost.skyowallet.commands.subcommands;
+package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -17,12 +14,12 @@ import fr.skyost.skyowallet.utils.Utils;
 public class SkyowalletSet implements CommandInterface {
 
 	@Override
-	public final String[] names() {
+	public final String[] getNames() {
 		return new String[]{"set"};
 	}
 
 	@Override
-	public final boolean forcePlayer() {
+	public final boolean mustBePlayer() {
 		return false;
 	}
 
@@ -52,13 +49,7 @@ public class SkyowalletSet implements CommandInterface {
 			player = (Player)sender;
 		}
 		else {
-			final UUID uuid = Utils.uuidTryParse(args[1]);
-			if(uuid == null) {
-				player = Bukkit.getOfflinePlayer(args[1]);
-			}
-			else {
-				player = Bukkit.getOfflinePlayer(uuid);
-			}
+			player = Utils.getPlayerByArgument(args[1]);
 			if(player == null) {
 				sender.sendMessage(Skyowallet.messages.message3);
 				return true;

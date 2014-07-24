@@ -2,9 +2,6 @@ package fr.skyost.skyowallet;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
-
-import org.bukkit.Material;
 
 import fr.skyost.skyowallet.utils.Skyoconfig;
 
@@ -23,23 +20,16 @@ public class PluginConfig extends Skyoconfig {
 	public boolean enableMetrics = true;
 	@ConfigOptions(name = "options.accounts-directory")
 	public String accountsDir;
+	@ConfigOptions(name = "options.banks-directory")
+	public String banksDir;
+	@ConfigOptions(name = "options.extensions-directory")
+	public String extensionsDir;
 	@ConfigOptions(name = "options.auto-sync-interval")
 	public int autoSyncInterval = 300;
 	@ConfigOptions(name = "options.warn-offline-mode")
 	public boolean warnOfflineMode = true;
 	@ConfigOptions(name = "options.sync-each-modification")
 	public boolean syncEachModification = false;
-	
-	@ConfigOptions(name = "extensions.mine4cash.enable")
-	public boolean mine4CashEnable = false;
-	@ConfigOptions(name = "extensions.mine4cash.data")
-	public HashMap<String, String> mine4CashData = new HashMap<String, String>();
-	@ConfigOptions(name = "extensions.mine4cash.auto-drop-item")
-	public boolean mine4CashAutoDropItem = false;
-	@ConfigOptions(name = "extensions.commands-costs.enable")
-	public boolean commandsCostsEnable = false;
-	@ConfigOptions(name = "extensions.commands-costs.data")
-	public HashMap<String, String> commandsCostsData = new HashMap<String, String>();
 	
 	@ConfigOptions(name = "mysql.enable")
 	public boolean mySQLEnable = false;
@@ -56,11 +46,9 @@ public class PluginConfig extends Skyoconfig {
 
 	protected PluginConfig(final File dataFolder) {
 		super(new File(dataFolder, "config.yml"), Arrays.asList("Skyowallet Configuration"));
-		accountsDir = dataFolder.getPath() + File.separator + "accounts";
-		mine4CashData.put(Material.GOLD_ORE.name(), "100.0");
-		mine4CashData.put(Material.DIAMOND_ORE.name(), "150.0");
-		mine4CashData.put(Material.EMERALD_ORE.name(), "200.0");
-		commandsCostsData.put("pl", "10.0");
+		accountsDir = new File(dataFolder + File.separator + "accounts").getPath();
+		banksDir = new File(dataFolder + File.separator + "banks").getPath();
+		extensionsDir = new File(dataFolder + File.separator + "extensions").getPath();
 	}
 
 }
