@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.Utils;
 
@@ -51,7 +52,9 @@ public class BankCreate implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message24);
 			return true;
 		}
-		SkyowalletAPI.createBank(args[0]).addOwner(account);
+		final SkyowalletBank bank = SkyowalletAPI.createBank(args[0]);
+		account.setBank(bank, false);
+		account.setBankOwner(true);
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;
 	}

@@ -6,7 +6,6 @@ import org.bukkit.command.CommandSender;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 
 public class BankLeave implements CommandInterface {
@@ -37,16 +36,14 @@ public class BankLeave implements CommandInterface {
 	}
 
 	@Override
-	public boolean onCommand(final CommandSender sender, final String[] args) {
+	public boolean onCommand(final CommandSender sender, final String[] args) { //TODO La banque est quittée avant d'être quittée
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
-		final SkyowalletBank bank = account.getBank();
-		if(bank == null) {
+		if(!account.hasBank()) {
 			sender.sendMessage(Skyowallet.messages.message21);
 			return true;
 		}
-		bank.removeMember(account);
-		final double wallet = account.getWallet();
-		sender.sendMessage(Skyowallet.messages.message21.replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)));
+		final double amount = account.setBank(null);
+		sender.sendMessage(Skyowallet.messages.message26.replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
 		return true;
 	}
 

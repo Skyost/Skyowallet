@@ -49,7 +49,7 @@ public class BankJoin implements CommandInterface
 			sender.sendMessage(Skyowallet.messages.message19);
 			return true;
 		}
-		bank.addMember(account);
+		account.setBank(bank);
 		sender.sendMessage(Skyowallet.messages.message25.replace("/bank/", bank.getName()));
 		return true;
 	}

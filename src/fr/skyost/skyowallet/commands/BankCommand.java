@@ -25,7 +25,6 @@ public class BankCommand extends SubCommandsExecutor {
 					sender.sendMessage(Skyowallet.messages.message21);
 					return true;
 				}
-				final double bankBalance = bank.getMemberBalance(account);
 				if(bank.isOwner(account)) {
 					sender.sendMessage(Skyowallet.messages.message14.replace("/bank/", bank.getName()));
 				}
@@ -42,6 +41,7 @@ public class BankCommand extends SubCommandsExecutor {
 					owners = builder.toString();
 					sender.sendMessage(Skyowallet.messages.message15.replace("/bank/", bank.getName()).replace("/owners/", owners.length() == 0 ? "X" : owners.substring(0, owners.length() - 2)));
 				}
+				final double bankBalance = account.getBankBalance();
 				sender.sendMessage(Skyowallet.messages.message16.replace("/amount/", String.valueOf(bankBalance)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(bankBalance)));
 			}
 			else {

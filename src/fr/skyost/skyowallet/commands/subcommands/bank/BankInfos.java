@@ -9,7 +9,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.util.ChatPaginator;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
@@ -67,20 +66,15 @@ public class BankInfos implements CommandInterface {
 			sender.sendMessage(ChatColor.RED + (args.length < 1 ? Skyowallet.messages.message21 : Skyowallet.messages.message19));
 			return true;
 		}
-		if(sender.hasPermission("skyowallet.admin") || account == null ? !(sender instanceof Player) : bank.isOwner(account)) {
+		if(sender.hasPermission("skyowallet.admin") || (account == null ? !(sender instanceof Player) : bank.isOwner(account))) {
 			final HashMap<SkyowalletAccount, Double> members = bank.getMembers();
 			for(final Entry<SkyowalletAccount, Double> entry : members.entrySet()) {
-				final SkyowalletAccount bankAccount = entry.getKey();
-				final String uuid = Utils.uuidAddDashes(bankAccount.getUUID());
+				final String uuid = Utils.uuidAddDashes(entry.getKey().getUUID());
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
 				final Double balance = entry.getValue();
-				sender.sendMessage((player == null ? uuid : player.getName()) + " " + balance + " " + SkyowalletAPI.getCurrencyName(balance));
+				sender.sendMessage((player == null ? uuid : player.getName()) + " " + ChatColor.AQUA + balance + " " + SkyowalletAPI.getCurrencyName(balance));
 			}
-			final StringBuilder separator = new StringBuilder();
-			for(int i = 0; i != ChatPaginator.AVERAGE_CHAT_PAGE_WIDTH; i++) {
-				separator.append("-");
-			}
-			sender.sendMessage(ChatColor.GRAY + separator.toString());
+			sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
 			sender.sendMessage((args.length < 1 ? Skyowallet.messages.message22 : Skyowallet.messages.message23).replace("/members/", String.valueOf(members.size())));
 		}
 		else {

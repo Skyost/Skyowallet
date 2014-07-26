@@ -1,6 +1,5 @@
 package fr.skyost.skyowallet.commands.subcommands.bank;
 
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,11 +11,11 @@ import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.Utils;
 
-public class BankAddOwner implements CommandInterface {
+public class BankSetOwner implements CommandInterface {
 	
 	@Override
 	public final String[] getNames() {
-		return new String[]{"addowner", "add-owner"};
+		return new String[]{"setowner", "set-owner"};
 	}
 
 	@Override
@@ -26,7 +25,7 @@ public class BankAddOwner implements CommandInterface {
 
 	@Override
 	public final String getPermission() {
-		return "skyowallet.bank.addowner";
+		return "skyowallet.bank.setowner";
 	}
 
 	@Override
@@ -36,7 +35,7 @@ public class BankAddOwner implements CommandInterface {
 
 	@Override
 	public final String getUsage() {
-		return "<player | uuid> [bank]";
+		return "<player | uuid>";
 	}
 
 	@Override
@@ -47,36 +46,19 @@ public class BankAddOwner implements CommandInterface {
 			return true;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
-		final SkyowalletBank bank;
-		if(args.length == 1) {
-			if(!(sender instanceof Player)) {
-				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
-				return true;
-			}
-			bank = SkyowalletAPI.getAccount((OfflinePlayer)sender).getBank();
-			if(bank == null) {
-				sender.sendMessage(Skyowallet.messages.message21);
-				if(sender.hasPermission("skyowallet.admin")) {
-					sender.sendMessage(Skyowallet.messages.message29);
-				}
-				return true;
-			}
+		final SkyowalletBank bank = account.getBank();
+		if(bank == null) {
+			sender.sendMessage(Skyowallet.messages.message31);
+			return true;
 		}
-		else {
-			bank = SkyowalletAPI.getBank(args[1]);
-			if(bank == null) {
-				sender.sendMessage(Skyowallet.messages.message19);
-				return true;
-			}
-		}
-		if(!sender.hasPermission("skyowallet.admin") || sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false) {
+		if(!sender.hasPermission("skyowallet.admin") || (sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false)) {
 			sender.sendMessage(Skyowallet.messages.message28);
 			return true;
 		}
 		if(!bank.isOwner(account)) {
-			bank.addOwner(account);
+			account.setBankOwner(true);
 			if(player.isOnline()) {
-				player.getPlayer().sendMessage(Skyowallet.messages.message30.replace("/bank/", bank.getName()));
+				player.getPlayer().sendMessage(Skyowallet.messages.message29.replace("/bank/", bank.getName()));
 			}
 		}
 		sender.sendMessage(Skyowallet.messages.message10);

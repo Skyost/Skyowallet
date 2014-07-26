@@ -55,15 +55,18 @@ public class Mine4Cash extends SkyowalletExtension {
 	@EventHandler
 	private final void onBlockBreak(final BlockBreakEvent event) {
 		final Block block = event.getBlock();
-		final Double reward = Utils.doubleTryParse(config.data.get(block.getType().name()));
-		if(reward != null) {
-			final Player player = event.getPlayer();
-			if(player.hasPermission("mine4cash.earn")) {
-				final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
-				account.setWallet(account.getWallet() + reward);
-				player.getWorld().playSound(player.getLocation(), Sound.ORB_PICKUP, 1f, 1f);
-				if(config.autoDropItem) {
-					block.setType(Material.AIR);
+		final String rawReward = config.data.get(block.getType().name());
+		if(rawReward != null) {
+			final Double reward = Utils.doubleTryParse(rawReward);
+			if(reward != null) {
+				final Player player = event.getPlayer();
+				if(player.hasPermission("mine4cash.earn")) {
+					final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
+					account.setWallet(account.getWallet() + reward);
+					player.getWorld().playSound(player.getLocation(), Sound.ORB_PICKUP, 1f, 1f);
+					if(config.autoDropItem) {
+						block.setType(Material.AIR);
+					}
 				}
 			}
 		}

@@ -50,12 +50,12 @@ public class BankWithdraw implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
 		}
-		final Double balance = bank.getMemberBalance(account) - amount;
+		final Double balance = account.getBankBalance() - amount;
 		if(balance < 0.0) {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
-		bank.setMemberBalance(account, balance);
+		account.setBankBalance(balance, false);
 		account.setWallet(account.getWallet() + amount);
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;

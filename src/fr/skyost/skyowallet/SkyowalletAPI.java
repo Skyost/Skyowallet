@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -234,7 +235,12 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletBank[] getBanks() {
-		final Collection<SkyowalletBank> banks = SkyowalletAPI.banks.values();
+		final List<SkyowalletBank> banks = new ArrayList<SkyowalletBank>();
+		for(final SkyowalletBank bank : SkyowalletAPI.banks.values()) {
+			if(bank != null) {
+				banks.add(bank);
+			}
+		}
 		return banks.toArray(new SkyowalletBank[banks.size()]);
 	}
 	
@@ -279,7 +285,7 @@ public class SkyowalletAPI {
 	public static final HashMap<SkyowalletAccount, Double> deleteBank(final SkyowalletBank bank) {
 		final HashMap<SkyowalletAccount, Double> members = bank.getMembers();
 		for(final SkyowalletAccount account : members.keySet()) {
-			bank.removeMember(account);
+			account.setBank(null, false);
 		}
 		banks.put(bank.name, null);
 		return members;
@@ -372,12 +378,27 @@ public class SkyowalletAPI {
 		}
 		try {
 			sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
-			for(final SkyowalletBank bank : banks.values()) {
-				Utils.writeToFile(new File(getBanksDirectoryName(), bank.name), bank.toString());
+			final List<String> removedBanks = new ArrayList<String>();
+			for(final Entry<String, SkyowalletBank> entry : banks.entrySet()) {
+				final String bankName = entry.getKey();
+				final File bankFile = new File(getBanksDirectoryName(), bankName);
+				final SkyowalletBank bank = entry.getValue();
+				if(bank == null) {
+					removedBanks.add(bankName);
+					if(bankFile.exists() && bankFile.isFile()) {
+						bankFile.delete();
+					}
+					continue;
+				}
+				Utils.writeToFile(bankFile, bank.toString());
+			}
+			for(final String removedBank : removedBanks) {
+				banks.remove(removedBank);
 			}
 			sender.sendMessage(prefix + ChatColor.GREEN + "Banks saved with success.");
 		}
 		catch(final Exception ex) {
+			ex.printStackTrace();
 			sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
 		}
 		sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
@@ -403,7 +424,7 @@ public class SkyowalletAPI {
 		 */
 		
 		public SkyowalletAccount(final String uuid) {
-			this(uuid, 0.0, null, 0.0, false, Utils.getCurrentTimeInMillis());
+			this(uuid, 0.0, null, 0.0, false, System.currentTimeMillis());
 		}
 		
 		/**
@@ -413,7 +434,7 @@ public class SkyowalletAPI {
 		 * @param wallet The account's wallet.
 		 * @param bank The account's bank.
 		 * @param bankBalance The account's bank balance.
-		 * @param ownedBank If the player owns a bank, specify it.
+		 * @param isBankOwner If the player is an owner of his bank.
 		 * @param lastModificationTime The last modification time of the specified account.
 		 */
 		
@@ -466,7 +487,7 @@ public class SkyowalletAPI {
 		
 		public final void setWallet(final double wallet, final boolean sync) {
 			this.wallet = wallet;
-			lastModificationTime = Utils.getCurrentTimeInMillis();
+			lastModificationTime = System.currentTimeMillis();
 			if(sync) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
 			}
@@ -497,27 +518,123 @@ public class SkyowalletAPI {
 		}
 		
 		/**
-		 * Sets the bank of the account. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+		 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
+		 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+		 * 
+		 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+		 * 
+		 * @return The old bank balance.
+		 */
+		
+		public final double setBank(final SkyowalletBank bank) {
+			return setBank(bank, Skyowallet.config.syncEachModification);
+		}
+		
+		/**
+		 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
+		 * 
+		 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+		 * @param sync If you want to synchronizes the database (asynchronously).
+		 * 
+		 * @return The old bank balance.
+		 */
+		
+		public final double setBank(final SkyowalletBank bank, final boolean sync) {
+			final double balance = bankBalance;
+			if(bank == null) {
+				if(isBankOwner) {
+					isBankOwner = false;
+				}
+				this.bank = null;
+			}
+			else {
+				this.bank = bank.getName();
+			}
+			bankBalance = 0.0;
+			wallet += balance;
+			lastModificationTime = System.currentTimeMillis();
+			if(sync) {
+				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+			}
+			return balance;
+		}
+		
+		/**
+		 * Gets the account's bank balance.
+		 */
+		
+		public final double getBankBalance() {
+			return bankBalance;
+		}
+		
+		/**
+		 * Sets the account's bank balance. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
 		 * 
 		 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
 		 */
 		
-		public final void setBank(final SkyowalletBank bank) {
-			setBank(bank, Skyowallet.config.syncEachModification);
+		public final void setBankBalance(final double bankBalance) {
+			setBankBalance(bankBalance, Skyowallet.config.syncEachModification);
 		}
 		
 		/**
-		 * Sets the bank of the account.
-		 * <br><b>null</b> if you want to clear the account's bank.
+		 * Sets the account's bank balance.
 		 * 
 		 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
 		 * @param sync If you want to synchronizes the database (asynchronously).
 		 */
 		
-		public final void setBank(final SkyowalletBank bank, final boolean sync) {
-			this.bank = bank == null ? null : bank.getName();
+		public final void setBankBalance(final double bankBalance, final boolean sync) {
+			this.bankBalance = bankBalance;
 			if(sync) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+			}
+		}
+		
+		/**
+		 * Checks if the specified account is an owner of its bank.
+		 * 
+		 * @param account The account.
+		 * 
+		 * @return <b>true</b> If the specified account is an owner of its bank.
+		 * <br><b>false</b> Otherwise.
+		 */
+		
+		public final boolean isBankOwner() {
+			return isBankOwner;
+		}
+		
+		/**
+		 * Sets if this account should be an owner of its bank.
+		 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+		 * 
+		 * @param isOwner <b>true</b> If this account should be an owner of its bank.
+		 * <br><b>false</b> Otherwise.
+		 */
+		
+		public final void setBankOwner(final boolean isOwner) {
+			setBankOwner(isOwner, Skyowallet.config.syncEachModification);
+		}
+		
+		/**
+		 * Sets if this account should be an owner of its bank.
+		 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+		 * 
+		 * @param isOwner <b>true</b> If this account should be an owner of its bank.
+		 * <br><b>false</b> Otherwise.
+		 * @param sync If you want to synchronizes the database (asynchronously).
+		 */
+		
+		public final void setBankOwner(final boolean isOwner, final boolean sync) {
+			if(bank == null) {
+				return;
+			}
+			if(isBankOwner != isOwner) {
+				isBankOwner = isOwner;
+				lastModificationTime = System.currentTimeMillis();
+				if(sync) {
+					Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+				}
 			}
 		}
 		
@@ -538,7 +655,7 @@ public class SkyowalletAPI {
 			json.put("wallet", wallet);
 			json.put("bank", bank);
 			json.put("bankBalance", bankBalance);
-			json.put("ownedBank", isBankOwner);
+			json.put("isBankOwner", isBankOwner);
 			json.put("lastModificationTime", lastModificationTime);
 			return json.toJSONString();
 		}
@@ -567,15 +684,14 @@ public class SkyowalletAPI {
 			if(bankBalance == null || Utils.doubleTryParse(bankBalance.toString()) == null) {
 				bankBalance = 0.0;
 			}
-			final Object ownedBank = jsonObject.get("isBankOwner");
-			return new SkyowalletAccount(uuid.toString(), Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), ownedBank == null ? false : Boolean.valueOf(ownedBank.toString()), Long.parseLong(lastModificationTime.toString()));
+			final Object isBankOwner = jsonObject.get("isBankOwner");
+			return new SkyowalletAccount(uuid.toString(), Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), Long.parseLong(lastModificationTime.toString()));
 		}
 		
 	}
 	
 	/**
-	 * Used to accounts' bank.
-	 * <br><b>NOTE :</b> Most of the method in this class are handled by <b>SkyowalletAccount</b>.
+	 * Used to handle accounts' bank.
 	 */
 	
 	public static class SkyowalletBank {
@@ -603,108 +719,32 @@ public class SkyowalletAPI {
 		}
 		
 		/**
-		 * Add an owner to this bank. He must have an account.
-		 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * 
-		 * @param account The owner's account.
-		 */
-		
-		public final void addOwner(final SkyowalletAccount account) {
-			addOwner(account, Skyowallet.config.syncEachModification);
-		}
-		
-		/**
-		 * Add an owner to this bank. He must have an account.
-		 * 
-		 * @param account The owner's account.
-		 * @param sync If you want to synchronizes the database (asynchronously).
-		 */
-		
-		public final void addOwner(final SkyowalletAccount account, final boolean sync) {
-			if(!isMember(account)) {
-				addMember(account, false);
-			}
-			account.isBankOwner = true;
-			account.lastModificationTime = Utils.getCurrentTimeInMillis();
-			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-			}
-		}
-		
-		/**
 		 * Checks if the specified account is an owner of this bank.
 		 * 
 		 * @param account The account.
 		 * 
 		 * @return <b>true</b> If the specified account is an owner of this bank.
-		 * <br><b>false</b> Otherwise.
+		 * <b>false</b> Otherwise.
 		 */
 		
 		public final boolean isOwner(final SkyowalletAccount account) {
-			return account.isBankOwner;
+			return account.bank != null && account.bank.equals(name) && account.isBankOwner;
 		}
 		
 		/**
-		 * Removes an owner from this bank. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+		 * Gets the owners of this bank.
 		 * 
-		 * @param account The owner's account.
-		 */
-		
-		public final void removeOwner(final SkyowalletAccount account) {
-			removeOwner(account, Skyowallet.config.syncEachModification);
-		}
-		
-		/**
-		 * Removes an owner from this bank.
-		 * 
-		 * @param account The owner's account.
-		 * @param sync If you want to synchronizes the database (asynchronously).
-		 */
-		
-		public final void removeOwner(final SkyowalletAccount account, final boolean sync) {
-			account.isBankOwner = false;
-			account.lastModificationTime = Utils.getCurrentTimeInMillis();
-			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-			}
-		}
-		
-		/**
-		 * Gets the accounts of this bank.
-		 * 
-		 * @return The accounts.
+		 * @return The owners.
 		 */
 		
 		public final SkyowalletAccount[] getOwners() {
 			final List<SkyowalletAccount> owners = new ArrayList<SkyowalletAccount>();
 			for(final SkyowalletAccount account : accounts.values()) {
-				if(account.isBankOwner && account.bank.equals(name)) {
+				if(isOwner(account)) {
 					owners.add(account);
 				}
 			}
 			return owners.toArray(new SkyowalletAccount[owners.size()]);
-		}
-		
-		/**
-		 * Adds a member in this bank. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * 
-		 * @param account The member's account.
-		 */
-		
-		public final void addMember(final SkyowalletAccount account) {
-			addMember(account, Skyowallet.config.syncEachModification);
-		}
-		
-		/**
-		 * Adds a member in this bank.
-		 * 
-		 * @param account The member's account.
-		 * @param sync If you want to synchronizes the database (asynchronously).
-		 */
-		
-		public final void addMember(final SkyowalletAccount account, final boolean sync) {
-			account.bank = name;
-			setMemberBalance(account, 0.0, sync);
 		}
 		
 		/**
@@ -718,84 +758,6 @@ public class SkyowalletAPI {
 		
 		public final boolean isMember(final SkyowalletAccount account) {
 			return account.bank != null && account.bank.equals(name);
-		}
-		
-		/**
-		 * Removes a member from this bank. It will automatically transfers his bank balance to his wallet.
-		 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * 
-		 * @param account The member's account.
-		 * 
-		 * @return The account's bank balance.
-		 */
-		
-		public final double removeMember(final SkyowalletAccount account) {
-			return removeMember(account, Skyowallet.config.syncEachModification);
-		}
-		
-		/**
-		 * Removes a member from this bank. It will automatically transfers his bank balance to his wallet.
-		 * 
-		 * @param account The member's account.
-		 * @param sync If you want to synchronizes the database (asynchronously).
-		 * 
-		 * @return The account's bank balance.
-		 */
-		
-		public final double removeMember(final SkyowalletAccount account, final boolean sync) {
-			account.setBank(null);
-			if(isOwner(account)) {
-				removeOwner(account);
-			}
-			final double bankBalance = account.bankBalance;
-			if(bankBalance != 0.0) {
-				account.setWallet(account.getWallet() + bankBalance, false);
-				account.bankBalance = 0.0;
-			}
-			account.lastModificationTime = Utils.getCurrentTimeInMillis();
-			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-			}
-			return bankBalance;
-		}
-		
-		/**
-		 * Gets the member's bank balance.
-		 * 
-		 * @param account The member's account.
-		 * 
-		 * @return The member's bank balance.
-		 */
-		
-		public final double getMemberBalance(final SkyowalletAccount account) {
-			return account.bankBalance;
-		}
-		
-		/**
-		 * Sets the member's bank balance. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * 
-		 * @param account The member's account.
-		 * @param amount The amount to set.
-		 */
-		
-		public final void setMemberBalance(final SkyowalletAccount account, final double amount) {
-			setMemberBalance(account, amount, Skyowallet.config.syncEachModification);
-		}
-		
-		/**
-		 * Sets the member's bank balance. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * 
-		 * @param account The member's account.
-		 * @param amount The amount to set.
-		 * @param sync If you want to synchronizes the database (asynchronously).
-		 */
-		
-		public final void setMemberBalance(final SkyowalletAccount account, final double amount, final boolean sync) {
-			account.bankBalance = amount;
-			account.lastModificationTime = Utils.getCurrentTimeInMillis();
-			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-			}
 		}
 		
 		/**

@@ -1,6 +1,5 @@
 package fr.skyost.skyowallet.commands.subcommands.bank;
 
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -36,7 +35,7 @@ public class BankRemoveOwner implements CommandInterface {
 
 	@Override
 	public final String getUsage() {
-		return "<player | uuid> [bank]";
+		return "<player | uuid>";
 	}
 
 	@Override
@@ -47,36 +46,19 @@ public class BankRemoveOwner implements CommandInterface {
 			return true;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
-		final SkyowalletBank bank;
-		if(args.length == 1) {
-			if(!(sender instanceof Player)) {
-				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
-				return true;
-			}
-			bank = SkyowalletAPI.getAccount((OfflinePlayer)sender).getBank();
-			if(bank == null) {
-				sender.sendMessage(Skyowallet.messages.message21);
-				if(sender.hasPermission("skyowallet.admin")) {
-					sender.sendMessage(Skyowallet.messages.message29);
-				}
-				return true;
-			}
+		final SkyowalletBank bank = account.getBank();
+		if(bank == null) {
+			sender.sendMessage(Skyowallet.messages.message31);
+			return true;
 		}
-		else {
-			bank = SkyowalletAPI.getBank(args[1]);
-			if(bank == null) {
-				sender.sendMessage(Skyowallet.messages.message19);
-				return true;
-			}
-		}
-		if(!sender.hasPermission("skyowallet.admin") || sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false) {
+		if(!sender.hasPermission("skyowallet.admin") || (sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false)) {
 			sender.sendMessage(Skyowallet.messages.message28);
 			return true;
 		}
 		if(bank.isOwner(account)) {
-			bank.removeOwner(account);
+			account.setBankOwner(false);
 			if(player.isOnline()) {
-				player.getPlayer().sendMessage(Skyowallet.messages.message31.replace("/bank/", bank.getName()));
+				player.getPlayer().sendMessage(Skyowallet.messages.message30.replace("/bank/", bank.getName()));
 			}
 		}
 		sender.sendMessage(Skyowallet.messages.message10);

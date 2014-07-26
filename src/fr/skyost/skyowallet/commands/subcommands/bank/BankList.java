@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import fr.skyost.skyowallet.Skyowallet;
@@ -53,6 +54,8 @@ public class BankList implements CommandInterface {
 			final Object[] data = entry.getValue();
 			sender.sendMessage(Skyowallet.messages.message27.replace("/bank/", data[0].toString()).replace("/accounts/", data[1].toString()).replace("/amount/", String.valueOf(entry.getKey())));
 		}
+		sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
+		sender.sendMessage(Skyowallet.messages.message32.replace("/banks/", String.valueOf(banksData.size())));
 		return true;
 	}
 

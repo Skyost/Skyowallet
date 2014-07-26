@@ -1,6 +1,7 @@
 package fr.skyost.skyowallet.commands.subcommands.bank;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -20,7 +21,7 @@ public class BankDelete implements CommandInterface {
 	
 	@Override
 	public final String[] getNames() {
-		return new String[]{"delete"};
+		return new String[]{"delete", "remove"};
 	}
 
 	@Override
@@ -65,17 +66,17 @@ public class BankDelete implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message19);
 			return true;
 		}
-		System.out.println(account);
-		if(sender.hasPermission("skyowallet.admin") || account == null ? !(sender instanceof Player) : bank.isOwner(account)) {
+		if(sender.hasPermission("skyowallet.admin") || (account == null ? !(sender instanceof Player) : bank.isOwner(account))) {
 			final String bankName = bank.getName();
 			final HashMap<SkyowalletAccount, Double> accounts = SkyowalletAPI.deleteBank(bank);
-			for(final SkyowalletAccount removedBankAccount : accounts.keySet()) {
-				final OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(Utils.uuidAddDashes(removedBankAccount.getUUID())));
+			for(Entry<SkyowalletAccount, Double> entry : accounts.entrySet()) {
+				final OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(Utils.uuidAddDashes(entry.getKey().getUUID())));
 				if(player != null && player.isOnline()) {
-					final double wallet = SkyowalletAPI.getAccount(player).getWallet();
-					player.getPlayer().sendMessage(Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)));
+					final double amount = entry.getValue();
+					player.getPlayer().sendMessage(Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
 				}
 			}
+			sender.sendMessage(Skyowallet.messages.message10);
 		}
 		else {
 			sender.sendMessage(Skyowallet.messages.message28);

@@ -15,6 +15,7 @@ import org.bukkit.plugin.Plugin;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 import fr.skyost.skyowallet.utils.Skyoconfig;
+import fr.skyost.skyowallet.utils.Utils;
 
 public class CommandsCosts extends SkyowalletExtension {
 	
@@ -51,18 +52,21 @@ public class CommandsCosts extends SkyowalletExtension {
 	
 	@EventHandler
 	private final void onPlayerCommandPreprocessEvent(final PlayerCommandPreprocessEvent event) {
-		final Double cost = Double.valueOf(config.data.get(event.getMessage().substring(1).split(" ")[0]));
-		if(cost != null) {
-			final Player player = event.getPlayer();
-			if(!player.hasPermission("commandscosts.bypass")) {
-				final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
-				final double wallet = account.getWallet() - cost;
-				if(wallet < 0.0) {
-					player.sendMessage(ChatColor.RED + "You do not have enough money to run that command.\nCost : " + cost);
-					event.setCancelled(true);
-					return;
+		final String rawCost = config.data.get(event.getMessage().substring(1).split(" ")[0]);
+		if(rawCost != null) {
+			final Double cost = Utils.doubleTryParse(rawCost);
+			if(cost != null) {
+				final Player player = event.getPlayer();
+				if(!player.hasPermission("commandscosts.bypass")) {
+					final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
+					final double wallet = account.getWallet() - cost;
+					if(wallet < 0.0) {
+						player.sendMessage(ChatColor.RED + "You do not have enough money to run that command.\nCost : " + cost);
+						event.setCancelled(true);
+						return;
+					}
+					account.setWallet(wallet);
 				}
-				account.setWallet(wallet);
 			}
 		}
 	}
