@@ -65,7 +65,7 @@ public abstract class SkyowalletExtension implements Listener {
 	 */
 	
 	public final File getConfigurationFile() {
-		return new File(SkyowalletAPI.getExtensionsDirectory(), getName().toLowerCase() + ".yml");
+		return new File(SkyowalletAPI.getExtensionsDirectory(), getName().toLowerCase().replace(" ", "") + ".yml");
 	}
 	
 	/**
