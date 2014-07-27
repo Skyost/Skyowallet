@@ -13,7 +13,7 @@ public class GlobalEvents implements Listener {
 	private final void onPlayerJoin(final PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 		if(!SkyowalletAPI.hasAccount(player)) {
-			SkyowalletAPI.registerAccount(player.getUniqueId().toString());
+			SkyowalletAPI.registerAccount(player.getUniqueId());
 		}
 	}
 

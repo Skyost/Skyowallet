@@ -7,7 +7,6 @@ import java.util.HashMap;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -23,7 +22,7 @@ public class Mine4Cash extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public Mine4Cash(final Plugin plugin) throws InvalidConfigurationException {
+	public Mine4Cash(final Plugin plugin) {
 		super(plugin);
 	}
 	
@@ -61,9 +60,9 @@ public class Mine4Cash extends SkyowalletExtension {
 			if(reward != null) {
 				final Player player = event.getPlayer();
 				if(player.hasPermission("mine4cash.earn")) {
-					final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
+					final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
 					account.setWallet(account.getWallet() + reward);
-					player.getWorld().playSound(player.getLocation(), Sound.ORB_PICKUP, 1f, 1f);
+					player.getWorld().playSound(player.getLocation(), config.sound, 1f, 1f);
 					if(config.autoDropItem) {
 						block.setType(Material.AIR);
 					}
@@ -80,6 +79,8 @@ public class Mine4Cash extends SkyowalletExtension {
 		public HashMap<String, String> data = new HashMap<String, String>();
 		@ConfigOptions(name = "mine4cash.auto-drop-item")
 		public boolean autoDropItem = false;
+		@ConfigOptions(name = "mine4cash.sound")
+		public Sound sound = Sound.ORB_PICKUP;
 		
 		private ExtensionConfig(final File file) {
 			super(file, Arrays.asList("Mine4Cash Configuration"));

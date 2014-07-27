@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -21,7 +20,7 @@ public class CommandsCosts extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public CommandsCosts(final Plugin plugin) throws InvalidConfigurationException {
+	public CommandsCosts(final Plugin plugin) {
 		super(plugin);
 	}
 	
@@ -58,10 +57,10 @@ public class CommandsCosts extends SkyowalletExtension {
 			if(cost != null) {
 				final Player player = event.getPlayer();
 				if(!player.hasPermission("commandscosts.bypass")) {
-					final SkyowalletAccount account = SkyowalletAPI.getAccount(player.getUniqueId().toString());
+					final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
 					final double wallet = account.getWallet() - cost;
 					if(wallet < 0.0) {
-						player.sendMessage(ChatColor.RED + "You do not have enough money to run that command.\nCost : " + cost);
+						player.sendMessage(config.message1.replace("/cost/", String.valueOf(cost)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(cost)));
 						event.setCancelled(true);
 						return;
 					}
@@ -77,6 +76,9 @@ public class CommandsCosts extends SkyowalletExtension {
 		public boolean enable = false;
 		@ConfigOptions(name = "commands-costs.data")
 		public HashMap<String, String> data = new HashMap<String, String>();
+		
+		@ConfigOptions(name = "messages.1")
+		public String message1 = ChatColor.RED + "You do not have enough money to run that command. Cost : /cost/ /currency-name/.";
 		
 		private ExtensionConfig(final File file) {
 			super(file, Arrays.asList("CommandsCosts Configuration"));

@@ -1,7 +1,5 @@
 package fr.skyost.skyowallet.commands;
 
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -32,7 +30,7 @@ public class BankCommand extends SubCommandsExecutor {
 					final String owners;
 					final StringBuilder builder = new StringBuilder();
 					for(final SkyowalletAccount ownerAccount : bank.getOwners()) {
-						final OfflinePlayer owner = Bukkit.getOfflinePlayer(UUID.fromString(ownerAccount.getUUID()));
+						final OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerAccount.getUUID());
 						if(owner == null) {
 							continue;
 						}

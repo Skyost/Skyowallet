@@ -15,7 +15,19 @@ import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public abstract class SkyowalletExtension implements Listener {
 	
-	protected SkyowalletExtension(final Plugin plugin) throws InvalidConfigurationException {
+	private final Plugin plugin;
+	
+	protected SkyowalletExtension(final Plugin plugin) {
+		this.plugin = plugin;
+	}
+	
+	/**
+	 * Loads the extension (register its events and load the configuration).
+	 * 
+	 * @throws InvalidConfigurationException If there is a problem in the extension's configuration.
+	 */
+	
+	public final void load() throws InvalidConfigurationException {
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		getConfiguration().load();
 	}

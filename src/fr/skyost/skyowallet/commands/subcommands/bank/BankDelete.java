@@ -2,7 +2,6 @@ package fr.skyost.skyowallet.commands.subcommands.bank;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,7 +14,6 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.utils.Utils;
 
 public class BankDelete implements CommandInterface {
 	
@@ -70,7 +68,7 @@ public class BankDelete implements CommandInterface {
 			final String bankName = bank.getName();
 			final HashMap<SkyowalletAccount, Double> accounts = SkyowalletAPI.deleteBank(bank);
 			for(Entry<SkyowalletAccount, Double> entry : accounts.entrySet()) {
-				final OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(Utils.uuidAddDashes(entry.getKey().getUUID())));
+				final OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey().getUUID());
 				if(player != null && player.isOnline()) {
 					final double amount = entry.getValue();
 					player.getPlayer().sendMessage(Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));

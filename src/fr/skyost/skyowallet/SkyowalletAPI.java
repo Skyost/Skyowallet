@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,6 +19,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import fr.skyost.skyowallet.tasks.SyncTask;
 import fr.skyost.skyowallet.utils.Utils;
@@ -35,7 +40,7 @@ public class SkyowalletAPI {
 	
 	protected static Statement statement;
 	
-	private static final HashMap<String, SkyowalletAccount> accounts = new HashMap<String, SkyowalletAccount>();
+	private static final HashMap<UUID, SkyowalletAccount> accounts = new HashMap<UUID, SkyowalletAccount>();
 	private static final HashMap<String, SkyowalletBank> banks = new HashMap<String, SkyowalletBank>();
 	
 	public static final Skyowallet getPlugin() {
@@ -152,7 +157,7 @@ public class SkyowalletAPI {
 		if(!player.hasPlayedBefore()) {
 			return false;
 		}
-		return hasAccount(player.getUniqueId().toString());
+		return hasAccount(player.getUniqueId());
 	}
 	
 	/**
@@ -164,7 +169,7 @@ public class SkyowalletAPI {
 	 * <br><b>false</b> Otherwise.
 	 */
 	
-	public static final boolean hasAccount(final String uuid) {
+	public static final boolean hasAccount(final UUID uuid) {
 		return accounts.containsKey(uuid);
 	}
 	
@@ -190,7 +195,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount getAccount(final OfflinePlayer player) {
-		return getAccount(player.getUniqueId().toString());
+		return getAccount(player.getUniqueId());
 	}
 	
 	/**
@@ -201,7 +206,7 @@ public class SkyowalletAPI {
 	 * @return The account if found (null otherwise).
 	 */
 	
-	public static final SkyowalletAccount getAccount(final String uuid) {
+	public static final SkyowalletAccount getAccount(final UUID uuid) {
 		return accounts.get(uuid);
 	}
 	
@@ -252,7 +257,7 @@ public class SkyowalletAPI {
 	 * @return The new account.
 	 */
 	
-	public static final SkyowalletAccount registerAccount(final String uuid) {
+	public static final SkyowalletAccount registerAccount(final UUID uuid) {
 		final SkyowalletAccount account = new SkyowalletAccount(uuid);
 		accounts.put(uuid, account);
 		return account;
@@ -307,7 +312,7 @@ public class SkyowalletAPI {
 				sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
 				for(final File localAccount : getAccountsDirectory().listFiles()) {
 					if(localAccount.isFile()) {
-						final SkyowalletAccount account = SkyowalletAccount.fromJson(Utils.getFileContent(localAccount, null));
+						final SkyowalletAccount account = SkyowalletAccount.fromJson(Files.readFirstLine(localAccount, Charsets.UTF_8));
 						accounts.put(account.uuid, account);
 					}
 				}
@@ -321,7 +326,7 @@ public class SkyowalletAPI {
 				sender.sendMessage(prefix + ChatColor.AQUA + "Loading banks...");
 				for(final File localBank : getBanksDirectory().listFiles()) {
 					if(localBank.isFile()) {
-						final SkyowalletBank bank = SkyowalletBank.fromJSON(Utils.getFileContent(localBank, null));
+						final SkyowalletBank bank = SkyowalletBank.fromJSON(Files.readFirstLine(localBank, Charsets.UTF_8));
 						banks.put(bank.name, bank);
 					}
 				}
@@ -338,13 +343,16 @@ public class SkyowalletAPI {
 				if(statement == null) {
 					sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
 					statement = DriverManager.getConnection("jdbc:mysql://" + Skyowallet.config.mySQLHost + ":" + Skyowallet.config.mySQLPort + "/" + Skyowallet.config.mySQLDB, Skyowallet.config.mySQLUser, Skyowallet.config.mySQLPassword).createStatement();
-					statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL, bank VARCHAR(30), bank_balance DOUBLE NOT NULL, is_bank_owner BOOLEAN, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))");
+					statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL DEFAULT 0.0, bank VARCHAR(30), bank_balance DOUBLE NOT NULL DEFAULT 0.0, is_bank_owner BOOLEAN NOT NULL DEFAULT false, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))");
 					sender.sendMessage(prefix + ChatColor.GREEN + "Done !");
 				}
-				final HashMap<String, SkyowalletAccount> remoteAccounts = new HashMap<String, SkyowalletAccount>();
+				final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
 				final ResultSet result = statement.executeQuery("SELECT HEX(uuid) AS uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time FROM " + MYSQL_TABLE_ACCOUNTS);
 				while(result.next()) {
-					final String uuid = Utils.uuidAddDashes(result.getString("uuid"));
+					final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString("uuid")));
+					if(uuid == null) {
+						continue;
+					}
 					remoteAccounts.put(uuid, new SkyowalletAccount(uuid, result.getDouble("wallet"), result.getString("bank"), result.getDouble("bank_balance"), result.getBoolean("is_bank_owner"), result.getLong("last_modification_time")));
 				}
 				for(final SkyowalletAccount account : remoteAccounts.values()) {
@@ -356,7 +364,7 @@ public class SkyowalletAPI {
 				for(final SkyowalletAccount account : accounts.values()) {
 					final SkyowalletAccount remoteAccount = remoteAccounts.get(account.uuid);
 					if(remoteAccount == null || remoteAccount.lastModificationTime < account.lastModificationTime) {
-						statement.executeUpdate("INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time) VALUES(UNHEX('" + account.uuid.replace("-", "") + "'), " + account.wallet + ", " + account.bank + ", " + account.bankBalance + ", " + account.isBankOwner + ", " + account.lastModificationTime + ") ON DUPLICATE KEY UPDATE wallet=" + account.wallet + ", bank=" + account.bank + ", bank_balance=" + account.bankBalance + ", is_bank_owner=" + account.isBankOwner + ", last_modification_time=" + account.lastModificationTime);
+						statement.executeUpdate("INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time) VALUES(UNHEX('" + account.uuid.toString().replace("-", "") + "'), " + account.wallet + ", \"" + account.bank + "\", " + account.bankBalance + ", " + account.isBankOwner + ", " + account.lastModificationTime + ") ON DUPLICATE KEY UPDATE wallet=" + account.wallet + ", bank=\"" + account.bank + "\", bank_balance=" + account.bankBalance + ", is_bank_owner=" + account.isBankOwner + ", last_modification_time=" + account.lastModificationTime);
 					}
 				}
 				sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
@@ -369,7 +377,7 @@ public class SkyowalletAPI {
 		try {
 			sender.sendMessage(prefix + ChatColor.AQUA + "Saving accounts...");
 			for(final SkyowalletAccount account : accounts.values()) {
-				Utils.writeToFile(new File(getAccountsDirectoryName(), account.uuid), account.toString());
+				Files.write(account.toString(), new File(getAccountsDirectoryName(), account.uuid.toString()), Charsets.UTF_8);
 			}
 			sender.sendMessage(prefix + ChatColor.GREEN + "Accounts saved with success.");
 		}
@@ -390,7 +398,7 @@ public class SkyowalletAPI {
 					}
 					continue;
 				}
-				Utils.writeToFile(bankFile, bank.toString());
+				Files.write(bank.toString(), bankFile, Charsets.UTF_8);
 			}
 			for(final String removedBank : removedBanks) {
 				banks.remove(removedBank);
@@ -410,7 +418,7 @@ public class SkyowalletAPI {
 	
 	public static class SkyowalletAccount {
 		
-		private final String uuid;
+		private final UUID uuid;
 		private double wallet;
 		private String bank;
 		private double bankBalance;
@@ -423,7 +431,7 @@ public class SkyowalletAPI {
 		 * @param uuid The uuid.
 		 */
 		
-		public SkyowalletAccount(final String uuid) {
+		public SkyowalletAccount(final UUID uuid) {
 			this(uuid, 0.0, null, 0.0, false, System.currentTimeMillis());
 		}
 		
@@ -438,7 +446,7 @@ public class SkyowalletAPI {
 		 * @param lastModificationTime The last modification time of the specified account.
 		 */
 		
-		private SkyowalletAccount(final String uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final long lastModificationTime) {
+		private SkyowalletAccount(final UUID uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final long lastModificationTime) {
 			this.uuid = uuid;
 			this.wallet = wallet;
 			this.bank = bank;
@@ -453,7 +461,7 @@ public class SkyowalletAPI {
 		 * @return The UUID.
 		 */
 		
-		public final String getUUID() {
+		public final UUID getUUID() {
 			return uuid;
 		}
 		
@@ -469,7 +477,6 @@ public class SkyowalletAPI {
 		
 		/**
 		 * Sets the wallet. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
-		 * <br><b>NOTE :</b> the last modification time field will be updated too.
 		 * 
 		 * @param wallet The wallet.
 		 */
@@ -651,7 +658,7 @@ public class SkyowalletAPI {
 		@Override
 		public final String toString() {
 			final JSONObject json = new JSONObject();
-			json.put("uuid", uuid);
+			json.put("uuid", uuid.toString());
 			json.put("wallet", wallet);
 			json.put("bank", bank);
 			json.put("bankBalance", bankBalance);
@@ -666,14 +673,20 @@ public class SkyowalletAPI {
 		 * @param json The JSON String.
 		 * 
 		 * @return A new instance of this class.
+		 * 
+		 * @throws ParseException If an error occurred while parsing the data.
 		 */
 		
-		public static final SkyowalletAccount fromJson(final String json) {
-			final JSONObject jsonObject = (JSONObject)JSONValue.parse(json);
-			final Object uuid = jsonObject.get("uuid");
+		public static final SkyowalletAccount fromJson(final String json) throws ParseException {
+			final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
+			Object uuid = jsonObject.get("uuid");
 			final Object lastModificationTime = jsonObject.get("lastModificationTime");
 			if(uuid == null || lastModificationTime == null) {
 				throw new NullPointerException("UUID / Last modification is null.");
+			}
+			uuid = Utils.uuidTryParse(uuid.toString());
+			if(uuid == null) {
+				throw new IllegalArgumentException("This is not a true UUID !");
 			}
 			Object wallet = jsonObject.get("wallet");
 			if(wallet == null || Utils.doubleTryParse(wallet.toString()) == null) {
@@ -685,7 +698,7 @@ public class SkyowalletAPI {
 				bankBalance = 0.0;
 			}
 			final Object isBankOwner = jsonObject.get("isBankOwner");
-			return new SkyowalletAccount(uuid.toString(), Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), Long.parseLong(lastModificationTime.toString()));
+			return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), Long.parseLong(lastModificationTime.toString()));
 		}
 		
 	}
@@ -791,10 +804,12 @@ public class SkyowalletAPI {
 		 * @param json The JSON String.
 		 * 
 		 * @return A new instance of this class.
+		 * 
+		 * @throws ParseException If an error occurred while parsing the data.
 		 */
 		
-		public static final SkyowalletBank fromJSON(final String json) {
-			final JSONObject jsonObject = (JSONObject)JSONValue.parse(json);
+		public static final SkyowalletBank fromJSON(final String json) throws ParseException {
+			final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
 			final Object name = jsonObject.get("name");
 			if(name == null) {
 				throw new IllegalArgumentException("Name cannot be null.");

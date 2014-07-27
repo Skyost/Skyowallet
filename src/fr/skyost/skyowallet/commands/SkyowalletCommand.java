@@ -1,5 +1,6 @@
 package fr.skyost.skyowallet.commands;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,7 +14,7 @@ public class SkyowalletCommand extends SubCommandsExecutor {
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, String[] args) {
 		if(args.length <= 0) {
 			if(sender instanceof Player) {
-				final double wallet = SkyowalletAPI.getAccount(((Player)sender).getUniqueId().toString()).getWallet();
+				final double wallet = SkyowalletAPI.getAccount((OfflinePlayer)sender).getWallet();
 				sender.sendMessage(Skyowallet.messages.message4.replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)).replace("/n/", "\n"));
 			}
 			else {

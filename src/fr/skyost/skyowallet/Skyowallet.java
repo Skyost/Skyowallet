@@ -19,6 +19,7 @@ import fr.skyost.skyowallet.commands.subcommands.skyowallet.*;
 import fr.skyost.skyowallet.commands.subcommands.bank.*;
 import fr.skyost.skyowallet.events.GlobalEvents;
 import fr.skyost.skyowallet.extensions.CommandsCosts;
+import fr.skyost.skyowallet.extensions.GoodbyeWallet;
 import fr.skyost.skyowallet.extensions.Mine4Cash;
 import fr.skyost.skyowallet.extensions.SkyowalletExtension;
 import fr.skyost.skyowallet.tasks.SyncTask;
@@ -81,19 +82,7 @@ public class Skyowallet extends JavaPlugin {
 				console.sendMessage(ChatColor.RED + "!!                                                  !!");
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
-			final Logger logger = this.getLogger();
-			for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this)}) {
-				if(!extension.isEnabled()) {
-					extension.disable();
-					continue;
-				}
-				final String name = extension.getName();
-				logger.log(Level.INFO, "Enabling " + name + "...");
-				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
-					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
-				}
-				logger.log(Level.INFO, name + " enabled !");
-			}
+			loadExtensions(manager);
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -111,6 +100,35 @@ public class Skyowallet extends JavaPlugin {
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Loads Skyowallet's extensions.
+	 * 
+	 * @param manager The plugin manager (used to register events).
+	 */
+	
+	private final void loadExtensions(final PluginManager manager) {
+		final Logger logger = this.getLogger();
+		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this)}) {
+			final String name = extension.getName();
+			try {
+				extension.load();
+				if(!extension.isEnabled()) {
+					extension.disable();
+					continue;
+				}
+				logger.log(Level.INFO, "Enabling " + name + "...");
+				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
+					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
+				}
+				logger.log(Level.INFO, name + " enabled !");
+			}
+			catch(final Exception ex) {
+				logger.log(Level.SEVERE, "An error occured while enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
+				continue;
+			}
 		}
 	}
 

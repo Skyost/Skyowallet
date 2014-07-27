@@ -27,11 +27,12 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.google.common.base.Joiner;
+import com.google.common.primitives.Primitives;
 
 /**
  * <h1>Skyoconfig</h1>
  * <p><i>Handle configurations with ease !</i></p>
- * <p><b>Current version :</b> v0.5.
+ * <p><b>Current version :</b> v0.6.
  * 
  * @author <b>Skyost</b> (<a href="http://www.skyost.eu">www.skyost.eu</a>).
  * <br>Inspired from <a href="https://forums.bukkit.org/threads/lib-supereasyconfig-v1-2-based-off-of-codename_bs-awesome-easyconfig-v2-1.100569/">SuperEasyConfig</a>.</br>
@@ -42,18 +43,6 @@ public class Skyoconfig {
 	private static final transient char DEFAULT_SEPARATOR = '_';
 	private static final transient String LINE_SEPARATOR = System.lineSeparator();
 	private static final transient String TEMP_CONFIG_SECTION = "temp";
-	public static final transient HashMap<Class<?>, Class<?>> PRIMITIVES_CLASS = new HashMap<Class<?>, Class<?>>() {
-		private static final long serialVersionUID = 1L; {
-			put(int.class, Integer.class);
-			put(long.class, Long.class);
-			put(double.class, Double.class);
-			put(float.class, Float.class);
-			put(boolean.class, Boolean.class);
-			put(byte.class, Byte.class);
-			put(void.class, Void.class);
-			put(short.class, Short.class);
-		}
-	};
 	
 	private transient File configFile;
 	private transient List<String> header;
@@ -205,8 +194,11 @@ public class Skyoconfig {
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private final Object deserializeObject(final Class<?> clazz, final Object object) throws ParseException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-		if(PRIMITIVES_CLASS.containsValue(clazz) || clazz.isPrimitive()) {
-			return PRIMITIVES_CLASS.get(clazz).getMethod("valueOf", String.class).invoke(this, object.toString());
+		if(clazz.isPrimitive()) {
+			return Primitives.wrap(clazz).getMethod("valueOf", String.class).invoke(this, object.toString());
+		}
+		if(Primitives.isWrapperType(clazz)) {
+			return clazz.getMethod("valueOf", String.class).invoke(this, object.toString());
 		}
 		if(clazz.isEnum() || object instanceof Enum<?>) {
 			return Enum.valueOf((Class<? extends Enum>)clazz, object.toString());
