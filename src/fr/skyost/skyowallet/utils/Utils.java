@@ -6,13 +6,19 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
+import com.google.common.base.Charsets;
+
 import fr.skyost.skyowallet.SkyowalletAPI;
 
 public class Utils {
 	
 	public static final OfflinePlayer getPlayerByArgument(final String arg) {
 		final UUID uuid = uuidTryParse(arg);
-		return uuid == null ? Bukkit.getOfflinePlayer(arg) : Bukkit.getOfflinePlayer(uuid);
+		final OfflinePlayer player = uuid == null ? Bukkit.getOfflinePlayer(arg) : Bukkit.getOfflinePlayer(uuid);
+		if(player == null && uuid == null) {
+			return Bukkit.getOfflinePlayer(UUID.nameUUIDFromBytes(("OfflinePlayer:" + arg).getBytes(Charsets.UTF_8)));
+		}
+		return player;
 	}
 	
 	public static final boolean isValidFileName(final String name) {

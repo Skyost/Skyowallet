@@ -4,6 +4,7 @@ description: Simple & lightweight economy plugin.
 version: 0.3
 author: Skyost
 website: http://dev.bukkit.org/bukkit-plugins/skyowallet/
+softdepend: [Vault]
 commands:
  skyowallet:
   description: Main command of Skyowallet's economy.
