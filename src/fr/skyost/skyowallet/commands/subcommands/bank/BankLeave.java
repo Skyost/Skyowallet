@@ -36,7 +36,7 @@ public class BankLeave implements CommandInterface {
 	}
 
 	@Override
-	public boolean onCommand(final CommandSender sender, final String[] args) { //TODO La banque est quittée avant d'être quittée
+	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
 		if(!account.hasBank()) {
 			sender.sendMessage(Skyowallet.messages.message21);
