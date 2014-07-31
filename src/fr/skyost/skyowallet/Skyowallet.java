@@ -2,6 +2,7 @@ package fr.skyost.skyowallet;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -21,12 +22,9 @@ import fr.skyost.skyowallet.commands.*;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.commands.subcommands.skyowallet.*;
 import fr.skyost.skyowallet.commands.subcommands.bank.*;
-import fr.skyost.skyowallet.events.GlobalEvents;
-import fr.skyost.skyowallet.extensions.CommandsCosts;
-import fr.skyost.skyowallet.extensions.GoodbyeWallet;
-import fr.skyost.skyowallet.extensions.Mine4Cash;
-import fr.skyost.skyowallet.extensions.SkyowalletExtension;
+import fr.skyost.skyowallet.extensions.*;
 import fr.skyost.skyowallet.hooks.VaultHook;
+import fr.skyost.skyowallet.listeners.GlobalEvents;
 import fr.skyost.skyowallet.tasks.SyncTask;
 import fr.skyost.skyowallet.utils.MetricsLite;
 import fr.skyost.skyowallet.utils.Skyupdater;
@@ -129,7 +127,7 @@ public class Skyowallet extends JavaPlugin {
 	 */
 	
 	private final void loadExtensions(final PluginManager manager, final Logger logger) {
-		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this)}) {
+		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this)}) {
 			final String name = extension.getName();
 			try {
 				extension.load();
@@ -138,8 +136,11 @@ public class Skyowallet extends JavaPlugin {
 					continue;
 				}
 				logger.log(Level.INFO, "Enabling " + name + "...");
-				for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
-					manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
+				final HashMap<String, PermissionDefault> permissions = extension.getPermissions();
+				if(permissions != null) {
+					for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
+						manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
+					}
 				}
 				logger.log(Level.INFO, name + " enabled !");
 			}

@@ -43,7 +43,9 @@ public class BankLeave implements CommandInterface {
 			return true;
 		}
 		final double amount = account.setBank(null);
-		sender.sendMessage(Skyowallet.messages.message26.replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+		if(amount >= 0) {
+			sender.sendMessage(Skyowallet.messages.message26.replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+		}
 		return true;
 	}
 

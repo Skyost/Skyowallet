@@ -24,6 +24,7 @@ import org.json.simple.parser.ParseException;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import fr.skyost.skyowallet.events.*;
 import fr.skyost.skyowallet.tasks.SyncTask;
 import fr.skyost.skyowallet.utils.Utils;
 
@@ -493,7 +494,12 @@ public class SkyowalletAPI {
 		 */
 		
 		public final void setWallet(final double wallet, final boolean sync) {
-			this.wallet = wallet;
+			final WalletChangeEvent event = new WalletChangeEvent(this, wallet);
+			Bukkit.getPluginManager().callEvent(event);
+			if(event.isCancelled()) {
+				return;
+			}
+			this.wallet = event.getNewWallet();
 			lastModificationTime = System.currentTimeMillis();
 			if(sync) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
@@ -544,25 +550,26 @@ public class SkyowalletAPI {
 		 * @param sync If you want to synchronizes the database (asynchronously).
 		 * 
 		 * @return The old bank balance.
+		 * <br>-1.0 will be returned if the event is cancelled.
 		 */
 		
-		public final double setBank(final SkyowalletBank bank, final boolean sync) {
+		public final double setBank(SkyowalletBank bank, final boolean sync) {
+			final BankChangeEvent event = new BankChangeEvent(this, bank);
+			Bukkit.getPluginManager().callEvent(event);
+			if(event.isCancelled()) {
+				return -1.0;
+			}
+			bank = event.getNewBank();
 			final double balance = bankBalance;
 			if(bank == null) {
-				if(isBankOwner) {
-					isBankOwner = false;
-				}
+				setBankOwner(false, false);
 				this.bank = null;
 			}
 			else {
 				this.bank = bank.getName();
 			}
-			bankBalance = 0.0;
 			wallet += balance;
-			lastModificationTime = System.currentTimeMillis();
-			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-			}
+			setBankBalance(0.0, sync);
 			return balance;
 		}
 		
@@ -592,7 +599,11 @@ public class SkyowalletAPI {
 		 */
 		
 		public final void setBankBalance(final double bankBalance, final boolean sync) {
-			this.bankBalance = bankBalance;
+			final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, bankBalance);
+			if(event.isCancelled()) {
+				return;
+			}
+			this.bankBalance = event.getNewBankBalance();
 			if(sync) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
 			}
@@ -633,15 +644,18 @@ public class SkyowalletAPI {
 		 */
 		
 		public final void setBankOwner(final boolean isOwner, final boolean sync) {
-			if(bank == null) {
+			if(bank == null || isBankOwner == isOwner) {
 				return;
 			}
-			if(isBankOwner != isOwner) {
-				isBankOwner = isOwner;
-				lastModificationTime = System.currentTimeMillis();
-				if(sync) {
-					Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
-				}
+			final StatusChangeEvent event = new StatusChangeEvent(this, isOwner);
+			Bukkit.getPluginManager().callEvent(event);
+			if(event.isCancelled()) {
+				return;
+			}
+			isBankOwner = event.getNewStatus();
+			lastModificationTime = System.currentTimeMillis();
+			if(sync) {
+				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
 			}
 		}
 		

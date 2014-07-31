@@ -1,4 +1,4 @@
-package fr.skyost.skyowallet.events;
+package fr.skyost.skyowallet.listeners;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
