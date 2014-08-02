@@ -17,6 +17,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -306,8 +307,15 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final void sync(final CommandSender sender) {
+		final PluginManager manager = Bukkit.getPluginManager();
 		final String prefix = sender instanceof Player ? "" : "[Skyowallet] ";
 		sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization started...");
+		final SyncBeginEvent syncBeginEvent = new SyncBeginEvent();
+		manager.callEvent(syncBeginEvent);
+		if(syncBeginEvent.isCancelled()) {
+			sender.sendMessage(prefix + ChatColor.DARK_RED + "Synchronization cancelled !");
+			return;
+		}
 		if(accounts.size() == 0) {
 			try {
 				sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
@@ -411,6 +419,7 @@ public class SkyowalletAPI {
 			sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
 		}
 		sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
+		manager.callEvent(new SyncEndEvent());
 	}
 	
 	/**
@@ -550,10 +559,13 @@ public class SkyowalletAPI {
 		 * @param sync If you want to synchronizes the database (asynchronously).
 		 * 
 		 * @return The old bank balance.
-		 * <br>-1.0 will be returned if the event is cancelled.
+		 * <br>-1.0 will be returned if the event is cancelled or if this account is already in the specified bank.
 		 */
 		
 		public final double setBank(SkyowalletBank bank, final boolean sync) {
+			if(this.bank.equals(bank)) {
+				return -1.0;
+			}
 			final BankChangeEvent event = new BankChangeEvent(this, bank);
 			Bukkit.getPluginManager().callEvent(event);
 			if(event.isCancelled()) {
@@ -568,7 +580,7 @@ public class SkyowalletAPI {
 			else {
 				this.bank = bank.getName();
 			}
-			wallet += balance;
+			setWallet(wallet + balance, false);
 			setBankBalance(0.0, sync);
 			return balance;
 		}

@@ -47,14 +47,14 @@ public class SkyowalletPay implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
 		}
-		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount(player);
+		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount((OfflinePlayer)sender);
 		final double wallet = playerAccount.getWallet() - amount;
 		if(wallet < 0.0) {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
 		playerAccount.setWallet(wallet, false);
-		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player.getUniqueId());
+		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player);
 		targetAccount.setWallet(targetAccount.getWallet() + amount);
 		if(player.isOnline()) {
 			player.getPlayer().sendMessage(Skyowallet.messages.message9.replace("/player/", sender.getName()).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));

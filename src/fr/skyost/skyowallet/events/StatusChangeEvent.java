@@ -2,7 +2,7 @@ package fr.skyost.skyowallet.events;
 
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 
-public class StatusChangeEvent extends SkyowalletEvent {
+public class StatusChangeEvent extends EconomyEvent {
 	
 	private boolean willBeBankOwner;
 

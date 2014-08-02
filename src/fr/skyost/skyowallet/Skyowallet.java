@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
@@ -62,12 +63,16 @@ public class Skyowallet extends JavaPlugin {
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
 			}
-			this.getCommand("skyowallet").setExecutor(skyowalletCmd);
+			final PluginCommand skyowallet = getCommand("skyowallet");
+			skyowallet.setUsage("/" + skyowallet.getName() + " " + skyowalletCmd.getUsage());
+			skyowallet.setExecutor(skyowalletCmd);
 			final BankCommand bankCmd = new BankCommand();
 			for(final CommandInterface command : new CommandInterface[]{new BankSetOwner(), new BankCreate(), new BankDelete(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankWithdraw()}) {
 				bankCmd.registerSubCommand(command);
 			}
-			this.getCommand("bank").setExecutor(bankCmd);
+			final PluginCommand bank = getCommand("bank");
+			bank.setUsage("/" + bank.getName() + " " + bankCmd.getUsage());
+			bank.setExecutor(bankCmd);
 			manager.registerEvents(new GlobalEvents(), this);
 			if(config.enableUpdater) {
 				new Skyupdater(this, 82182, this.getFile(), true, true);

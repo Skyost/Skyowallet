@@ -18,6 +18,7 @@ import com.google.common.primitives.Ints;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
+import fr.skyost.skyowallet.events.SyncEndEvent;
 import fr.skyost.skyowallet.events.WalletChangeEvent;
 import fr.skyost.skyowallet.utils.SimpleScoreboard;
 import fr.skyost.skyowallet.utils.Skyoconfig;
@@ -67,7 +68,6 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	private final void onWalletChange(final WalletChangeEvent event) {
 		final Player player = Bukkit.getPlayer(event.getAccount().getUUID());
 		if(player != null) {
-			System.out.println(event.getNewWallet());
 			buildAndSend(player, event.getNewWallet(), null);
 		}
 	}
@@ -77,6 +77,13 @@ public class ScoreboardInfos extends SkyowalletExtension {
 		final Player player = Bukkit.getPlayer(event.getAccount().getUUID());
 		if(player != null) {
 			buildAndSend(player, null, event.getNewBankBalance());
+		}
+	}
+	
+	@EventHandler
+	private final void onSyncEnd(final SyncEndEvent event) {
+		for(final Player player : Bukkit.getOnlinePlayers()) {
+			buildAndSend(player, null, null);
 		}
 	}
 	

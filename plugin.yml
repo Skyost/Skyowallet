@@ -8,7 +8,7 @@ softdepend: [Vault]
 commands:
  skyowallet:
   description: Main command of Skyowallet's economy.
-  aliases: [wallet, economy, econ, eco]
+  aliases: [wallet, economy, econ, eco, money]
  bank:
   description: Main command of Skyowallet's banks.
   aliases: [ba]

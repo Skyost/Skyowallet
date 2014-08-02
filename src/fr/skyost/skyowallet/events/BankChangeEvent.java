@@ -3,7 +3,7 @@ package fr.skyost.skyowallet.events;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
 
-public class BankChangeEvent extends SkyowalletEvent {
+public class BankChangeEvent extends EconomyEvent {
 	
 	private SkyowalletBank newBank;
 

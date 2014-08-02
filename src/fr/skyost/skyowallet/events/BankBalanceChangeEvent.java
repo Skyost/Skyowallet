@@ -2,7 +2,7 @@ package fr.skyost.skyowallet.events;
 
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 
-public class BankBalanceChangeEvent extends SkyowalletEvent {
+public class BankBalanceChangeEvent extends EconomyEvent {
 	
 	private double newBankBalance;
 
