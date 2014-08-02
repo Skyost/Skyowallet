@@ -612,6 +612,7 @@ public class SkyowalletAPI {
 		
 		public final void setBankBalance(final double bankBalance, final boolean sync) {
 			final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, bankBalance);
+			Bukkit.getPluginManager().callEvent(event);
 			if(event.isCancelled()) {
 				return;
 			}

@@ -55,7 +55,7 @@ public class BankDeposit implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
-		account.setWallet(wallet);
+		account.setWallet(wallet, false);
 		account.setBankBalance(account.getBankBalance() + amount);
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;
