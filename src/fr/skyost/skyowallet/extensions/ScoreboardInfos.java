@@ -85,7 +85,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	 * 
 	 * @param player The player.
 	 * @param wallet His wallet.
-	 * @param bankBalance His bankBalance.
+	 * @param bankBalance His bank balance.
 	 */
 	
 	private final void buildAndSend(final Player player, final Double wallet, final Double bankBalance) {
