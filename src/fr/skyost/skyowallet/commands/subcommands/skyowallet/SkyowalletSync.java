@@ -1,8 +1,9 @@
 package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
 import org.bukkit.command.CommandSender;
-import fr.skyost.skyowallet.SkyowalletAPI;
+
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.tasks.SyncTask;
 
 public class SkyowalletSync implements CommandInterface {
 
@@ -33,14 +34,7 @@ public class SkyowalletSync implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		new Thread() {
-			
-			@Override
-			public final void run() {
-				SkyowalletAPI.sync(sender);
-			}
-			
-		}.start();
+		new SyncTask(false, sender).start();
 		return true;
 	}
 

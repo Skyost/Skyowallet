@@ -2,7 +2,7 @@ package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -37,7 +37,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> getPermissions() {
+	public final Map<String, PermissionDefault> getPermissions() {
 		return null;
 	}
 	
@@ -47,6 +47,11 @@ public class ScoreboardInfos extends SkyowalletExtension {
 			config = new ExtensionConfig(this.getConfigurationFile());
 		}
 		return config;
+	}
+	
+	@Override
+	public final String getFileName() {
+		return "scoreboard-infos.yml";
 	}
 	
 	@Override
@@ -106,7 +111,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	
 	public class ExtensionConfig extends Skyoconfig {
 
-		@ConfigOptions(name = "scoreboardinfos.enable")
+		@ConfigOptions(name = "enable")
 		public boolean enable = true;
 		@ConfigOptions(name = "sidebar.title")
 		public String sidebarTitle = ChatColor.BOLD + "Economy :";

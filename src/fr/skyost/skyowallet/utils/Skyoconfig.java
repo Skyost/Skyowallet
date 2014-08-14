@@ -32,7 +32,7 @@ import com.google.common.primitives.Primitives;
 /**
  * <h1>Skyoconfig</h1>
  * <p><i>Handle configurations with ease !</i></p>
- * <p><b>Current version :</b> v0.6.
+ * <p><b>Current version :</b> v0.6.1.
  * 
  * @author <b>Skyost</b> (<a href="http://www.skyost.eu">www.skyost.eu</a>).
  * <br>Inspired from <a href="https://forums.bukkit.org/threads/lib-supereasyconfig-v1-2-based-off-of-codename_bs-awesome-easyconfig-v2-1.100569/">SuperEasyConfig</a>.</br>
@@ -146,9 +146,10 @@ public class Skyoconfig {
 	 * @throws IllegalAccessException If <b>Skyoconfig</b> does not have access to the <b>Field</b> or the <b>Method</b> <b>valueOf</b> of a <b>Primitive</b>.
 	 * @throws InvocationTargetException Invoked if the <b>Skyoconfig</b> fails to use <b>valueOf</b> for a <b>Primitive</b>.
 	 * @throws NoSuchMethodException Same as <b>InvocationTargetException</b>.
+	 * @throws InstantiationException When a <b>Map</b> cannot be created.
 	 */
 	
-	private final void loadField(final Field field, final String name, final YamlConfiguration config) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, ParseException {
+	private final void loadField(final Field field, final String name, final YamlConfiguration config) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, ParseException, InstantiationException {
 		if(Modifier.isTransient(field.getModifiers())) {
 			return;
 		}
@@ -190,10 +191,11 @@ public class Skyoconfig {
 	 * @throws IllegalAccessException If <b>Skyoconfig</b> does not have access to the <b>Field</b> or the <b>Method</b> <b>valueOf</b> of a <b>Primitive</b>.
 	 * @throws InvocationTargetException Invoked if the <b>Skyoconfig</b> fails to use <b>valueOf</b> for a <b>Primitive</b>.
 	 * @throws NoSuchMethodException Same as <b>InvocationTargetException</b>.
+	 * @throws InstantiationException When a <b>Map</b> cannot be created.
 	 */
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private final Object deserializeObject(final Class<?> clazz, final Object object) throws ParseException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+	private final Object deserializeObject(final Class<?> clazz, final Object object) throws ParseException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
 		if(clazz.isPrimitive()) {
 			return Primitives.wrap(clazz).getMethod("valueOf", String.class).invoke(this, object.toString());
 		}
@@ -205,11 +207,13 @@ public class Skyoconfig {
 		}
 		if(Map.class.isAssignableFrom(clazz) || object instanceof Map) {
 			final ConfigurationSection section = (ConfigurationSection)object;
-			final Map<Object, Object> map = new HashMap<Object, Object>();
+			final Map<Object, Object> deserializedMap = new HashMap<Object, Object>();
 			for(final String key : section.getKeys(false)) {
 				final Object value = section.get(key);
-				map.put(key, deserializeObject(value.getClass(), value));
+				deserializedMap.put(key, deserializeObject(value.getClass(), value));
 			}
+			final Object map = clazz.newInstance();
+			clazz.getMethod("putAll", Map.class).invoke(map, deserializedMap);
 			return map;
 		}
 		if(List.class.isAssignableFrom(clazz) || object instanceof List) {

@@ -1,15 +1,12 @@
 package fr.skyost.skyowallet.events;
 
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class SkyowalletEvent extends Event implements Cancellable {
+public class SkyowalletEvent extends Event {
 	
-	private static final HandlerList HANDLERS = new HandlerList();
+private static final HandlerList HANDLERS = new HandlerList();
 	
-	private boolean isCancelled;
-
 	@Override
 	public final HandlerList getHandlers() {
 		return HANDLERS;
@@ -24,15 +21,5 @@ public class SkyowalletEvent extends Event implements Cancellable {
 	public static final HandlerList getHandlerList() {
     	return HANDLERS;
     }
-
-	@Override
-	public final boolean isCancelled() {
-		return isCancelled;
-	}
-
-	@Override
-	public final void setCancelled(final boolean isCancelled) {
-		this.isCancelled = isCancelled;
-	}
 
 }

@@ -3,6 +3,7 @@ package fr.skyost.skyowallet.extensions;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -32,8 +33,8 @@ public class Mine4Cash extends SkyowalletExtension {
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> getPermissions() {
-		final HashMap<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
+	public final Map<String, PermissionDefault> getPermissions() {
+		final Map<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
 		permissions.put("mine4cash.earn", PermissionDefault.TRUE);
 		return permissions;
 	}
@@ -47,6 +48,11 @@ public class Mine4Cash extends SkyowalletExtension {
 	}
 	
 	@Override
+	public final String getFileName() {
+		return "mine4cash.yml";
+	}
+	
+	@Override
 	public final boolean isEnabled() {
 		return config.enable;
 	}
@@ -55,31 +61,34 @@ public class Mine4Cash extends SkyowalletExtension {
 	private final void onBlockBreak(final BlockBreakEvent event) {
 		final Block block = event.getBlock();
 		final String rawReward = config.data.get(block.getType().name());
-		if(rawReward != null) {
-			final Double reward = Utils.doubleTryParse(rawReward);
-			if(reward != null) {
-				final Player player = event.getPlayer();
-				if(player.hasPermission("mine4cash.earn")) {
-					final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
-					account.setWallet(account.getWallet() + reward);
-					player.getWorld().playSound(player.getLocation(), config.sound, 1f, 1f);
-					if(config.autoDropItem) {
-						block.setType(Material.AIR);
-					}
-				}
-			}
+		if(rawReward == null) {
+			return;
+		}
+		final Double reward = Utils.doubleTryParse(rawReward);
+		if(reward == null) {
+			return;
+		}
+		final Player player = event.getPlayer();
+		if(!player.hasPermission("mine4cash.earn")) {
+			return;
+		}
+		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
+		account.setWallet(account.getWallet() + reward);
+		player.getWorld().playSound(player.getLocation(), config.sound, 1f, 1f);
+		if(config.autoDropItem) {
+			block.setType(Material.AIR);
 		}
 	}
 	
 	public class ExtensionConfig extends Skyoconfig {
 
-		@ConfigOptions(name = "mine4cash.enable")
+		@ConfigOptions(name = "enable")
 		public boolean enable = false;
-		@ConfigOptions(name = "mine4cash.data")
+		@ConfigOptions(name = "data")
 		public HashMap<String, String> data = new HashMap<String, String>();
-		@ConfigOptions(name = "mine4cash.auto-drop-item")
+		@ConfigOptions(name = "auto-drop-item")
 		public boolean autoDropItem = false;
-		@ConfigOptions(name = "mine4cash.sound")
+		@ConfigOptions(name = "sound")
 		public Sound sound = Sound.ORB_PICKUP;
 		
 		private ExtensionConfig(final File file) {

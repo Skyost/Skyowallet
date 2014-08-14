@@ -1,6 +1,5 @@
 package fr.skyost.skyowallet.hooks;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +14,6 @@ import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 
 import com.google.common.base.Charsets;
@@ -28,19 +26,21 @@ import fr.skyost.skyowallet.utils.Utils;
 
 public class VaultHook extends AbstractEconomy implements Listener {
 	
-	private final Skyowallet skyowallet = SkyowalletAPI.getPlugin();
+	private final Skyowallet skyowallet;
 	
-	public VaultHook(final Plugin plugin) {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+	public VaultHook(final Skyowallet skyowallet) {
+		this.skyowallet = skyowallet;
+		Bukkit.getPluginManager().registerEvents(this, skyowallet);
 	}
 	
-	public static final void addToVault(final Plugin vault) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		final VaultHook hook = new VaultHook(vault);
-		Bukkit.getServicesManager().register(Economy.class, hook, vault, ServicePriority.Normal);
-		final Logger logger = vault.getLogger();
-		final String name = hook.getName();
-		logger.log(Level.INFO, "[Economy] " + name + " found: Loaded.");
-		logger.log(Level.INFO, "[Economy] " + name + " hooked.");
+	public static final void addToVault() {
+		final Skyowallet skyowallet = SkyowalletAPI.getPlugin();
+		final Logger logger = skyowallet.getLogger();
+		logger.log(Level.INFO, "Initializing the Vault hook...");
+		final VaultHook hook = new VaultHook(skyowallet);
+		logger.log(Level.INFO, "Registering the Vault hook...");
+		Bukkit.getServicesManager().register(Economy.class, hook, skyowallet, ServicePriority.Normal);
+		logger.log(Level.INFO, "Finished ! Vault will now support Skyowallet !");
 		/*final Method hookEconomy = vault.getClass().getDeclaredMethod("hookEconomy", String.class, Class.class, ServicePriority.class, String[].class);
 		hookEconomy.setAccessible(true);
 		hookEconomy.invoke(vault, "Skyowallet", VaultHook.class, ServicePriority.Normal, new String[]{"fr.skyost.skyowallet.Skyowallet"});*/
@@ -129,9 +129,8 @@ public class VaultHook extends AbstractEconomy implements Listener {
 		if(!hasAccount(playerName)) {
 			return new EconomyResponse(amount, balance, ResponseType.FAILURE, "This player does not exist or does not have an account.");
 		}
-		final SkyowalletAccount account = getAccountByName(playerName);
-		balance += account.getWallet();
-		account.setWallet(balance);
+		balance += amount;
+		getAccountByName(playerName).setWallet(balance);
 		return new EconomyResponse(amount, balance, ResponseType.SUCCESS, "Success.");
 	}
 	

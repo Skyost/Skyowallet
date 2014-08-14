@@ -49,7 +49,7 @@ public class Skyupdater {
 	private String response;
 	private Thread updaterThread;
 	
-	private static final String SKYUPDATER_VERSION = "0.5";
+	private static final String SKYUPDATER_VERSION = "0.5.1";
 	
 	public enum Result {
 		
@@ -410,7 +410,7 @@ public class Skyupdater {
 				inputStreamReader.close();
 			}
 			catch(final Exception ex) {
-				logger.log(Level.SEVERE, "Exception '" + ex + "'. Please check your network connection.");
+				logger.log(Level.SEVERE, "[Skyupdater] Exception '" + ex + "'. Please check your network connection.");
 				result = Result.ERROR;
 			}
 		}

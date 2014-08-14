@@ -1,7 +1,7 @@
 package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -48,7 +48,7 @@ public abstract class SkyowalletExtension implements Listener {
 	 * @return The extension's permissions.
 	 */
 	
-	public abstract HashMap<String, PermissionDefault> getPermissions();
+	public abstract Map<String, PermissionDefault> getPermissions();
 	
 	/**
 	 * Gets the extension's YAML configuration.
@@ -65,8 +65,16 @@ public abstract class SkyowalletExtension implements Listener {
 	 */
 	
 	public final File getConfigurationFile() {
-		return new File(SkyowalletAPI.getExtensionsDirectory(), getName().toLowerCase().replace(" ", "") + ".yml");
+		return new File(SkyowalletAPI.getExtensionsDirectory(), getFileName());
 	}
+	
+	/**
+	 * Gets the extension's configuration file name.
+	 * 
+	 * @return The file name.
+	 */
+	
+	public abstract String getFileName();
 	
 	/**
 	 * Checks if this extension is enabled (only checks via the configuration).

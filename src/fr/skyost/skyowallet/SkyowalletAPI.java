@@ -304,51 +304,70 @@ public class SkyowalletAPI {
 	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
 	 * 
 	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
+	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
 	 */
 	
 	public static final void sync(final CommandSender sender) {
 		final PluginManager manager = Bukkit.getPluginManager();
 		final String prefix = sender instanceof Player ? "" : "[Skyowallet] ";
-		sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization started...");
+		if(sender != null) {
+			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization started...");
+		}
 		final SyncBeginEvent syncBeginEvent = new SyncBeginEvent();
 		manager.callEvent(syncBeginEvent);
 		if(syncBeginEvent.isCancelled()) {
-			sender.sendMessage(prefix + ChatColor.DARK_RED + "Synchronization cancelled !");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.DARK_RED + "Synchronization cancelled !");
+			}
 			return;
 		}
 		if(accounts.size() == 0) {
 			try {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
+				}
 				for(final File localAccount : getAccountsDirectory().listFiles()) {
 					if(localAccount.isFile()) {
 						final SkyowalletAccount account = SkyowalletAccount.fromJson(Files.readFirstLine(localAccount, Charsets.UTF_8));
 						accounts.put(account.uuid, account);
 					}
 				}
-				sender.sendMessage(prefix + ChatColor.GREEN + "Accounts loaded.");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.GREEN + "Accounts loaded.");
+				}
 			}
 			catch(final Exception ex) {
 				ex.printStackTrace();
-				sender.sendMessage(prefix + ChatColor.RED + "Failed to load accounts.");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Failed to load accounts.");
+				}
 			}
 			try {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Loading banks...");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.AQUA + "Loading banks...");
+				}
 				for(final File localBank : getBanksDirectory().listFiles()) {
 					if(localBank.isFile()) {
 						final SkyowalletBank bank = SkyowalletBank.fromJSON(Files.readFirstLine(localBank, Charsets.UTF_8));
 						banks.put(bank.name, bank);
 					}
 				}
-				sender.sendMessage(prefix + ChatColor.GREEN + "Banks loaded.");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.GREEN + "Banks loaded.");
+				}
 			}
 			catch(final Exception ex) {
 				ex.printStackTrace();
-				sender.sendMessage(prefix + ChatColor.RED + "Failed to load banks.");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Failed to load banks.");
+				}
 			}
 		}
 		if(Skyowallet.config.mySQLEnable) {
 			try {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Synchronization with the MySQL database...");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.AQUA + "Synchronization with the MySQL database...");
+				}
 				if(statement == null) {
 					sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
 					statement = DriverManager.getConnection("jdbc:mysql://" + Skyowallet.config.mySQLHost + ":" + Skyowallet.config.mySQLPort + "/" + Skyowallet.config.mySQLDB, Skyowallet.config.mySQLUser, Skyowallet.config.mySQLPassword).createStatement();
@@ -376,22 +395,33 @@ public class SkyowalletAPI {
 						statement.executeUpdate("INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time) VALUES(UNHEX('" + account.uuid.toString().replace("-", "") + "'), " + account.wallet + ", \"" + account.bank + "\", " + account.bankBalance + ", " + account.isBankOwner + ", " + account.lastModificationTime + ") ON DUPLICATE KEY UPDATE wallet=" + account.wallet + ", bank=\"" + account.bank + "\", bank_balance=" + account.bankBalance + ", is_bank_owner=" + account.isBankOwner + ", last_modification_time=" + account.lastModificationTime);
 					}
 				}
-				sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
+				}
 			}
 			catch(final Exception ex) {
 				ex.printStackTrace();
-				sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
+				}
 			}
 		}
 		try {
-			sender.sendMessage(prefix + ChatColor.AQUA + "Saving accounts...");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.AQUA + "Saving accounts...");
+			}
 			for(final SkyowalletAccount account : accounts.values()) {
 				Files.write(account.toString(), new File(getAccountsDirectoryName(), account.uuid.toString()), Charsets.UTF_8);
 			}
-			sender.sendMessage(prefix + ChatColor.GREEN + "Accounts saved with success.");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.GREEN + "Accounts saved with success.");
+			}
 		}
 		catch(final Exception ex) {
-			sender.sendMessage(prefix + ChatColor.RED + "Failed to save accounts !");
+			ex.printStackTrace();
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.RED + "Failed to save accounts !");
+			}
 		}
 		try {
 			sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
@@ -412,13 +442,19 @@ public class SkyowalletAPI {
 			for(final String removedBank : removedBanks) {
 				banks.remove(removedBank);
 			}
-			sender.sendMessage(prefix + ChatColor.GREEN + "Banks saved with success.");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.GREEN + "Banks saved with success.");
+			}
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
-			sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
+			}
 		}
-		sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
+		if(sender != null) {
+			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
+		}
 		manager.callEvent(new SyncEndEvent());
 	}
 	
@@ -511,7 +547,7 @@ public class SkyowalletAPI {
 			this.wallet = event.getNewWallet();
 			lastModificationTime = System.currentTimeMillis();
 			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask(Skyowallet.config.silentSync));
 			}
 		}
 		
@@ -618,7 +654,7 @@ public class SkyowalletAPI {
 			}
 			this.bankBalance = event.getNewBankBalance();
 			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask(Skyowallet.config.silentSync));
 			}
 		}
 		
@@ -668,7 +704,7 @@ public class SkyowalletAPI {
 			isBankOwner = event.getNewStatus();
 			lastModificationTime = System.currentTimeMillis();
 			if(sync) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask());
+				Bukkit.getScheduler().scheduleSyncDelayedTask(PLUGIN, new SyncTask(Skyowallet.config.silentSync));
 			}
 		}
 		

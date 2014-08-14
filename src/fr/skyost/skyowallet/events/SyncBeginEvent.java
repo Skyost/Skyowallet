@@ -1,3 +1,3 @@
 package fr.skyost.skyowallet.events;
 
-public class SyncBeginEvent extends SkyowalletEvent {}
+public class SyncBeginEvent extends SkyowalletCancellableEvent {}

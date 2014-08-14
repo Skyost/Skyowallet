@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -34,8 +35,8 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> getPermissions() {
-		final HashMap<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
+	public final Map<String, PermissionDefault> getPermissions() {
+		final Map<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
 		permissions.put("goodbyewallet.bypass", PermissionDefault.FALSE);
 		return permissions;
 	}
@@ -46,6 +47,11 @@ public class GoodbyeWallet extends SkyowalletExtension {
 			config = new ExtensionConfig(this.getConfigurationFile());
 		}
 		return config;
+	}
+	
+	@Override
+	public final String getFileName() {
+		return "goodbye-wallet.yml";
 	}
 	
 	@Override
@@ -82,7 +88,7 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	
 	public class ExtensionConfig extends Skyoconfig {
 		
-		@ConfigOptions(name = "goodbye-wallet.enable")
+		@ConfigOptions(name = "enable")
 		public boolean enable = false;
 		
 		@ConfigOptions(name = "messages.1")

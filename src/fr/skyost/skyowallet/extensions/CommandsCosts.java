@@ -3,6 +3,7 @@ package fr.skyost.skyowallet.extensions;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -30,8 +31,8 @@ public class CommandsCosts extends SkyowalletExtension {
 	}
 
 	@Override
-	public final HashMap<String, PermissionDefault> getPermissions() {
-		final HashMap<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
+	public final Map<String, PermissionDefault> getPermissions() {
+		final Map<String, PermissionDefault> permissions = new HashMap<String, PermissionDefault>();
 		permissions.put("commandscosts.bypass", PermissionDefault.FALSE);
 		return permissions;
 	}
@@ -45,36 +46,44 @@ public class CommandsCosts extends SkyowalletExtension {
 	}
 	
 	@Override
+	public final String getFileName() {
+		return "commands-costs.yml";
+	}
+	
+	@Override
 	public final boolean isEnabled() {
 		return config.enable;
 	}
 	
 	@EventHandler
 	private final void onPlayerCommandPreprocessEvent(final PlayerCommandPreprocessEvent event) {
-		final String rawCost = config.data.get(event.getMessage().substring(1).split(" ")[0]);
-		if(rawCost != null) {
-			final Double cost = Utils.doubleTryParse(rawCost);
-			if(cost != null) {
-				final Player player = event.getPlayer();
-				if(!player.hasPermission("commandscosts.bypass")) {
-					final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
-					final double wallet = account.getWallet() - cost;
-					if(wallet < 0.0) {
-						player.sendMessage(config.message1.replace("/cost/", String.valueOf(cost)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(cost)));
-						event.setCancelled(true);
-						return;
-					}
-					account.setWallet(wallet);
-				}
-			}
+		final Player player = event.getPlayer();
+		if(!player.hasPermission("commandscosts.bypass")) {
+			return;
 		}
+		final String rawCost = config.data.get(event.getMessage().substring(1).split(" ")[0]);
+		if(rawCost == null) {
+			return;
+		}
+		final Double cost = Utils.doubleTryParse(rawCost);
+		if(cost == null) {
+			return;
+		}
+		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
+		final double wallet = account.getWallet() - cost;
+		if(wallet < 0.0) {
+			player.sendMessage(config.message1.replace("/cost/", String.valueOf(cost)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(cost)));
+			event.setCancelled(true);
+			return;
+		}
+		account.setWallet(wallet);
 	}
 	
 	public class ExtensionConfig extends Skyoconfig {
 		
-		@ConfigOptions(name = "commands-costs.enable")
+		@ConfigOptions(name = "enable")
 		public boolean enable = false;
-		@ConfigOptions(name = "commands-costs.data")
+		@ConfigOptions(name = "data")
 		public HashMap<String, String> data = new HashMap<String, String>();
 		
 		@ConfigOptions(name = "messages.1")

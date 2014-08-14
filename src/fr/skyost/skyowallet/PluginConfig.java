@@ -30,6 +30,8 @@ public class PluginConfig extends Skyoconfig {
 	public boolean warnOfflineMode = true;
 	@ConfigOptions(name = "options.sync-each-modification")
 	public boolean syncEachModification = false;
+	@ConfigOptions(name = "options.silent-sync")
+	public boolean silentSync = false;
 	
 	@ConfigOptions(name = "mysql.enable")
 	public boolean mySQLEnable = false;

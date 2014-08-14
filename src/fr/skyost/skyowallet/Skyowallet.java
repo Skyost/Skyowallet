@@ -1,9 +1,7 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,8 +12,6 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -53,11 +49,13 @@ public class Skyowallet extends JavaPlugin {
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
-			final Runnable syncTask = new SyncTask();
-			syncTask.run();
+			final SyncTask syncTask = new SyncTask(config.silentSync);
 			if(config.autoSyncInterval > 0) {
-				final long interval = config.autoSyncInterval * 20L;
-				Bukkit.getScheduler().scheduleSyncRepeatingTask(this, syncTask, interval, interval);
+				Bukkit.getScheduler().scheduleSyncRepeatingTask(this, syncTask, 0L, config.autoSyncInterval * 20L);
+			}
+			else {
+				syncTask.start();
+				syncTask.join();
 			}
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletView()}) {
@@ -95,14 +93,8 @@ public class Skyowallet extends JavaPlugin {
 			}
 			final Logger logger = this.getLogger();
 			loadExtensions(manager, logger);
-			final Plugin vault = manager.getPlugin("Vault");
-			if(vault != null) {
-				logger.log(Level.INFO, "Vault detected. Disabling all others plugins which use Vault...");
-				final Plugin[] plugins = disableAllPlugins(manager, vault);
-				logger.log(Level.INFO, "Hooking into Vault...");
-				VaultHook.addToVault(vault);
-				logger.log(Level.INFO, "Re-enabling the disabled plugins...");
-				enableDisabledPlugins(manager, plugins);
+			if(manager.getPlugin("Vault") != null) {
+				VaultHook.addToVault();
 			}
 		}
 		catch(final Exception ex) {
@@ -114,7 +106,9 @@ public class Skyowallet extends JavaPlugin {
 	@Override
 	public final void onDisable() {
 		try {
-			new SyncTask().run();
+			final SyncTask task = new SyncTask(config.silentSync);
+			task.start();
+			task.join();
 			if(SkyowalletAPI.statement != null && !SkyowalletAPI.statement.isClosed()) {
 				SkyowalletAPI.statement.close();
 			}
@@ -132,7 +126,7 @@ public class Skyowallet extends JavaPlugin {
 	 */
 	
 	private final void loadExtensions(final PluginManager manager, final Logger logger) {
-		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this)}) {
+		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this), new KillerIncome(this)}) {
 			final String name = extension.getName();
 			try {
 				extension.load();
@@ -141,7 +135,7 @@ public class Skyowallet extends JavaPlugin {
 					continue;
 				}
 				logger.log(Level.INFO, "Enabling " + name + "...");
-				final HashMap<String, PermissionDefault> permissions = extension.getPermissions();
+				final Map<String, PermissionDefault> permissions = extension.getPermissions();
 				if(permissions != null) {
 					for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
 						manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
@@ -153,43 +147,6 @@ public class Skyowallet extends JavaPlugin {
 				logger.log(Level.SEVERE, "An error occured while enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
 				continue;
 			}
-		}
-	}
-	
-	/**
-	 * Disable plugins which use Vault.
-	 * 
-	 * @param manager The plugin manager (used to disable plugins).
-	 * @param vault Vault (because we do not want to disable it).
-	 * 
-	 * @return An array containing every plugins disabled.
-	 */
-	
-	private final Plugin[] disableAllPlugins(final PluginManager manager, final Plugin vault) {
-		final String name = vault.getName();
-		final List<Plugin> plugins = new ArrayList<Plugin>();
-		for(final Plugin plugin : manager.getPlugins()) {
-			if(!plugin.equals(this) && !plugin.equals(vault) && plugin.isEnabled()) {
-				final PluginDescriptionFile description = plugin.getDescription();
-				if(description.getDepend().contains(name) || description.getSoftDepend().contains(name)) {
-					manager.disablePlugin(plugin);
-					plugins.add(plugin);
-				}
-			}
-		}
-		return plugins.toArray(new Plugin[plugins.size()]);
-	}
-	
-	/**
-	 * Enable disabled plugins.
-	 * 
-	 * @param manager The plugin manager (used to enable plugins).
-	 * @param plugins The disabled plugins.
-	 */
-	
-	private final void enableDisabledPlugins(final PluginManager manager, final Plugin[] plugins) {
-		for(final Plugin plugin : plugins) {
-			manager.enablePlugin(plugin);
 		}
 	}
 

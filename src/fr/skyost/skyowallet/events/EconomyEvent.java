@@ -2,7 +2,7 @@ package fr.skyost.skyowallet.events;
 
 import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
 
-public class EconomyEvent extends SkyowalletEvent {
+public class EconomyEvent extends SkyowalletCancellableEvent {
 	
 	private final SkyowalletAccount account;
 	
