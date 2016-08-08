@@ -89,7 +89,7 @@ public class Mine4Cash extends SkyowalletExtension {
 		@ConfigOptions(name = "auto-drop-item")
 		public boolean autoDropItem = false;
 		@ConfigOptions(name = "sound")
-		public Sound sound = Sound.ORB_PICKUP;
+		public Sound sound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 		
 		private ExtensionConfig(final File file) {
 			super(file, Arrays.asList("Mine4Cash Configuration"));
