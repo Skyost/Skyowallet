@@ -599,7 +599,7 @@ public class SkyowalletAPI {
 		 */
 		
 		public final double setBank(SkyowalletBank bank, final boolean sync) {
-			if(this.bank.equals(bank)) {
+			if(this.bank != null && this.bank.equals(bank)) {
 				return -1.0;
 			}
 			final BankChangeEvent event = new BankChangeEvent(this, bank);
