@@ -7,7 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 
 public class SkyowalletInfos implements CommandInterface {

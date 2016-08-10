@@ -15,7 +15,7 @@ import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.utils.Skyoconfig;
 import fr.skyost.skyowallet.utils.Utils;
 

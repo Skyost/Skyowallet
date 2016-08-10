@@ -16,7 +16,7 @@ import org.bukkit.plugin.Plugin;
 import com.google.common.primitives.Ints;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
 import fr.skyost.skyowallet.events.SyncEndEvent;
 import fr.skyost.skyowallet.events.WalletChangeEvent;

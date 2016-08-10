@@ -20,8 +20,8 @@ import com.google.common.base.Charsets;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
+import fr.skyost.skyowallet.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class VaultHook extends AbstractEconomy implements Listener {

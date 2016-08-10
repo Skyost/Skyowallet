@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletAccount;
-import fr.skyost.skyowallet.SkyowalletAPI.SkyowalletBank;
+import fr.skyost.skyowallet.SkyowalletAccount;
+import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.Utils;
 
