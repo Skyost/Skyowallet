@@ -39,7 +39,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 		logger.log(Level.INFO, "Initializing the Vault hook...");
 		final VaultHook hook = new VaultHook(skyowallet);
 		logger.log(Level.INFO, "Registering the Vault hook...");
-		Bukkit.getServicesManager().register(Economy.class, hook, skyowallet, ServicePriority.Normal);
+		Bukkit.getServicesManager().register(Economy.class, hook, skyowallet, ServicePriority.Highest);
 		logger.log(Level.INFO, "Finished ! Vault will now support Skyowallet !");
 		/*final Method hookEconomy = vault.getClass().getDeclaredMethod("hookEconomy", String.class, Class.class, ServicePriority.class, String[].class);
 		hookEconomy.setAccessible(true);
@@ -91,7 +91,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	
 	@Override
 	public final int fractionalDigits() {
-		return 0;
+		return -1;
 	}
 	
 	@Override
@@ -147,40 +147,40 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	@Override
 	public final EconomyResponse createBank(final String bankName, final String playerName) {
 		if(!Utils.isValidFileName(bankName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This is not a valid bank name.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This is not a valid bank name.");
 		}
 		if(SkyowalletAPI.isBankExists(bankName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "A bank with the same name already exists.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "A bank with the same name already exists.");
 		}
 		if(!hasAccount(playerName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not exist or does not have an account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not exist or does not have an account.");
 		}
 		final SkyowalletBank bank = SkyowalletAPI.createBank(bankName);
 		final SkyowalletAccount account = getAccountByName(playerName);
 		account.setBank(bank, false);
 		account.setBankOwner(true);
-		return new EconomyResponse(0.0, 0.0, ResponseType.SUCCESS, "Success.");
+		return new EconomyResponse(0d, 0d, ResponseType.SUCCESS, "Success.");
 	}
 	
 	@Override
 	public final EconomyResponse deleteBank(final String bankName) {
 		if(!SkyowalletAPI.isBankExists(bankName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This bank does not exist.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This bank does not exist.");
 		}
 		SkyowalletAPI.deleteBank(SkyowalletAPI.getBank(bankName));
-		return new EconomyResponse(0.0, 0.0, ResponseType.SUCCESS, "Success.");
+		return new EconomyResponse(0d, 0d, ResponseType.SUCCESS, "Success.");
 	}
 	
 	@Override
 	public final EconomyResponse bankBalance(final String playerName) {
 		if(!hasAccount(playerName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not exist or does not have an account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not exist or does not have an account.");
 		}
 		final SkyowalletAccount account = getAccountByName(playerName);
 		if(!account.hasBank()) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not have a bank account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not have a bank account.");
 		}
-		return new EconomyResponse(0.0, account.getBankBalance(), ResponseType.SUCCESS, "Success.");
+		return new EconomyResponse(0d, account.getBankBalance(), ResponseType.SUCCESS, "Success.");
 	}
 	
 	@Override
@@ -222,27 +222,27 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	@Override
 	public final EconomyResponse isBankOwner(final String bankName, final String playerName) {
 		if(!SkyowalletAPI.isBankExists(bankName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This bank does not exist.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This bank does not exist.");
 		}
 		if(!hasAccount(playerName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not exist or does not have an account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not exist or does not have an account.");
 		}
-		return getAccountByName(playerName).isBankOwner() ? new EconomyResponse(0.0, 0.0, ResponseType.SUCCESS, "Yes.") : new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "No.");
+		return getAccountByName(playerName).isBankOwner() ? new EconomyResponse(0d, 0d, ResponseType.SUCCESS, "Yes.") : new EconomyResponse(0d, 0d, ResponseType.FAILURE, "No.");
 	}
 	
 	@Override
 	public final EconomyResponse isBankMember(final String bankName, final String playerName) {
 		if(!SkyowalletAPI.isBankExists(bankName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This bank does not exist.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This bank does not exist.");
 		}
 		if(!hasAccount(playerName)) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not exist or does not have an account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not exist or does not have an account.");
 		}
 		final SkyowalletBank playerBank = getAccountByName(playerName).getBank();
 		if(playerBank == null) {
-			return new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "This player does not have a bank account.");
+			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This player does not have a bank account.");
 		}
-		return playerBank.getName().equals(bankName) ? new EconomyResponse(0.0, 0.0, ResponseType.SUCCESS, "Yes.") : new EconomyResponse(0.0, 0.0, ResponseType.FAILURE, "No.");
+		return playerBank.getName().equals(bankName) ? new EconomyResponse(0d, 0d, ResponseType.SUCCESS, "Yes.") : new EconomyResponse(0d, 0d, ResponseType.FAILURE, "No.");
 	}
 	
 	@Override

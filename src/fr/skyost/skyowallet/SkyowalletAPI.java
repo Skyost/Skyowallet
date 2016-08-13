@@ -33,7 +33,11 @@ import fr.skyost.skyowallet.utils.Utils;
 public class SkyowalletAPI {
 	
 	private static final Plugin PLUGIN = Bukkit.getPluginManager().getPlugin("Skyowallet");
+	
 	private static final String MYSQL_TABLE_ACCOUNTS = "skyowallet_accounts_v3";
+	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL DEFAULT 0.0, bank VARCHAR(30), bank_balance DOUBLE NOT NULL DEFAULT 0.0, is_bank_owner BOOLEAN NOT NULL DEFAULT false, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))";
+	private static final String MYSQL_SELECT = "SELECT HEX(uuid) AS uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time FROM " + MYSQL_TABLE_ACCOUNTS;
+	private static final String MYSQL_INSERT_REQUEST = "INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(`uuid`, `wallet`, `bank`, `bank_balance`, `is_bank_owner`, `last_modification_time`) VALUES (UNHEX('%s'), %s, '%s', %s, %b, %d) ON DUPLICATE KEY UPDATE `wallet`=VALUES(`wallet`), `bank`=VALUES(`bank`), `bank_balance`=VALUES(`bank_balance`), `is_bank_owner`=VALUES(`is_bank_owner`), `last_modification_time`=(`last_modification_time`)";
 	
 	protected static Statement statement;
 	
@@ -361,14 +365,16 @@ public class SkyowalletAPI {
 				if(sender != null) {
 					sender.sendMessage(prefix + ChatColor.AQUA + "Synchronization with the MySQL database...");
 				}
-				if(statement == null) {
+				if(statement == null || statement.isClosed()) {
 					sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
 					statement = DriverManager.getConnection("jdbc:mysql://" + Skyowallet.config.mySQLHost + ":" + Skyowallet.config.mySQLPort + "/" + Skyowallet.config.mySQLDB, Skyowallet.config.mySQLUser, Skyowallet.config.mySQLPassword).createStatement();
-					statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL DEFAULT 0.0, bank VARCHAR(30), bank_balance DOUBLE NOT NULL DEFAULT 0.0, is_bank_owner BOOLEAN NOT NULL DEFAULT false, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))");
+					if(statement == null) {
+						statement.executeUpdate(MYSQL_CREATE_TABLE);
+					}
 					sender.sendMessage(prefix + ChatColor.GREEN + "Done !");
 				}
 				final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
-				final ResultSet result = statement.executeQuery("SELECT HEX(uuid) AS uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time FROM " + MYSQL_TABLE_ACCOUNTS);
+				final ResultSet result = statement.executeQuery(MYSQL_SELECT);
 				while(result.next()) {
 					final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString("uuid")));
 					if(uuid == null) {
@@ -386,9 +392,10 @@ public class SkyowalletAPI {
 					final SkyowalletAccount remoteAccount = remoteAccounts.get(account.getUUID());
 					final long lastModificationTime = account.getLastModificationTime();
 					if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
-						statement.executeUpdate("INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time) VALUES(UNHEX('" + account.getUUID().toString().replace("-", "") + "'), " + account.getWallet() + ", \"" + account.getBank() + "\", " + account.getBankBalance() + ", " + account.isBankOwner() + ", " + lastModificationTime + ") ON DUPLICATE KEY UPDATE wallet=" + account.getWallet() + ", bank=\"" + account.getBank() + "\", bank_balance=" + account.getBankBalance() + ", is_bank_owner=" + account.isBankOwner() + ", last_modification_time=" + lastModificationTime);
+						statement.executeUpdate(String.format(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), account.getBank(), String.valueOf(account.getBankBalance()), account.isBankOwner(), lastModificationTime));
 					}
 				}
+				statement.close();
 				if(sender != null) {
 					sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
 				}
