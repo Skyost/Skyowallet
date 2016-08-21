@@ -12,7 +12,7 @@ public class PluginConfig extends Skyoconfig {
 	@ConfigOptions(name = "economy.currency-name.plural")
 	public String currencyNamePlural = "skyodollars";
 	@ConfigOptions(name = "economy.default-wallet")
-	public double defaultWallet = 0.0;
+	public double defaultWallet = 0d;
 	
 	@ConfigOptions(name = "options.enable-updater")
 	public boolean enableUpdater = true;
@@ -38,7 +38,7 @@ public class PluginConfig extends Skyoconfig {
 	@ConfigOptions(name = "mysql.host")
 	public String mySQLHost = "localhost";
 	@ConfigOptions(name = "mysql.port")
-	public short mySQLPort = 3306;
+	public int mySQLPort = 3306;
 	@ConfigOptions(name = "mysql.database")
 	public String mySQLDB = "skyowallet_data";
 	@ConfigOptions(name = "mysql.user")

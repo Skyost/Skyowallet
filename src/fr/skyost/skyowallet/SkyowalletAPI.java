@@ -425,7 +425,9 @@ public class SkyowalletAPI {
 			}
 		}
 		try {
-			sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
+			}
 			final List<String> removedBanks = new ArrayList<String>();
 			for(final Entry<String, SkyowalletBank> entry : banks.entrySet()) {
 				final String bankName = entry.getKey();
