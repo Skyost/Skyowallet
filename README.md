@@ -1,1 +1,1 @@
-![![Skyowallet](http://dev.bukkit.org/media/images/75/501/Skyowallet.png)](https://dev.bukkit.org/bukkit-plugins/skyowallet/)
+![![Skyowallet](https://media-elerium.cursecdn.com/attachments/211/962/skyowallet.png)](https://dev.bukkit.org/bukkit-plugins/skyowallet/)
