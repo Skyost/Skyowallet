@@ -19,6 +19,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import net.md_5.bungee.api.ChatColor;
+
 /**
  * <h1>SimpleScoreboard</h1>
  * <br>
@@ -86,7 +88,7 @@ public class SimpleScoreboard {
 
 	private final String fixDuplicates(String text) {
 		while(scores.containsKey(text)) {
-			text += "�r";
+			text += ChatColor.RESET;
 		}
 		return text.length() > 48 ? text.substring(0, 47) : text;
 	}
