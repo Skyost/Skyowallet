@@ -47,6 +47,10 @@ public class SkyowalletPay implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
 		}
+		if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
+			sender.sendMessage(Skyowallet.messages.message33);
+			return true;
+		}
 		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount((OfflinePlayer)sender);
 		final double wallet = playerAccount.getWallet() - amount;
 		if(wallet < 0.0) {

@@ -277,6 +277,7 @@ public class SkyowalletAccount {
 		return lastModificationTime;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final String toString() {
 		final JSONObject json = new JSONObject();

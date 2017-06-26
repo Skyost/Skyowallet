@@ -17,6 +17,10 @@ public class BankCommand extends SubCommandsExecutor {
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, String[] args) {
 		if(args.length <= 0) {
 			if(sender instanceof Player) {
+				if(!SkyowalletAPI.hasAccount((Player)sender)) {
+					sender.sendMessage(Skyowallet.messages.message33);
+					return true;
+				}
 				final SkyowalletAccount account = SkyowalletAPI.getAccount((Player)sender);
 				final SkyowalletBank bank = account.getBank();
 				if(bank == null) {

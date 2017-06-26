@@ -1,11 +1,11 @@
 package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -15,7 +15,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.utils.Skyoconfig;
@@ -23,9 +23,9 @@ import fr.skyost.skyowallet.utils.Skyoconfig;
 public class GoodbyeWallet extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
-	private final List<UUID> players = new ArrayList<UUID>();
+	private final Set<UUID> players = new HashSet<UUID>();
 	
-	public GoodbyeWallet(final Plugin plugin) {
+	public GoodbyeWallet(final JavaPlugin plugin) {
 		super(plugin);
 	}
 	
@@ -62,7 +62,7 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	@EventHandler
 	private final void onPlayerDeath(final PlayerDeathEvent event) {
 		final Player player = event.getEntity();
-		if(!player.hasPermission("goodbyewallet.bypass")) {
+		if(!player.hasPermission("goodbyewallet.bypass") && SkyowalletAPI.hasAccount(player)) {
 			SkyowalletAPI.getAccount(player).setWallet(0.0);
 			players.add(player.getUniqueId());
 		}
@@ -95,7 +95,7 @@ public class GoodbyeWallet extends SkyowalletExtension {
 		public String message1 = ChatColor.DARK_RED + "You have lost your wallet !";
 		
 		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList("GoodbyeWallet Configuration"));
+			super(file, Arrays.asList(getName() + " Configuration"));
 		}
 		
 	}

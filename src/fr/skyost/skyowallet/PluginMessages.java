@@ -10,7 +10,7 @@ import fr.skyost.skyowallet.utils.Skyoconfig;
 public class PluginMessages extends Skyoconfig {
 	
 	@ConfigOptions(name = "messages.1")
-	public String message1 = ChatColor.RED + "You do not have the permission to run that command.";
+	public String message1 = ChatColor.RED + "You do not have the permission to run this command.";
 	@ConfigOptions(name = "messages.2")
 	public String message2 = ChatColor.RED + "Please perform this command from the game !";
 	@ConfigOptions(name = "messages.3")
@@ -22,7 +22,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.6")
 	public String message6 = "Total money (on the server) : /amount/ /currency-name/";
 	@ConfigOptions(name = "messages.7")
-	public String message7 = "Best wallet : /amount/ /currency-name/";
+	public String message7 = "Best money amount : /amount/ /currency-name/ by /player/";
 	@ConfigOptions(name = "messages.8")
 	public String message8 = ChatColor.RED + "You do not have enough money !";
 	@ConfigOptions(name = "messages.9")
@@ -30,7 +30,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.10")
 	public String message10 = ChatColor.GREEN + "Done.";
 	@ConfigOptions(name = "messages.11")
-	public String message11 = "/player/ just set your wallet at /amount/ /currency-name/ !";
+	public String message11 = "/player/ just set your wallet to /amount/ /currency-name/ !";
 	@ConfigOptions(name = "messages.12")
 	public String message12 = "/player/ has /amount/ /currency-name/ in his wallet.";
 	@ConfigOptions(name = "messages.13")
@@ -40,7 +40,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.15")
 	public String message15 = ChatColor.AQUA + "Your bank is /bank/. The owners of your bank are /owners/.";
 	@ConfigOptions(name = "messages.16")
-	public String message16 = "You have /amount/ /currency-name/ on your bank account.";
+	public String message16 = "You have /amount/ /currency-name/ in your bank account.";
 	@ConfigOptions(name = "messages.17")
 	public String message17 = ChatColor.RED + "This bank already exists !";
 	@ConfigOptions(name = "messages.18")
@@ -48,7 +48,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.19")
 	public String message19 = ChatColor.RED + "No bank exists with the given name !";
 	@ConfigOptions(name = "messages.20")
-	public String message20 = ChatColor.RED + "You bank (/bank/) has been deleted. /amount/ /currency-name/ were transfered in your wallet.";
+	public String message20 = ChatColor.RED + "Your bank (/bank/) has been deleted. /amount/ /currency-name/ were transfered to your wallet.";
 	@ConfigOptions(name = "messages.21")
 	public String message21 = ChatColor.RED + "You do not have a bank account.";
 	@ConfigOptions(name = "messages.22")
@@ -56,13 +56,13 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.23")
 	public String message23 = "There are /members/ members in the specified bank.";
 	@ConfigOptions(name = "messages.24")
-	public String message24 = ChatColor.RED + "You already have a bank account. You can leave your bank with /bank leave.";
+	public String message24 = ChatColor.RED + "You already have a bank account. You can leave your bank with " + ChatColor.GRAY + "/bank leave" + ChatColor.RED + ".";
 	@ConfigOptions(name = "messages.25")
 	public String message25 = ChatColor.GOLD + "Welcome to /bank/ !";
 	@ConfigOptions(name = "messages.26")
-	public String message26 = ChatColor.GREEN + "You have left your bank. /amount/ /currency-name/ were transfered in your wallet.";
+	public String message26 = ChatColor.GREEN + "You have left your bank. /amount/ /currency-name/ were transfered to your wallet.";
 	@ConfigOptions(name = "messages.27")
-	public String message27 = ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/bank/ " + ChatColor.GRAY + "Accounts : " + ChatColor.WHITE + "/accounts/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/";
+	public String message27 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/bank/ " + ChatColor.GRAY + "Accounts : " + ChatColor.WHITE + "/accounts/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/";
 	@ConfigOptions(name = "messages.28")
 	public String message28 = ChatColor.RED + "You do not have the permission to perform this action on the specified bank !";
 	@ConfigOptions(name = "messages.29")
@@ -73,6 +73,8 @@ public class PluginMessages extends Skyoconfig {
 	public String message31 = ChatColor.RED + "This player does not have any bank !";
 	@ConfigOptions(name = "messages.32")
 	public String message32 = "There are /banks/ banks here.";
+	@ConfigOptions(name = "messages.33")
+	public String message33 = ChatColor.RED + "You do not have an economy account on this server.";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

@@ -9,8 +9,7 @@ import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 
-public class BankJoin implements CommandInterface  
-{
+public class BankJoin implements CommandInterface {
 	
 	@Override
 	public final String[] getNames() {
@@ -40,6 +39,10 @@ public class BankJoin implements CommandInterface
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
+		if(account == null) {
+			sender.sendMessage(Skyowallet.messages.message33);
+			return true;
+		}
 		if(account.getBank() != null) {
 			sender.sendMessage(Skyowallet.messages.message24);
 			return true;

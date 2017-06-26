@@ -2,7 +2,6 @@ package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,8 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.primitives.Ints;
 
@@ -27,18 +25,13 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public ScoreboardInfos(final Plugin plugin) {
+	public ScoreboardInfos(final JavaPlugin plugin) {
 		super(plugin);
 	}
 	
 	@Override
 	public final String getName() {
 		return "ScoreboardInfos";
-	}
-
-	@Override
-	public final Map<String, PermissionDefault> getPermissions() {
-		return null;
 	}
 	
 	@Override
@@ -102,6 +95,9 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	
 	private final void buildAndSend(final Player player, final Double wallet, final Double bankBalance) {
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
+		if(account == null) {
+			return;
+		}
 		final SimpleScoreboard playerBoard = new SimpleScoreboard(config.sidebarTitle);
 		playerBoard.add(config.sidebarWalletText, Ints.checkedCast(Math.round(wallet == null ? account.getWallet() : wallet)));
 		playerBoard.add(config.sidebarBankBalanceText, Ints.checkedCast(Math.round(bankBalance == null ? account.getBankBalance() : bankBalance)));
@@ -114,7 +110,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 		@ConfigOptions(name = "enable")
 		public boolean enable = true;
 		@ConfigOptions(name = "sidebar.title")
-		public String sidebarTitle = ChatColor.BOLD + "Economy :";
+		public String sidebarTitle = ChatColor.BOLD + "ECONOMY";
 		@ConfigOptions(name = "sidebar.wallet.display")
 		public boolean sidebarWalletDisplay = true;
 		@ConfigOptions(name = "sidebar.wallet.text")
@@ -125,7 +121,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 		public String sidebarBankBalanceText = ChatColor.GOLD + "Bank balance:";
 		
 		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList("ScoreboardInfos Configuration"));
+			super(file, Arrays.asList(getName() + " Configuration"));
 		}
 		
 	}

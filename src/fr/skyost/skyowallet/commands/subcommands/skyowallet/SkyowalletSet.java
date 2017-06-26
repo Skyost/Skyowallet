@@ -47,17 +47,17 @@ public class SkyowalletSet implements CommandInterface {
 				return true;
 			}
 			player = (Player)sender;
-		}
-		else {
-			player = Utils.getPlayerByArgument(args[1]);
-			if(player == null) {
-				sender.sendMessage(Skyowallet.messages.message3);
+			if(!SkyowalletAPI.hasAccount(player)) {
+				sender.sendMessage(Skyowallet.messages.message33);
 				return true;
 			}
 		}
-		if(!SkyowalletAPI.hasAccount(player)) {
-			sender.sendMessage(Skyowallet.messages.message3);
-			return true;
+		else {
+			player = Utils.getPlayerByArgument(args[1]);
+			if(player == null || !SkyowalletAPI.hasAccount(player)) {
+				sender.sendMessage(Skyowallet.messages.message3);
+				return true;
+			}
 		}
 		final Double parsedDouble = Utils.doubleTryParse(args[0]);
 		if(parsedDouble == null) {

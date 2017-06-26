@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
@@ -24,7 +24,7 @@ public class KillerIncome extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public KillerIncome(final Plugin plugin) {
+	public KillerIncome(final JavaPlugin plugin) {
 		super(plugin);
 	}
 	
@@ -62,7 +62,7 @@ public class KillerIncome extends SkyowalletExtension {
 	private final void onEntityDeath(final EntityDeathEvent event) {
 		final LivingEntity entity = event.getEntity();
 		final EntityType type = entity.getType();
-		final String rawAmount = config.data.get(type.name());
+		final String rawAmount = config.rewards.get(type.name());
 		if(rawAmount == null) {
 			return;
 		}
@@ -72,6 +72,9 @@ public class KillerIncome extends SkyowalletExtension {
 		}
 		final Player killer = entity.getKiller();
 		if(killer == null) {
+			return;
+		}
+		if(!SkyowalletAPI.hasAccount(killer)) {
 			return;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(killer);
@@ -84,24 +87,24 @@ public class KillerIncome extends SkyowalletExtension {
 		
 		@ConfigOptions(name = "enable")
 		public boolean enable = false;
-		@ConfigOptions(name = "data")
-		public LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+		@ConfigOptions(name = "rewards")
+		public LinkedHashMap<String, String> rewards = new LinkedHashMap<String, String>();
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.GOLD + "Congracubations ! You have won /amount/ /currency-name/ because you have killed a /entity/.";
 		
 		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList("KillerIncome Configuration"));
-			data.put(EntityType.CREEPER.name(), "10.0");
-			data.put(EntityType.SPIDER.name(), "10.0");
-			data.put(EntityType.ZOMBIE.name(), "12.5");
-			data.put(EntityType.SKELETON.name(), "15.0");
-			data.put(EntityType.ENDERMAN.name(), "17.5");
-			data.put(EntityType.WITCH.name(), "20.0");
-			data.put(EntityType.BLAZE.name(), "25.0");
-			data.put(EntityType.PLAYER.name(), "30.0");
-			data.put(EntityType.WITHER.name(), "50.0");
-			data.put(EntityType.ENDER_DRAGON.name(), "100.0");
+			super(file, Arrays.asList(getName() + " Configuration"));
+			rewards.put(EntityType.CREEPER.name(), "10.0");
+			rewards.put(EntityType.SPIDER.name(), "10.0");
+			rewards.put(EntityType.ZOMBIE.name(), "12.5");
+			rewards.put(EntityType.SKELETON.name(), "15.0");
+			rewards.put(EntityType.ENDERMAN.name(), "17.5");
+			rewards.put(EntityType.WITCH.name(), "20.0");
+			rewards.put(EntityType.BLAZE.name(), "25.0");
+			rewards.put(EntityType.PLAYER.name(), "30.0");
+			rewards.put(EntityType.WITHER.name(), "50.0");
+			rewards.put(EntityType.ENDER_DRAGON.name(), "100.0");
 		}
 		
 	}

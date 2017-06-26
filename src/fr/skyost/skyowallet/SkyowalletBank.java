@@ -99,6 +99,7 @@ public class SkyowalletBank {
 		return members;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final String toString() {
 		final JSONObject json = new JSONObject();

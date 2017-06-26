@@ -39,6 +39,10 @@ public class BankCreate implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
+		if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
+			sender.sendMessage(Skyowallet.messages.message33);
+			return true;
+		}
 		if(SkyowalletAPI.isBankExists(args[0])) {
 			sender.sendMessage(Skyowallet.messages.message17);
 			return true;

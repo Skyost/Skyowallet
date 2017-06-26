@@ -38,6 +38,10 @@ public class BankLeave implements CommandInterface {
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
+		if(account == null) {
+			sender.sendMessage(Skyowallet.messages.message33);
+			return true;
+		}
 		if(!account.hasBank()) {
 			sender.sendMessage(Skyowallet.messages.message21);
 			return true;

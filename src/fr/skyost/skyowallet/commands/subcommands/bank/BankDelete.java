@@ -52,6 +52,10 @@ public class BankDelete implements CommandInterface {
 				return true;
 			}
 			account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
+			if(account == null) {
+				sender.sendMessage(Skyowallet.messages.message33);
+				return true;
+			}
 			bank = account.getBank();
 		}
 		else {

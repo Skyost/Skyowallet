@@ -10,8 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.utils.Skyoconfig;
@@ -21,7 +22,7 @@ public class CommandsCosts extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public CommandsCosts(final Plugin plugin) {
+	public CommandsCosts(final JavaPlugin plugin) {
 		super(plugin);
 	}
 	
@@ -61,12 +62,16 @@ public class CommandsCosts extends SkyowalletExtension {
 		if(!player.hasPermission("commandscosts.bypass")) {
 			return;
 		}
-		final String rawCost = config.data.get(event.getMessage().substring(1).split(" ")[0]);
+		final String rawCost = config.commands.get(event.getMessage().substring(1).split(" ")[0]);
 		if(rawCost == null) {
 			return;
 		}
 		final Double cost = Utils.doubleTryParse(rawCost);
 		if(cost == null) {
+			return;
+		}
+		if(!SkyowalletAPI.hasAccount(player)) {
+			player.sendMessage(Skyowallet.messages.message33);
 			return;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
@@ -83,15 +88,15 @@ public class CommandsCosts extends SkyowalletExtension {
 		
 		@ConfigOptions(name = "enable")
 		public boolean enable = false;
-		@ConfigOptions(name = "data")
-		public HashMap<String, String> data = new HashMap<String, String>();
+		@ConfigOptions(name = "commands")
+		public HashMap<String, String> commands = new HashMap<String, String>();
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.RED + "You do not have enough money to run that command. Cost : /cost/ /currency-name/.";
 		
 		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList("CommandsCosts Configuration"));
-			data.put("pl", "10.0");
+			super(file, Arrays.asList(getName() + " Configuration"));
+			commands.put("pl", "10.0");
 		}
 		
 	}

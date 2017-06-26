@@ -86,7 +86,7 @@ public class SimpleScoreboard {
 
 	private final String fixDuplicates(String text) {
 		while(scores.containsKey(text)) {
-			text += "§r";
+			text += "ï¿½r";
 		}
 		return text.length() > 48 ? text.substring(0, 47) : text;
 	}

@@ -76,6 +76,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 		return amount + " " + SkyowalletAPI.getCurrencyName(amount);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public final boolean createPlayerAccount(final String playerName) {
 		if(hasAccount(playerName)) {
@@ -284,6 +285,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 		return createPlayerAccount(playerName);
 	}
 	
+	@SuppressWarnings("deprecation")
 	private final SkyowalletAccount getAccountByName(final String playerName) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
 		if(player == null) {

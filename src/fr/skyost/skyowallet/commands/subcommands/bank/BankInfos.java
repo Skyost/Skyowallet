@@ -53,6 +53,10 @@ public class BankInfos implements CommandInterface {
 				return true;
 			}
 			account = SkyowalletAPI.getAccount((Player)sender);
+			if(account == null) {
+				sender.sendMessage(Skyowallet.messages.message33);
+				return true;
+			}
 			bank = account.getBank();
 		}
 		else {

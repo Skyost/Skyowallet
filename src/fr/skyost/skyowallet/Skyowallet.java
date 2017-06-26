@@ -1,17 +1,10 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -76,7 +69,7 @@ public class Skyowallet extends JavaPlugin {
 				new Skyupdater(this, 82182, this.getFile(), true, true);
 			}
 			if(config.enableMetrics) {
-				new MetricsLite(this).start();
+				new MetricsLite(this);
 			}
 			if(config.warnOfflineMode && !Bukkit.getOnlineMode()) {
 				final ConsoleCommandSender console = Bukkit.getConsoleSender();
@@ -91,8 +84,7 @@ public class Skyowallet extends JavaPlugin {
 				console.sendMessage(ChatColor.RED + "!!                                                  !!");
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
-			final Logger logger = this.getLogger();
-			loadExtensions(manager, logger);
+			loadExtensions();
 			if(manager.getPlugin("Vault") != null) {
 				VaultHook.addToVault();
 			}
@@ -112,6 +104,9 @@ public class Skyowallet extends JavaPlugin {
 			if(SkyowalletAPI.statement != null && !SkyowalletAPI.statement.isClosed()) {
 				SkyowalletAPI.statement.close();
 			}
+			for(final SkyowalletExtension extension : SkyowalletAPI.getLoadedExtensions()) {
+				SkyowalletAPI.unregisterExtension(extension, true);
+			}
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -120,33 +115,11 @@ public class Skyowallet extends JavaPlugin {
 	
 	/**
 	 * Loads Skyowallet's extensions.
-	 * 
-	 * @param manager The plugin manager (used to register events).
-	 * @param logger The logger (used to log events).
 	 */
 	
-	private final void loadExtensions(final PluginManager manager, final Logger logger) {
-		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this), new KillerIncome(this)}) {
-			final String name = extension.getName();
-			try {
-				extension.load();
-				if(!extension.isEnabled()) {
-					extension.disable();
-					continue;
-				}
-				logger.log(Level.INFO, "Enabling " + name + "...");
-				final Map<String, PermissionDefault> permissions = extension.getPermissions();
-				if(permissions != null) {
-					for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
-						manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
-					}
-				}
-				logger.log(Level.INFO, name + " enabled !");
-			}
-			catch(final Exception ex) {
-				logger.log(Level.SEVERE, "An error occured while enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
-				continue;
-			}
+	private final void loadExtensions() {
+		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this), new KillerIncome(this), new Bounties(this)}) {
+			SkyowalletAPI.registerExtension(extension, true, this);
 		}
 	}
 

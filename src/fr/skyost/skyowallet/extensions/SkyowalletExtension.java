@@ -1,24 +1,36 @@
 package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public abstract class SkyowalletExtension implements Listener {
 	
-	private final Plugin plugin;
+	private final JavaPlugin plugin;
 	
-	protected SkyowalletExtension(final Plugin plugin) {
+	protected SkyowalletExtension(final JavaPlugin plugin) {
 		this.plugin = plugin;
+	}
+	
+	/**
+	 * Gets the plugin this extension belongs to.
+	 * 
+	 * @return The plugin this extension belongs to.
+	 */
+	
+	public final JavaPlugin getPlugin() {
+		return plugin;
 	}
 	
 	/**
@@ -27,7 +39,7 @@ public abstract class SkyowalletExtension implements Listener {
 	 * @throws InvalidConfigurationException If there is a problem in the extension's configuration.
 	 */
 	
-	public final void load() throws InvalidConfigurationException {
+	public void load() throws InvalidConfigurationException {
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		getConfiguration().load();
 	}
@@ -48,7 +60,21 @@ public abstract class SkyowalletExtension implements Listener {
 	 * @return The extension's permissions.
 	 */
 	
-	public abstract Map<String, PermissionDefault> getPermissions();
+	public Map<String, PermissionDefault> getPermissions() {
+		return new HashMap<String, PermissionDefault>();
+	}
+	
+	/**
+	 * Gets the extension's commands.
+	 * <br><b>Key :</b> Command's name.
+	 * <br><b>Value :</b> The executor.
+	 * 
+	 * @return The extension's commands.
+	 */
+	
+	public Map<String, CommandExecutor> getCommands() {
+		return new HashMap<String, CommandExecutor>();
+	}
 	
 	/**
 	 * Gets the extension's YAML configuration.
@@ -85,10 +111,17 @@ public abstract class SkyowalletExtension implements Listener {
 	/**
 	 * Extensions are enabled by default. Use this method to disable them.
 	 * <br><b>NOTE :</b> If the user has enabled the extension and you call this method, <i>isEnabled()</i> will always return <b>true</b>.
+	 * 
+	 * @throws InvalidConfigurationException If the config cannot be saved.
 	 */
 	
-	public final void disable() {
+	public void disable() throws InvalidConfigurationException {
 		HandlerList.unregisterAll(this);
+		for(final String command : this.getCommands().keySet()) {
+			plugin.getCommand(command).setExecutor(null);
+		}
+		final Skyoconfig config = getConfiguration();
+		config.save();
 	}
 	
 }

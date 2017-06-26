@@ -10,9 +10,10 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
@@ -23,7 +24,7 @@ public class Mine4Cash extends SkyowalletExtension {
 	
 	private ExtensionConfig config;
 	
-	public Mine4Cash(final Plugin plugin) {
+	public Mine4Cash(final JavaPlugin plugin) {
 		super(plugin);
 	}
 	
@@ -57,10 +58,10 @@ public class Mine4Cash extends SkyowalletExtension {
 		return config.enable;
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	private final void onBlockBreak(final BlockBreakEvent event) {
 		final Block block = event.getBlock();
-		final String rawReward = config.data.get(block.getType().name());
+		final String rawReward = config.rewards.get(block.getType().name());
 		if(rawReward == null) {
 			return;
 		}
@@ -69,7 +70,7 @@ public class Mine4Cash extends SkyowalletExtension {
 			return;
 		}
 		final Player player = event.getPlayer();
-		if(!player.hasPermission("mine4cash.earn")) {
+		if(!player.hasPermission("mine4cash.earn") || !SkyowalletAPI.hasAccount(player)) {
 			return;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
@@ -84,18 +85,18 @@ public class Mine4Cash extends SkyowalletExtension {
 
 		@ConfigOptions(name = "enable")
 		public boolean enable = false;
-		@ConfigOptions(name = "data")
-		public HashMap<String, String> data = new HashMap<String, String>();
+		@ConfigOptions(name = "rewards")
+		public HashMap<String, String> rewards = new HashMap<String, String>();
 		@ConfigOptions(name = "auto-drop-item")
 		public boolean autoDropItem = false;
 		@ConfigOptions(name = "sound")
 		public Sound sound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 		
 		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList("Mine4Cash Configuration"));
-			data.put(Material.GOLD_ORE.name(), "100.0");
-			data.put(Material.DIAMOND_ORE.name(), "150.0");
-			data.put(Material.EMERALD_ORE.name(), "200.0");
+			super(file, Arrays.asList(getName() + " Configuration"));
+			rewards.put(Material.GOLD_ORE.name(), "100.0");
+			rewards.put(Material.DIAMOND_ORE.name(), "150.0");
+			rewards.put(Material.EMERALD_ORE.name(), "200.0");
 		}
 		
 	}

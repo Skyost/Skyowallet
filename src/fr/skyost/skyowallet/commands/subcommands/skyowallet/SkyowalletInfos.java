@@ -2,6 +2,7 @@ package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -39,21 +40,26 @@ public class SkyowalletInfos implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		final Plugin plugin = Bukkit.getPluginManager().getPlugin("Skyowallet");
-		sender.sendMessage(ChatColor.GOLD + "Skyowallet v" + plugin.getDescription().getVersion());
+		final Plugin plugin = SkyowalletAPI.getPlugin();
+		sender.sendMessage(ChatColor.GOLD + plugin.getName() + " v" + plugin.getDescription().getVersion());
 		final SkyowalletAccount[] accounts = SkyowalletAPI.getAccounts();
 		sender.sendMessage(Skyowallet.messages.message5.replace("/total-accounts/", String.valueOf(accounts.length)));
-		double totalWallet = 0.0;
-		double bestWallet = 0.0;
+		if(accounts.length == 0) {
+			return true;
+		}
+		double totalMoney = 0.0;
+		SkyowalletAccount bestAccount = null;
 		for(final SkyowalletAccount account : accounts) {
-			final double wallet = account.getWallet();
-			totalWallet += wallet;
-			if(bestWallet < wallet) {
-				bestWallet = wallet;
+			final double amount = account.getWallet() + account.getBankBalance();
+			totalMoney += amount;
+			if(bestAccount == null || bestAccount.getWallet() + bestAccount.getBankBalance() < amount) {
+				bestAccount = account;
 			}
 		}
-		sender.sendMessage(Skyowallet.messages.message6.replace("/amount/", String.valueOf(totalWallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(totalWallet)));
-		sender.sendMessage(Skyowallet.messages.message7.replace("/amount/", String.valueOf(bestWallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(bestWallet)));
+		final double bestAccountAmount = bestAccount.getWallet() + bestAccount.getBankBalance();
+		final OfflinePlayer player = Bukkit.getOfflinePlayer(bestAccount.getUUID());
+		sender.sendMessage(Skyowallet.messages.message6.replace("/amount/", String.valueOf(totalMoney)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(totalMoney)));
+		sender.sendMessage(Skyowallet.messages.message7.replace("/amount/", String.valueOf(bestAccountAmount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(bestAccountAmount)).replace("/player/", player == null ? bestAccount.getUUID().toString() : player.getName()));
 		return true;
 	}
 

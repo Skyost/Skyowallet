@@ -7,21 +7,34 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import fr.skyost.skyowallet.commands.SubCommandsExecutor;
 import fr.skyost.skyowallet.events.*;
+import fr.skyost.skyowallet.extensions.SkyowalletExtension;
 import fr.skyost.skyowallet.utils.Utils;
 
 /**
@@ -43,6 +56,8 @@ public class SkyowalletAPI {
 	
 	private static final HashMap<UUID, SkyowalletAccount> accounts = new HashMap<UUID, SkyowalletAccount>();
 	private static final HashMap<String, SkyowalletBank> banks = new HashMap<String, SkyowalletBank>();
+	
+	private static final HashSet<SkyowalletExtension> extensions = new HashSet<SkyowalletExtension>();
 	
 	public static final Skyowallet getPlugin() {
 		return (Skyowallet)PLUGIN;
@@ -459,6 +474,81 @@ public class SkyowalletAPI {
 			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
 		}
 		manager.callEvent(new SyncEndEvent());
+	}
+	
+	/**
+	 * Loads and registers an extension.
+	 * 
+	 * @param extension The Skyowallet extension.
+	 * @param log If there should be a log in the console.
+	 * @param plugin The plugin this extension belongs to.
+	 */
+	
+	public static final void registerExtension(final SkyowalletExtension extension, final boolean log, final JavaPlugin plugin) {
+		final Logger logger = plugin.getLogger();
+		final String name = extension.getName();
+		try {
+			extension.load();
+			if(!extension.isEnabled()) {
+				extension.disable();
+				return;
+			}
+			if(log) {
+				logger.log(Level.INFO, "Enabling " + name + "...");
+			}
+			final PluginManager manager = Bukkit.getPluginManager();
+			for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
+				manager.addPermission(new Permission(entry.getKey(), entry.getValue()));
+			}
+			for(final Entry<String, CommandExecutor> entry : extension.getCommands().entrySet()) {
+				final CommandExecutor executor = entry.getValue();
+				final PluginCommand command = plugin.getCommand(entry.getKey());
+				command.setUsage(ChatColor.RED + "/" + command.getName() + " " + (executor instanceof SubCommandsExecutor ? ((SubCommandsExecutor)executor).getUsage() : command.getUsage()));
+				command.setExecutor(executor);
+			}
+			extensions.add(extension);
+			if(log) {
+				logger.log(Level.INFO, name + " enabled !");
+			}
+		}
+		catch(final Exception ex) {
+			if(log) {
+				logger.log(Level.SEVERE, "An error occured while enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Unloads and unregisters an extension (just a convenience method).
+	 * 
+	 * @param extension The Skyowallet extension.
+	 * @param log If there should be a log in the console.
+	 * 
+	 * @throws InvalidConfigurationException If the config cannot be saved.
+	 */
+	
+	public static final void unregisterExtension(final SkyowalletExtension extension, final boolean log) throws InvalidConfigurationException {
+		final Logger logger = extension.getPlugin().getLogger();
+		final String name = extension.getName();
+		if(log) {
+			logger.log(Level.INFO, "Disabling " + name + "...");
+		}
+		extension.disable();
+		extensions.remove(extension);
+		if(log) {
+			logger.log(Level.INFO, name + " disabled !");
+		}
+	}
+	
+	/**
+	 * Gets the loaded and registered extensions.
+	 * 
+	 * @return The loaded and registered extensions.
+	 */
+	
+	public static final Set<SkyowalletExtension> getLoadedExtensions() {
+		return new HashSet<SkyowalletExtension>(extensions);
 	}
 	
 }
