@@ -1,7 +1,7 @@
 name: Skyowallet
 main: fr.skyost.skyowallet.Skyowallet
 description: Simple & lightweight economy plugin.
-version: 0.4
+version: 0.4.1
 author: Skyost
 website: http://dev.bukkit.org/bukkit-plugins/skyowallet/
 loadbefore: [Vault]
@@ -36,31 +36,31 @@ permissions:
   description: Allows you to use /skyowallet view <player | uuid>.
  skyowallet.bank.addowner:
   default: true
-  description: Allows yout to use /skyowallet addowner <player | uuid> [bank].
+  description: Allows you to use /skyowallet addowner <player | uuid> [bank].
  skyowallet.bank.create:
   default: true
-  description: Allows yout to use /skyowallet create <bank>.
+  description: Allows you to use /skyowallet create <bank>.
  skyowallet.bank.delete:
   default: true
-  description: Allows yout to use /skyowallet delete [bank].
+  description: Allows you to use /skyowallet delete [bank].
  skyowallet.bank.deposit:
   default: true
-  description: Allows yout to use /skyowallet deposit <amount>.
+  description: Allows you to use /skyowallet deposit <amount>.
  skyowallet.bank.infos:
   default: true
-  description: Allows yout to use /skyowallet infos [bank].
+  description: Allows you to use /skyowallet infos [bank].
  skyowallet.bank.join:
   default: true
-  description: Allows yout to use /skyowallet join <bank>.
+  description: Allows you to use /skyowallet join <bank>.
  skyowallet.bank.leave:
   default: true
-  description: Allows yout to use /skyowallet leave.
+  description: Allows you to use /skyowallet leave.
  skyowallet.bank.list:
   default: true
-  description: Allows yout to use /skyowallet list.
+  description: Allows you to use /skyowallet list.
  skyowallet.bank.removeowner:
   default: true
-  description: Allows yout to use /skyowallet removeowner <player | uuid> [bank].
+  description: Allows you to use /skyowallet removeowner <player | uuid> [bank].
  skyowallet.bank.withdraw:
   default: true
-  description: Allows yout to use /skyowallet withdraw <amount>.
+  description: Allows you to use /skyowallet withdraw <amount>.

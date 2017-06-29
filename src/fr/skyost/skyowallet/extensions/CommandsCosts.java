@@ -1,13 +1,12 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,7 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class CommandsCosts extends SkyowalletExtension {
@@ -39,24 +37,11 @@ public class CommandsCosts extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
-	@Override
-	public final String getFileName() {
-		return "commands-costs.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
-	}
-	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	private final void onPlayerCommandPreprocessEvent(final PlayerCommandPreprocessEvent event) {
 		final Player player = event.getPlayer();
 		if(!player.hasPermission("commandscosts.bypass")) {
@@ -84,18 +69,16 @@ public class CommandsCosts extends SkyowalletExtension {
 		account.setWallet(wallet);
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 		
-		@ConfigOptions(name = "enable")
-		public boolean enable = false;
 		@ConfigOptions(name = "commands")
 		public HashMap<String, String> commands = new HashMap<String, String>();
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.RED + "You do not have enough money to run that command. Cost : /cost/ /currency-name/.";
 		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
+		private ExtensionConfig() {
+			super();
 			commands.put("pl", "10.0");
 		}
 		

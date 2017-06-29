@@ -1,8 +1,6 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,6 +19,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
@@ -33,7 +32,6 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class Bounties extends SkyowalletExtension {
@@ -89,25 +87,12 @@ public class Bounties extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
 	@Override
-	public final String getFileName() {
-		return "bounties.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
-	}
-	
-	@Override
-	public final void disable() throws InvalidConfigurationException {
+	public final void unload() throws InvalidConfigurationException {
 		for(final Bounty bounty : bounties.values()) {
 			final String json = bounty.toString();
 			if(json == null) {
@@ -116,7 +101,12 @@ public class Bounties extends SkyowalletExtension {
 			config.bountiesData.add(json);
 		}
 		bounties.clear();
-		super.disable();
+		super.unload();
+	}
+	
+	@EventHandler
+	public final void onPlayerJoin(final PlayerJoinEvent event) {
+		getBounty(event.getPlayer().getUniqueId()).refreshPlayerListName();
 	}
 	
 	@EventHandler
@@ -494,11 +484,8 @@ public class Bounties extends SkyowalletExtension {
 		
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 
-		@ConfigOptions(name = "enable")
-		public boolean enable = false;
-		
 		@ConfigOptions(name = "bounty.min")
 		public double bountyMin = 10.0;
 		@ConfigOptions(name = "bounty.max")
@@ -507,6 +494,11 @@ public class Bounties extends SkyowalletExtension {
 		public boolean bountyNotify = true;
 		@ConfigOptions(name = "bounty.give-back-if-deleted")
 		public boolean bountyGiveBackIfDeleted = true;
+		
+		@ConfigOptions(name = "player-list.enable")
+		public boolean playerListEnable = true;
+		@ConfigOptions(name = "player-list.display")
+		public String playerListDisplay = "/player/ " + ChatColor.GRAY + "> " + ChatColor.RED + "BOUNTY: " + ChatColor.GOLD + "/amount/ /currency-name/";
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.RED + "This player does not exist.";
@@ -545,10 +537,6 @@ public class Bounties extends SkyowalletExtension {
 		
 		@ConfigOptions(name = "bounties-data")
 		public List<String> bountiesData = new ArrayList<String>();
-		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
-		}
 		
 	}
 	
@@ -602,6 +590,7 @@ public class Bounties extends SkyowalletExtension {
 		
 		public final void setBounty(final UUID uuid, final double amount) {
 			bounties.put(uuid, amount);
+			refreshPlayerListName();
 		}
 		
 		/**
@@ -614,7 +603,9 @@ public class Bounties extends SkyowalletExtension {
 			bounties.remove(uuid);
 			if(getTotalBounty() == 0d) {
 				clearBounties();
+				return;
 			}
+			refreshPlayerListName();
 		}
 		
 		/**
@@ -624,7 +615,14 @@ public class Bounties extends SkyowalletExtension {
 		public final void clearBounties() {
 			bounties.clear();
 			Bounties.this.bounties.remove(target);
+			refreshPlayerListName();
 		}
+		
+		/**
+		 * Gets the total amount of money placed on the target's head.
+		 * 
+		 * @return The total amount of money placed on the target's head.
+		 */
 
 		public final double getTotalBounty() {
 			double totalBounty = 0d;
@@ -632,6 +630,21 @@ public class Bounties extends SkyowalletExtension {
 				totalBounty += bounty;
 			}
 			return totalBounty;
+		}
+		
+		/**
+		 * Allows you to refresh the name of the current player in the TAB menu (if enabled by user).
+		 */
+		
+		public final void refreshPlayerListName() {
+			if(!config.playerListEnable) {
+				return;
+			}
+			final OfflinePlayer player = Bukkit.getOfflinePlayer(target);
+			if(player.isOnline()) {
+				final double bounty = getTotalBounty();
+				((Player)player).setPlayerListName(config.playerListDisplay.replace("/player/", player.getName()).replace("/amount/", String.valueOf(bounty)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(bounty)));
+			}
 		}
 		
 		@SuppressWarnings("unchecked")

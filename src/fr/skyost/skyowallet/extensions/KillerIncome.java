@@ -1,7 +1,5 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class KillerIncome extends SkyowalletExtension {
@@ -41,21 +38,8 @@ public class KillerIncome extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
-	}
-	
-	@Override
-	public final String getFileName() {
-		return "killer-income.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
 	@EventHandler
@@ -83,18 +67,17 @@ public class KillerIncome extends SkyowalletExtension {
 		killer.sendMessage(config.message1.replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)).replace("/entity/", entityName.charAt(0) + entityName.substring(1).toLowerCase()));
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 		
-		@ConfigOptions(name = "enable")
-		public boolean enable = false;
 		@ConfigOptions(name = "rewards")
 		public LinkedHashMap<String, String> rewards = new LinkedHashMap<String, String>();
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.GOLD + "Congracubations ! You have won /amount/ /currency-name/ because you have killed a /entity/.";
 		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
+		private ExtensionConfig() {
+			super();
+			
 			rewards.put(EntityType.CREEPER.name(), "10.0");
 			rewards.put(EntityType.SPIDER.name(), "10.0");
 			rewards.put(EntityType.ZOMBIE.name(), "12.5");

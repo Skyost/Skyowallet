@@ -1,7 +1,5 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,7 +16,6 @@ import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public class GoodbyeWallet extends SkyowalletExtension {
 	
@@ -42,21 +39,8 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
-	}
-	
-	@Override
-	public final String getFileName() {
-		return "goodbye-wallet.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
 	@EventHandler
@@ -86,17 +70,10 @@ public class GoodbyeWallet extends SkyowalletExtension {
 		}
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
-		
-		@ConfigOptions(name = "enable")
-		public boolean enable = false;
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 		
 		@ConfigOptions(name = "messages.1")
 		public String message1 = ChatColor.DARK_RED + "You have lost your wallet !";
-		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
-		}
 		
 	}
 

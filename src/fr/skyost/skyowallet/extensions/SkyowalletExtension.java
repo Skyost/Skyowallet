@@ -1,6 +1,7 @@
 package fr.skyost.skyowallet.extensions;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public abstract class SkyowalletExtension implements Listener {
 	
+	private boolean loaded = false;
 	private final JavaPlugin plugin;
 	
 	protected SkyowalletExtension(final JavaPlugin plugin) {
@@ -40,8 +42,41 @@ public abstract class SkyowalletExtension implements Listener {
 	 */
 	
 	public void load() throws InvalidConfigurationException {
+		if(loaded) {
+			return;
+		}
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		getConfiguration().load();
+		loaded = true;
+	}
+	
+	/**
+	 * Unload this extension (unregister events and commands making this extension useless).
+	 * 
+	 * @throws InvalidConfigurationException If the config cannot be saved.
+	 */
+	
+	public void unload() throws InvalidConfigurationException {
+		if(!loaded) {
+			return;
+		}
+		HandlerList.unregisterAll(this);
+		for(final String command : this.getCommands().keySet()) {
+			plugin.getCommand(command).setExecutor(null);
+		}
+		final Skyoconfig config = getConfiguration();
+		config.save();
+		loaded = false;
+	}
+	
+	/**
+	 * Checks if this extensions loaded (not enabled but initialized and loaded).
+	 * 
+	 * @return Whether this extension is loaded.
+	 */
+	
+	public boolean isLoaded() {
+		return loaded;
 	}
 	
 	/**
@@ -82,7 +117,7 @@ public abstract class SkyowalletExtension implements Listener {
 	 * @return The YAML configuration.
 	 */
 	
-	public abstract Skyoconfig getConfiguration();
+	public abstract SkyowalletExtensionConfig getConfiguration();
 	
 	/**
 	 * Gets the extension's configuration file.
@@ -100,28 +135,43 @@ public abstract class SkyowalletExtension implements Listener {
 	 * @return The file name.
 	 */
 	
-	public abstract String getFileName();
+	public String getFileName() {
+		final StringBuilder builder = new StringBuilder();
+		final String name = getName();
+		for(int i = 0; i != name.length(); i++) {
+			final char c = name.charAt(i);
+			if(i != 0 && Character.isUpperCase(c)) {
+				builder.append("-");
+			}
+			builder.append(Character.toLowerCase(c));
+		}
+		builder.append(".yml");
+		return builder.toString();
+	}
 	
 	/**
 	 * Checks if this extension is enabled (only checks via the configuration).
+	 * <br>If the configuration returned by <i>getConfiguration()</i> is null, this will return <b>false</b>.
 	 */
 	
-	public abstract boolean isEnabled();
+	public boolean isEnabled() {
+		final SkyowalletExtensionConfig config = getConfiguration();
+		return config == null ? false : config.enable;
+	}
 	
 	/**
-	 * Extensions are enabled by default. Use this method to disable them.
-	 * <br><b>NOTE :</b> If the user has enabled the extension and you call this method, <i>isEnabled()</i> will always return <b>true</b>.
-	 * 
-	 * @throws InvalidConfigurationException If the config cannot be saved.
+	 * Represents an extension configuration.
 	 */
 	
-	public void disable() throws InvalidConfigurationException {
-		HandlerList.unregisterAll(this);
-		for(final String command : this.getCommands().keySet()) {
-			plugin.getCommand(command).setExecutor(null);
+	public class SkyowalletExtensionConfig extends Skyoconfig {
+		
+		@ConfigOptions(name = "enable")
+		public boolean enable = false;
+
+		public SkyowalletExtensionConfig() {
+			super(getConfigurationFile(), Arrays.asList(getName() + " Configuration"));
 		}
-		final Skyoconfig config = getConfiguration();
-		config.save();
+		
 	}
 	
 }

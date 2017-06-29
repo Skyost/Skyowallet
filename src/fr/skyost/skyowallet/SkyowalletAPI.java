@@ -490,11 +490,11 @@ public class SkyowalletAPI {
 		try {
 			extension.load();
 			if(!extension.isEnabled()) {
-				extension.disable();
+				extension.unload();
 				return;
 			}
 			if(log) {
-				logger.log(Level.INFO, "Enabling " + name + "...");
+				logger.log(Level.INFO, "Loading " + name + "...");
 			}
 			final PluginManager manager = Bukkit.getPluginManager();
 			for(final Entry<String, PermissionDefault> entry : extension.getPermissions().entrySet()) {
@@ -508,12 +508,12 @@ public class SkyowalletAPI {
 			}
 			extensions.add(extension);
 			if(log) {
-				logger.log(Level.INFO, name + " enabled !");
+				logger.log(Level.INFO, name + " loaded !");
 			}
 		}
 		catch(final Exception ex) {
 			if(log) {
-				logger.log(Level.SEVERE, "An error occured while enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
+				logger.log(Level.SEVERE, "An error occured while verifying / enabling the extension \"" + name + "\" : " + ex.getClass().getName() + ".");
 				ex.printStackTrace();
 			}
 		}
@@ -534,7 +534,7 @@ public class SkyowalletAPI {
 		if(log) {
 			logger.log(Level.INFO, "Disabling " + name + "...");
 		}
-		extension.disable();
+		extension.unload();
 		extensions.remove(extension);
 		if(log) {
 			logger.log(Level.INFO, name + " disabled !");

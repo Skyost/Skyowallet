@@ -1,8 +1,5 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
-import java.util.Arrays;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,7 +16,6 @@ import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
 import fr.skyost.skyowallet.events.SyncEndEvent;
 import fr.skyost.skyowallet.events.WalletChangeEvent;
 import fr.skyost.skyowallet.utils.SimpleScoreboard;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 
 public class ScoreboardInfos extends SkyowalletExtension {
 	
@@ -35,21 +31,8 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
-	}
-	
-	@Override
-	public final String getFileName() {
-		return "scoreboard-infos.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
 	@EventHandler
@@ -105,10 +88,8 @@ public class ScoreboardInfos extends SkyowalletExtension {
 		playerBoard.send(player);
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 
-		@ConfigOptions(name = "enable")
-		public boolean enable = true;
 		@ConfigOptions(name = "sidebar.title")
 		public String sidebarTitle = ChatColor.BOLD + "ECONOMY";
 		@ConfigOptions(name = "sidebar.wallet.display")
@@ -119,10 +100,6 @@ public class ScoreboardInfos extends SkyowalletExtension {
 		public boolean sidebarBankBalanceDisplay = true;
 		@ConfigOptions(name = "sidebar.bank-balance.text")
 		public String sidebarBankBalanceText = ChatColor.GOLD + "Bank balance:";
-		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
-		}
 		
 	}
 

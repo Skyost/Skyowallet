@@ -1,7 +1,5 @@
 package fr.skyost.skyowallet.extensions;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
-import fr.skyost.skyowallet.utils.Skyoconfig;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class Mine4Cash extends SkyowalletExtension {
@@ -41,21 +38,13 @@ public class Mine4Cash extends SkyowalletExtension {
 	}
 	
 	@Override
-	public final Skyoconfig getConfiguration() {
-		if(config == null) {
-			config = new ExtensionConfig(this.getConfigurationFile());
-		}
-		return config;
+	public final SkyowalletExtensionConfig getConfiguration() {
+		return config == null ? config = new ExtensionConfig() : config;
 	}
 	
 	@Override
 	public final String getFileName() {
 		return "mine4cash.yml";
-	}
-	
-	@Override
-	public final boolean isEnabled() {
-		return config.enable;
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -81,10 +70,8 @@ public class Mine4Cash extends SkyowalletExtension {
 		}
 	}
 	
-	public class ExtensionConfig extends Skyoconfig {
+	public class ExtensionConfig extends SkyowalletExtensionConfig {
 
-		@ConfigOptions(name = "enable")
-		public boolean enable = false;
 		@ConfigOptions(name = "rewards")
 		public HashMap<String, String> rewards = new HashMap<String, String>();
 		@ConfigOptions(name = "auto-drop-item")
@@ -92,8 +79,9 @@ public class Mine4Cash extends SkyowalletExtension {
 		@ConfigOptions(name = "sound")
 		public Sound sound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 		
-		private ExtensionConfig(final File file) {
-			super(file, Arrays.asList(getName() + " Configuration"));
+		private ExtensionConfig() {
+			super();
+			
 			rewards.put(Material.GOLD_ORE.name(), "100.0");
 			rewards.put(Material.DIAMOND_ORE.name(), "150.0");
 			rewards.put(Material.EMERALD_ORE.name(), "200.0");
