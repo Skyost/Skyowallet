@@ -1,14 +1,9 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -22,45 +17,48 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-
 import fr.skyost.skyowallet.commands.SubCommandsExecutor;
-import fr.skyost.skyowallet.events.*;
 import fr.skyost.skyowallet.extensions.SkyowalletExtension;
-import fr.skyost.skyowallet.utils.Utils;
 
 /**
- * SkyowalletAPI.
+ * Skyowallet API.
  * 
- * @author <a href="http://www.skyost.eu"><b>Skyost</b></a>.
+ * @author <a href="https://www.skyost.eu"><b>Skyost</b></a>.
  */
 
 public class SkyowalletAPI {
 	
-	private static final Plugin PLUGIN = Bukkit.getPluginManager().getPlugin("Skyowallet");
+	private static final Skyowallet PLUGIN = (Skyowallet)Bukkit.getPluginManager().getPlugin("Skyowallet");
+	private static final SyncManager SYNC_MANAGER = new SyncManager();
 	
-	private static final String MYSQL_TABLE_ACCOUNTS = "skyowallet_accounts_v3";
-	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL DEFAULT 0.0, bank VARCHAR(30), bank_balance DOUBLE NOT NULL DEFAULT 0.0, is_bank_owner BOOLEAN NOT NULL DEFAULT false, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))";
-	private static final String MYSQL_SELECT = "SELECT HEX(uuid) AS uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time FROM " + MYSQL_TABLE_ACCOUNTS;
-	private static final String MYSQL_INSERT_REQUEST = "INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(`uuid`, `wallet`, `bank`, `bank_balance`, `is_bank_owner`, `last_modification_time`) VALUES (UNHEX('%s'), %s, '%s', %s, %b, %d) ON DUPLICATE KEY UPDATE `wallet`=VALUES(`wallet`), `bank`=VALUES(`bank`), `bank_balance`=VALUES(`bank_balance`), `is_bank_owner`=VALUES(`is_bank_owner`), `last_modification_time`=(`last_modification_time`)";
-	
-	protected static Statement statement;
-	
-	private static final HashMap<UUID, SkyowalletAccount> accounts = new HashMap<UUID, SkyowalletAccount>();
-	private static final HashMap<String, SkyowalletBank> banks = new HashMap<String, SkyowalletBank>();
+	protected static final HashMap<UUID, SkyowalletAccount> accounts = new HashMap<UUID, SkyowalletAccount>();
+	protected static final HashMap<String, SkyowalletBank> banks = new HashMap<String, SkyowalletBank>();
 	
 	private static final HashSet<SkyowalletExtension> extensions = new HashSet<SkyowalletExtension>();
 	
+	/**
+	 * Gets a Skyowallet instance.
+	 * 
+	 * @return A Skyowallet instance.
+	 */
+	
 	public static final Skyowallet getPlugin() {
-		return (Skyowallet)PLUGIN;
+		return PLUGIN;
+	}
+	
+	/**
+	 * Gets a SyncManager instance.
+	 * 
+	 * @return A SyncManager instance.
+	 */
+	
+	public static final SyncManager getSyncManager() {
+		return SYNC_MANAGER;
 	}
 	
 	/**
@@ -253,13 +251,19 @@ public class SkyowalletAPI {
 	}
 	
 	/**
-	 * Gets all banks.
+	 * Gets all non-deleted banks.
 	 * 
-	 * @return All banks.
+	 * @return All non-deleted banks.
 	 */
 	
 	public static final SkyowalletBank[] getBanks() {
 		final Collection<SkyowalletBank> banks = SkyowalletAPI.banks.values();
+		for(final SkyowalletBank bank : new HashSet<SkyowalletBank>(banks)) {
+			if(bank != null) {
+				continue;
+			}
+			banks.remove(bank);
+		}
 		return banks.toArray(new SkyowalletBank[banks.size()]);
 	}
 	
@@ -272,8 +276,19 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount registerAccount(final UUID uuid) {
-		final SkyowalletAccount account = new SkyowalletAccount(uuid);
-		accounts.put(uuid, account);
+		return registerAccount(new SkyowalletAccount(uuid));
+	}
+	
+	/**
+	 * Registers a new account.
+	 * 
+	 * @param account The account.
+	 * 
+	 * @return The account.
+	 */
+	
+	protected static final SkyowalletAccount registerAccount(final SkyowalletAccount account) {
+		accounts.put(account.getUUID(), account);
 		return account;
 	}
 	
@@ -286,8 +301,19 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletBank createBank(final String name) {
-		final SkyowalletBank bank = new SkyowalletBank(name);
-		banks.put(name, bank);
+		return createBank(new SkyowalletBank(name));
+	}
+	
+	/**
+	 * Creates a new bank.
+	 * 
+	 * @param bank The bank.
+	 * 
+	 * @return The bank.
+	 */
+	
+	protected static final SkyowalletBank createBank(final SkyowalletBank bank) {
+		banks.put(bank.getName(), bank);
 		return bank;
 	}
 	
@@ -311,169 +337,11 @@ public class SkyowalletAPI {
 	}
 	
 	/**
-	 * Synchronizes the accounts' databases.
-	 * <br>NOTE : files are created after the synchronization is done. So, if you manually create files, they will not be loaded.
-	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
+	 * Convenience method for {@link fr.skyost.skyowallet.SyncManager#sync(CommandSender)}.
 	 */
 	
 	public static final void sync(final CommandSender sender) {
-		final PluginManager manager = Bukkit.getPluginManager();
-		final String prefix = sender instanceof Player ? "" : "[Skyowallet] ";
-		if(sender != null) {
-			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization started...");
-		}
-		final SyncBeginEvent syncBeginEvent = new SyncBeginEvent();
-		manager.callEvent(syncBeginEvent);
-		if(syncBeginEvent.isCancelled()) {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.DARK_RED + "Synchronization cancelled !");
-			}
-			return;
-		}
-		if(accounts.size() == 0) {
-			try {
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
-				}
-				for(final File localAccount : getAccountsDirectory().listFiles()) {
-					if(localAccount.isFile()) {
-						final SkyowalletAccount account = SkyowalletAccount.fromJson(Files.readFirstLine(localAccount, Charsets.UTF_8));
-						accounts.put(account.getUUID(), account);
-					}
-				}
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.GREEN + "Accounts loaded.");
-				}
-			}
-			catch(final Exception ex) {
-				ex.printStackTrace();
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.RED + "Failed to load accounts.");
-				}
-			}
-			try {
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.AQUA + "Loading banks...");
-				}
-				for(final File localBank : getBanksDirectory().listFiles()) {
-					if(localBank.isFile()) {
-						final SkyowalletBank bank = SkyowalletBank.fromJSON(Files.readFirstLine(localBank, Charsets.UTF_8));
-						banks.put(bank.getName(), bank);
-					}
-				}
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.GREEN + "Banks loaded.");
-				}
-			}
-			catch(final Exception ex) {
-				ex.printStackTrace();
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.RED + "Failed to load banks.");
-				}
-			}
-		}
-		if(Skyowallet.config.mySQLEnable) {
-			try {
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.AQUA + "Synchronization with the MySQL database...");
-				}
-				if(statement == null || statement.isClosed()) {
-					sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
-					statement = DriverManager.getConnection("jdbc:mysql://" + Skyowallet.config.mySQLHost + ":" + Skyowallet.config.mySQLPort + "/" + Skyowallet.config.mySQLDB, Skyowallet.config.mySQLUser, Skyowallet.config.mySQLPassword).createStatement();
-					if(statement == null) {
-						statement.executeUpdate(MYSQL_CREATE_TABLE);
-					}
-					sender.sendMessage(prefix + ChatColor.GREEN + "Done !");
-				}
-				final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
-				final ResultSet result = statement.executeQuery(MYSQL_SELECT);
-				while(result.next()) {
-					final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString("uuid")));
-					if(uuid == null) {
-						continue;
-					}
-					remoteAccounts.put(uuid, new SkyowalletAccount(uuid, result.getDouble("wallet"), result.getString("bank"), result.getDouble("bank_balance"), result.getBoolean("is_bank_owner"), result.getLong("last_modification_time")));
-				}
-				for(final SkyowalletAccount account : remoteAccounts.values()) {
-					final SkyowalletAccount localAccount = accounts.get(account.getUUID());
-					if(localAccount == null || localAccount.getLastModificationTime() < account.getLastModificationTime()) {
-						accounts.put(account.getUUID(), account);
-					}
-				}
-				for(final SkyowalletAccount account : accounts.values()) {
-					final SkyowalletAccount remoteAccount = remoteAccounts.get(account.getUUID());
-					final long lastModificationTime = account.getLastModificationTime();
-					if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
-						statement.executeUpdate(String.format(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), account.getBank(), String.valueOf(account.getBankBalance()), account.isBankOwner(), lastModificationTime));
-					}
-				}
-				statement.close();
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
-				}
-			}
-			catch(final Exception ex) {
-				ex.printStackTrace();
-				if(sender != null) {
-					sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
-				}
-			}
-		}
-		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Saving accounts...");
-			}
-			for(final SkyowalletAccount account : accounts.values()) {
-				Files.write(account.toString(), new File(getAccountsDirectoryName(), account.getUUID().toString()), Charsets.UTF_8);
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Accounts saved with success.");
-			}
-		}
-		catch(final Exception ex) {
-			ex.printStackTrace();
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.RED + "Failed to save accounts !");
-			}
-		}
-		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
-			}
-			final List<String> removedBanks = new ArrayList<String>();
-			for(final Entry<String, SkyowalletBank> entry : banks.entrySet()) {
-				final String bankName = entry.getKey();
-				final File bankFile = new File(getBanksDirectoryName(), bankName);
-				final SkyowalletBank bank = entry.getValue();
-				if(bank == null) {
-					removedBanks.add(bankName);
-					if(bankFile.exists() && bankFile.isFile()) {
-						bankFile.delete();
-					}
-					continue;
-				}
-				Files.write(bank.toString(), bankFile, Charsets.UTF_8);
-			}
-			for(final String removedBank : removedBanks) {
-				banks.remove(removedBank);
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Banks saved with success.");
-			}
-		}
-		catch(final Exception ex) {
-			ex.printStackTrace();
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
-			}
-		}
-		if(sender != null) {
-			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
-		}
-		manager.callEvent(new SyncEndEvent());
+		SYNC_MANAGER.sync(sender);
 	}
 	
 	/**
