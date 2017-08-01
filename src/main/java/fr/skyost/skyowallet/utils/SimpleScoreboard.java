@@ -7,6 +7,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -18,8 +19,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import net.md_5.bungee.api.ChatColor;
 
 /**
  * <h1>SimpleScoreboard</h1>
