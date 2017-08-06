@@ -32,6 +32,9 @@ public class PluginConfig extends Skyoconfig {
 	public boolean syncEachModification = false;
 	@ConfigOptions(name = "options.silent-sync")
 	public boolean silentSync = false;
+	@ConfigOptions(name = "options.rounding-digits")
+	public int roundingDigits = -1;
+	
 	
 	@ConfigOptions(name = "mysql.enable")
 	public boolean mySQLEnable = false;

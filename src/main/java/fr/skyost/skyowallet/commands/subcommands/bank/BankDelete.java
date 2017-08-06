@@ -46,6 +46,7 @@ public class BankDelete implements CommandInterface {
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		SkyowalletAccount account = null;
 		final SkyowalletBank bank;
+		
 		if(args.length < 1) {
 			if(!(sender instanceof Player)) {
 				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
@@ -64,10 +65,12 @@ public class BankDelete implements CommandInterface {
 			}
 			bank = SkyowalletAPI.getBank(args[0]);
 		}
+		
 		if(bank == null) {
 			sender.sendMessage(Skyowallet.messages.message19);
 			return true;
 		}
+		
 		if(sender.hasPermission("skyowallet.admin") || (account == null ? !(sender instanceof Player) : bank.isOwner(account))) {
 			final String bankName = bank.getName();
 			final HashMap<SkyowalletAccount, Double> accounts = SkyowalletAPI.deleteBank(bank);

@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
@@ -40,14 +39,16 @@ public class SkyowalletInfos implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		final Plugin plugin = SkyowalletAPI.getPlugin();
+		final Skyowallet plugin = SkyowalletAPI.getPlugin();
 		sender.sendMessage(ChatColor.GOLD + plugin.getName() + " v" + plugin.getDescription().getVersion());
+		
 		final SkyowalletAccount[] accounts = SkyowalletAPI.getAccounts();
 		sender.sendMessage(Skyowallet.messages.message5.replace("/total-accounts/", String.valueOf(accounts.length)));
 		if(accounts.length == 0) {
 			return true;
 		}
-		double totalMoney = 0.0;
+		
+		double totalMoney = 0d;
 		SkyowalletAccount bestAccount = null;
 		for(final SkyowalletAccount account : accounts) {
 			final double amount = account.getWallet() + account.getBankBalance();
@@ -56,6 +57,8 @@ public class SkyowalletInfos implements CommandInterface {
 				bestAccount = account;
 			}
 		}
+		totalMoney = SkyowalletAPI.round(totalMoney);
+		
 		final double bestAccountAmount = bestAccount.getWallet() + bestAccount.getBankBalance();
 		final OfflinePlayer player = Bukkit.getOfflinePlayer(bestAccount.getUUID());
 		sender.sendMessage(Skyowallet.messages.message6.replace("/amount/", String.valueOf(totalMoney)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(totalMoney)));

@@ -62,7 +62,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.26")
 	public String message26 = ChatColor.GREEN + "You have left your bank. /amount/ /currency-name/ were transfered to your wallet.";
 	@ConfigOptions(name = "messages.27")
-	public String message27 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/bank/ " + ChatColor.GRAY + "Accounts : " + ChatColor.WHITE + "/accounts/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/";
+	public String message27 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/bank/ " + ChatColor.GRAY + "Accounts : " + ChatColor.WHITE + "/accounts/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/ /currency-name/";
 	@ConfigOptions(name = "messages.28")
 	public String message28 = ChatColor.RED + "You do not have the permission to perform this action on the specified bank !";
 	@ConfigOptions(name = "messages.29")

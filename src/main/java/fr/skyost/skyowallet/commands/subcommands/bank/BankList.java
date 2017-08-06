@@ -48,11 +48,12 @@ public class BankList implements CommandInterface {
 			for(final double balance : balances) {
 				bankBalance += balance;
 			}
-			banksData.put(bankBalance, new Object[]{bank.getName(), balances.size()});
+			banksData.put(SkyowalletAPI.round(bankBalance), new Object[]{bank.getName(), balances.size()});
 		}
 		for(final Entry<Double, Object[]> entry : banksData.entrySet()) {
 			final Object[] data = entry.getValue();
-			sender.sendMessage(Skyowallet.messages.message27.replace("/bank/", data[0].toString()).replace("/accounts/", data[1].toString()).replace("/amount/", String.valueOf(entry.getKey())));
+			final double amount = entry.getKey();
+			sender.sendMessage(Skyowallet.messages.message27.replace("/bank/", data[0].toString()).replace("/accounts/", data[1].toString()).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
 		}
 		sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
 		sender.sendMessage(Skyowallet.messages.message32.replace("/banks/", String.valueOf(banksData.size())));

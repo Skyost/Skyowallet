@@ -41,6 +41,7 @@ public class SkyowalletSet implements CommandInterface {
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final OfflinePlayer player;
+		
 		if(args.length < 2) {
 			if(!(sender instanceof Player)) {
 				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
@@ -59,16 +60,17 @@ public class SkyowalletSet implements CommandInterface {
 				return true;
 			}
 		}
+		
 		final Double parsedDouble = Utils.doubleTryParse(args[0]);
 		if(parsedDouble == null) {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
 		}
+		
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
 		account.setWallet(parsedDouble);
 		if(player.isOnline()) {
-			final double wallet = account.getWallet();
-			player.getPlayer().sendMessage(Skyowallet.messages.message11.replace("/player/", sender.getName()).replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)));
+			player.getPlayer().sendMessage(Skyowallet.messages.message11.replace("/player/", sender.getName()).replace("/amount/", String.valueOf(parsedDouble)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(parsedDouble)));
 		}
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;

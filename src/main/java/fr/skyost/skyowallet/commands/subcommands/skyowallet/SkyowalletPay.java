@@ -2,6 +2,7 @@ package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
@@ -38,11 +39,17 @@ public class SkyowalletPay implements CommandInterface {
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final OfflinePlayer player = Utils.getPlayerByArgument(args[1]);
+		
+		if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
+			sender.sendMessage(Skyowallet.messages.message33);
+			return true;
+		}
 		if(player == null || !SkyowalletAPI.hasAccount(player)) {
 			sender.sendMessage(Skyowallet.messages.message3);
 			return true;
 		}
-		final Double amount = Utils.doubleTryParse(args[0]);
+		
+		final Double amount = SkyowalletAPI.round(Utils.doubleTryParse(args[0]));
 		if(amount == null) {
 			sender.sendMessage(Skyowallet.messages.message13);
 			return true;
@@ -51,15 +58,19 @@ public class SkyowalletPay implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message33);
 			return true;
 		}
+		
 		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount((OfflinePlayer)sender);
 		final double wallet = playerAccount.getWallet() - amount;
-		if(wallet < 0.0) {
+		if(wallet < 0d) {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
 		playerAccount.setWallet(wallet, false);
+		
 		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player);
-		targetAccount.setWallet(targetAccount.getWallet() + amount);
+		final double targetWallet = targetAccount.getWallet() + amount;
+		targetAccount.setWallet(targetWallet);
+		
 		if(player.isOnline()) {
 			player.getPlayer().sendMessage(Skyowallet.messages.message9.replace("/player/", sender.getName()).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
 		}

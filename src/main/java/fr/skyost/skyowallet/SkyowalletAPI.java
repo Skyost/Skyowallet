@@ -1,6 +1,8 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,8 +91,33 @@ public class SkyowalletAPI {
 	 * @return The currency name.
 	 */
 	
-	public static final String getCurrencyName(final double amount) {
-		return amount < 2 ? Skyowallet.config.currencyNameSingular : Skyowallet.config.currencyNamePlural;
+	public static final String getCurrencyName(final Double amount) {
+		return amount == null || amount < 2d ? Skyowallet.config.currencyNameSingular : Skyowallet.config.currencyNamePlural;
+	}
+	
+	/**
+	 * Rounds a <b>double</b> according to the config options.
+	 * 
+	 * @param amount The <b>double</b>.
+	 * 
+	 * @return The rounded <b>double</b>.
+	 */
+	
+	public static final Double round(final Double amount) {
+		if(amount == null || Skyowallet.config.roundingDigits < 0d) {
+			return amount;
+		}
+		return new BigDecimal(amount).setScale(Skyowallet.config.roundingDigits, RoundingMode.HALF_UP).doubleValue();
+	}
+	
+	/**
+	 * Gets the fractional digits that allows to round the currency.
+	 * 
+	 * @return The fractional digits of the currency.
+	 */
+	
+	public static final int getRoundingDigits() {
+		return Skyowallet.config.roundingDigits;
 	}
 	
 	/**

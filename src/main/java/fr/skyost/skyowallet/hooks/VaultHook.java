@@ -73,7 +73,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	
 	@Override
 	public final String format(final double amount) {
-		return amount + " " + SkyowalletAPI.getCurrencyName(amount);
+		return SkyowalletAPI.round(amount) + " " + SkyowalletAPI.getCurrencyName(amount);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -92,7 +92,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	
 	@Override
 	public final int fractionalDigits() {
-		return -1;
+		return SkyowalletAPI.getRoundingDigits();
 	}
 	
 	@Override
@@ -110,7 +110,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 			return new EconomyResponse(amount, balance, ResponseType.FAILURE, "Cannot withdraw negative funds.");
 		}
 		if(!has(playerName, amount)) {
-			return new EconomyResponse(amount, balance, ResponseType.FAILURE, "Insufficient funds");
+			return new EconomyResponse(amount, balance, ResponseType.FAILURE, "Insufficient funds.");
 		}
 		if(!hasAccount(playerName)) {
 			return new EconomyResponse(amount, balance, ResponseType.FAILURE, "This player does not exist or does not have an account.");

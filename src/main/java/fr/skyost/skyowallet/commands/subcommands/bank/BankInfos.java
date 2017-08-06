@@ -47,6 +47,7 @@ public class BankInfos implements CommandInterface {
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		SkyowalletAccount account = null;
 		final SkyowalletBank bank;
+		
 		if(args.length < 1) {
 			if(!(sender instanceof Player)) {
 				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
@@ -65,10 +66,12 @@ public class BankInfos implements CommandInterface {
 			}
 			bank = SkyowalletAPI.getBank(args[0]);
 		}
+		
 		if(bank == null) {
 			sender.sendMessage(ChatColor.RED + (args.length < 1 ? Skyowallet.messages.message21 : Skyowallet.messages.message19));
 			return true;
 		}
+		
 		if(sender.hasPermission("skyowallet.admin") || (account == null ? !(sender instanceof Player) : bank.isOwner(account))) {
 			final HashMap<SkyowalletAccount, Double> members = bank.getMembers();
 			for(final Entry<SkyowalletAccount, Double> entry : members.entrySet()) {

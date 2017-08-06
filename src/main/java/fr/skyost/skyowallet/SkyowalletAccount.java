@@ -74,7 +74,19 @@ public class SkyowalletAccount {
 	 */
 	
 	public final double getWallet() {
-		return wallet;
+		return getWallet(true);
+	}
+	
+	/**
+	 * Gets the wallet.
+	 * 
+	 * @param round If the bank balance should rounded.
+	 * 
+	 * @return The wallet.
+	 */
+	
+	public final double getWallet(final boolean round) {
+		return round ? SkyowalletAPI.round(wallet) : wallet;
 	}
 	
 	/**
@@ -95,7 +107,19 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setWallet(final double wallet, final boolean sync) {
-		final WalletChangeEvent event = new WalletChangeEvent(this, wallet);
+		setWallet(wallet, sync, true);
+	}
+	
+	/**
+	 * Sets the wallet.
+	 * 
+	 * @param wallet The wallet.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified amount (will not round the amount if changed by an event).
+	 */
+	
+	public final void setWallet(final double wallet, final boolean sync, final boolean round) {
+		final WalletChangeEvent event = new WalletChangeEvent(this, SkyowalletAPI.round(wallet));
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
 			return;
@@ -154,7 +178,22 @@ public class SkyowalletAccount {
 	 * <br>-1.0 will be returned if the event is cancelled or if this account is already in the specified bank.
 	 */
 	
-	public final double setBank(SkyowalletBank bank, final boolean sync) {
+	public final double setBank(final SkyowalletBank bank, final boolean sync) {
+		return setBank(bank, sync, true);
+	}
+	
+	/**
+	 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
+	 * 
+	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the account total wallet.
+	 * 
+	 * @return The old bank balance.
+	 * <br>-1.0 will be returned if the event is cancelled or if this account is already in the specified bank.
+	 */
+	
+	public final double setBank(SkyowalletBank bank, final boolean sync, final boolean round) {
 		if(hasBank() && (bank != null && this.bank.equals(bank.getName()))) {
 			return -1d;
 		}
@@ -172,17 +211,31 @@ public class SkyowalletAccount {
 		else {
 			this.bank = bank.getName();
 		}
-		setWallet(wallet + balance, false);
+		setWallet(SkyowalletAPI.round(wallet + balance), false);
 		setBankBalance(0d, sync);
-		return balance;
+		return SkyowalletAPI.round(balance);
 	}
 	
 	/**
 	 * Gets the account's bank balance.
+	 * 
+	 * @return The account's current bank balance.
 	 */
 	
 	public final double getBankBalance() {
-		return bankBalance;
+		return getBankBalance(true);
+	}
+	
+	/**
+	 * Gets the account's bank balance.
+	 * 
+	 * @param round If the bank balance should rounded.
+	 * 
+	 * @return The account's current bank balance.
+	 */
+	
+	public final double getBankBalance(final boolean round) {
+		return round ? SkyowalletAPI.round(bankBalance) : bankBalance;
 	}
 	
 	/**
@@ -203,10 +256,22 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setBankBalance(final double bankBalance, final boolean sync) {
+		setBankBalance(bankBalance, sync, true);
+	}
+	
+	/**
+	 * Sets the account's bank balance.
+	 * 
+	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
+	 */
+	
+	public final void setBankBalance(final double bankBalance, final boolean sync, final boolean round) {
 		if(!hasBank()) {
 			return;
 		}
-		final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, bankBalance);
+		final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, SkyowalletAPI.round(bankBalance));
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
 			return;
