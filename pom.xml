@@ -9,10 +9,11 @@
  <name>Skyowallet</name>
  <description>Simple and lightweight economy plugin.</description>
  <build>
+  <finalName>${project.name}</finalName>
   <sourceDirectory>src/main/java</sourceDirectory>
   <resources>
    <resource>
-    <targetPath></targetPath>
+    <targetPath>.</targetPath>
     <directory>src/main/resources</directory>
    </resource>
   </resources>
@@ -34,6 +35,7 @@
      <descriptorRefs>
       <descriptorRef>jar-with-dependencies</descriptorRef>
      </descriptorRefs>
+     <appendAssemblyId>false</appendAssemblyId>
     </configuration>
    </plugin>
    <plugin>

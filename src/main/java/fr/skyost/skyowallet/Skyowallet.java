@@ -22,7 +22,7 @@ import fr.skyost.skyowallet.utils.Skyupdater;
 public class Skyowallet extends JavaPlugin {
 	
 	/**
-	 * Skyowallet's config
+	 * Skyowallet's config.
 	 */
 	
 	protected static PluginConfig config;

@@ -1,7 +1,7 @@
 name: Skyowallet
 main: fr.skyost.skyowallet.Skyowallet
 description: Simple & lightweight economy plugin.
-version: 1.0
+version: 1.1
 author: Skyost
 website: http://dev.bukkit.org/bukkit-plugins/skyowallet/
 loadbefore: [Vault]
