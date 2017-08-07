@@ -50,7 +50,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.20")
 	public String message20 = ChatColor.RED + "Your bank (/bank/) has been deleted. /amount/ /currency-name/ were transfered to your wallet.";
 	@ConfigOptions(name = "messages.21")
-	public String message21 = ChatColor.RED + "You do not have a bank account.";
+	public String message21 = ChatColor.RED + "You do not have a bank account (if you asked to join a bank and your request has been approved yet, you can cancel it with " + ChatColor.GRAY + "/bank cancel" + ChatColor.RED + ").";
 	@ConfigOptions(name = "messages.22")
 	public String message22 = "You have /members/ members in your bank.";
 	@ConfigOptions(name = "messages.23")
@@ -75,6 +75,22 @@ public class PluginMessages extends Skyoconfig {
 	public String message32 = "There are /banks/ banks here.";
 	@ConfigOptions(name = "messages.33")
 	public String message33 = ChatColor.RED + "You do not have an economy account on this server.";
+	@ConfigOptions(name = "messages.34")
+	public String message34 = ChatColor.GREEN + "You have successfully requested to join /bank/. The owners will approve or deny your request.";
+	@ConfigOptions(name = "messages.35")
+	public String message35 = ChatColor.RED + "You did not have requested to join a bank.";
+	@ConfigOptions(name = "messages.36")
+	public String message36 = ChatColor.RED + "The player did not have requested to join a bank.";
+	@ConfigOptions(name = "messages.37")
+	public String message37 = ChatColor.RED + "You have cancelled your request of joining /bank/.";
+	@ConfigOptions(name = "messages.38")
+	public String message38 = ChatColor.GREEN + "/player/ has accepted your request of joining the bank /bank/ !";
+	@ConfigOptions(name = "messages.39")
+	public String message39 = ChatColor.RED + "/player/ has denied your request of joining the bank /bank/ (/reason/).";
+	@ConfigOptions(name = "messages.40")
+	public String message40 = "No reason";
+	@ConfigOptions(name = "messages.41")
+	public String message41 = "The bank has been deleted";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

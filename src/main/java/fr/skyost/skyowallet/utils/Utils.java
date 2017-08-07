@@ -37,7 +37,7 @@ public class Utils {
 		try {
 			return Double.parseDouble(string);
 		}
-		catch(final NumberFormatException ex) {}
+		catch(final Exception ex) {}
 		return null;
 	}
 	
@@ -45,7 +45,15 @@ public class Utils {
 		try {
 			return Long.parseLong(string);
 		}
-		catch(final NumberFormatException ex) {}
+		catch(final Exception ex) {}
+		return null;
+	}
+	
+	public static final Boolean booleanTryParse(final String string) {
+		try {
+			return Boolean.parseBoolean(string);
+		}
+		catch(final Exception ex) {}
 		return null;
 	}
 	
@@ -53,7 +61,7 @@ public class Utils {
 		try {
 			return UUID.fromString(string);
 		}
-		catch(final IllegalArgumentException ex){}
+		catch(final Exception ex) {}
 		return null;
 	}
 	

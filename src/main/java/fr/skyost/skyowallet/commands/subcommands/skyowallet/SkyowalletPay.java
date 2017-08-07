@@ -38,12 +38,12 @@ public class SkyowalletPay implements CommandInterface {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		final OfflinePlayer player = Utils.getPlayerByArgument(args[1]);
-		
 		if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
 			sender.sendMessage(Skyowallet.messages.message33);
 			return true;
 		}
+		
+		final OfflinePlayer player = Utils.getPlayerByArgument(args[1]);
 		if(player == null || !SkyowalletAPI.hasAccount(player)) {
 			sender.sendMessage(Skyowallet.messages.message3);
 			return true;

@@ -34,25 +34,7 @@ public class SyncManager {
 	 * The MySQL table that contains accounts.
 	 */
 	
-	public static final String MYSQL_TABLE_ACCOUNTS = "skyowallet_accounts_v4";
-	
-	/**
-	 * The MySQL query that allows to create a table.
-	 */
-	
-	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (uuid BINARY(16) NOT NULL, wallet DOUBLE NOT NULL DEFAULT 0.0, bank VARCHAR(30), bank_balance DOUBLE NOT NULL DEFAULT 0.0, is_bank_owner BOOLEAN NOT NULL DEFAULT false, last_modification_time BIGINT NOT NULL, PRIMARY KEY(uuid))";
-	
-	/**
-	 * The MySQL query that selects necessary data from the table.
-	 */
-	
-	private static final String MYSQL_SELECT = "SELECT HEX(uuid) AS uuid, wallet, bank, bank_balance, is_bank_owner, last_modification_time FROM " + MYSQL_TABLE_ACCOUNTS;
-	
-	/**
-	 * The MySQL query that inserts data to the table.
-	 */
-	
-	private static final String MYSQL_INSERT_REQUEST = "INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(`uuid`, `wallet`, `bank`, `bank_balance`, `is_bank_owner`, `last_modification_time`) VALUES (UNHEX('%s'), %s, %s, %s, %b, %d) ON DUPLICATE KEY UPDATE `wallet`=VALUES(`wallet`), `bank`=VALUES(`bank`), `bank_balance`=VALUES(`bank_balance`), `is_bank_owner`=VALUES(`is_bank_owner`), `last_modification_time`=(`last_modification_time`)";
+	public static final String MYSQL_TABLE_ACCOUNTS = "skyowallet_accounts_v5";
 	
 	/**
 	 * The UUID field.
@@ -85,10 +67,34 @@ public class SyncManager {
 	public static final String MYSQL_FIELD_IS_BANK_OWNER = "is_bank_owner";
 	
 	/**
+	 * The bank pending approval field.
+	 */
+	
+	public static final String MYSQL_FIELD_BANK_REQUEST = "bank_request";
+	
+	/**
 	 * The last modification time field.
 	 */
 	
 	public static final String MYSQL_FIELD_LAST_MODIFICATION_TIME = "last_modification_time";
+	
+	/**
+	 * The MySQL query that allows to create a table.
+	 */
+	
+	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (" + MYSQL_FIELD_UUID + " BINARY(16) NOT NULL, " + MYSQL_FIELD_WALLET + " DOUBLE NOT NULL DEFAULT 0.0, " + MYSQL_FIELD_BANK + " VARCHAR(30), " + MYSQL_FIELD_BANK_BALANCE + " DOUBLE NOT NULL DEFAULT 0.0, " + MYSQL_FIELD_IS_BANK_OWNER + " BOOLEAN NOT NULL DEFAULT false, " + MYSQL_FIELD_BANK_REQUEST + " VARCHAR(30), " + MYSQL_FIELD_LAST_MODIFICATION_TIME + " BIGINT NOT NULL, PRIMARY KEY(" + MYSQL_FIELD_UUID + "))";
+	
+	/**
+	 * The MySQL query that selects necessary data from the table.
+	 */
+	
+	private static final String MYSQL_SELECT = "SELECT HEX(" + MYSQL_FIELD_UUID + ") AS " + MYSQL_FIELD_UUID + ", " + MYSQL_FIELD_WALLET + ", " + MYSQL_FIELD_BANK + ", " + MYSQL_FIELD_BANK_BALANCE + ", " + MYSQL_FIELD_IS_BANK_OWNER + ", " + MYSQL_FIELD_BANK_REQUEST + ", " + MYSQL_FIELD_LAST_MODIFICATION_TIME + " FROM " + MYSQL_TABLE_ACCOUNTS;
+	
+	/**
+	 * The MySQL query that inserts data to the table.
+	 */
+	
+	private static final String MYSQL_INSERT_REQUEST = "INSERT INTO " + MYSQL_TABLE_ACCOUNTS + "(`" + MYSQL_FIELD_UUID + "`, `" + MYSQL_FIELD_WALLET + "`, `" + MYSQL_FIELD_BANK + "`, `" + MYSQL_FIELD_BANK_BALANCE + "`, `" + MYSQL_FIELD_IS_BANK_OWNER + "`, `" + MYSQL_FIELD_BANK_REQUEST + "`, `" + MYSQL_FIELD_LAST_MODIFICATION_TIME + "`) VALUES (UNHEX('%s'), %s, %s, %s, %b, %s, %d) ON DUPLICATE KEY UPDATE `" + MYSQL_FIELD_WALLET + "`=VALUES(`" + MYSQL_FIELD_WALLET + "`), `" + MYSQL_FIELD_BANK + "`=VALUES(`" + MYSQL_FIELD_BANK + "`), `" + MYSQL_FIELD_BANK_BALANCE + "`=VALUES(`" + MYSQL_FIELD_BANK_BALANCE + "`), `" + MYSQL_FIELD_IS_BANK_OWNER + "`=VALUES(`" + MYSQL_FIELD_IS_BANK_OWNER + "`), `" + MYSQL_FIELD_BANK_REQUEST + "`=VALUES(`" + MYSQL_FIELD_BANK_REQUEST + "`), `" + MYSQL_FIELD_LAST_MODIFICATION_TIME + "`=VALUES(`" + MYSQL_FIELD_LAST_MODIFICATION_TIME + "`)";
 	
 	/**
 	 * Whether MySQL is enabled.
@@ -370,7 +376,7 @@ public class SyncManager {
 				if(uuid == null) {
 					continue;
 				}
-				final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), result.getString(MYSQL_FIELD_BANK), result.getDouble(MYSQL_FIELD_BANK_BALANCE), result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
+				final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), result.getString(MYSQL_FIELD_BANK), result.getDouble(MYSQL_FIELD_BANK_BALANCE), result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), result.getString(MYSQL_FIELD_BANK_REQUEST), result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
 				remoteAccounts.put(uuid, remoteAccount);
 			}
 			for(final SkyowalletAccount account : remoteAccounts.values()) {
@@ -384,7 +390,8 @@ public class SyncManager {
 				final long lastModificationTime = account.getLastModificationTime();
 				if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
 					final SkyowalletBank bank = account.getBank();
-					executeUpdate(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), bank == null ? "NULL" : "'" + bank.getName() + "'", String.valueOf(account.getBankBalance()), account.isBankOwner(), lastModificationTime);
+					final SkyowalletBank bankRequest = account.getBankRequest();
+					executeUpdate(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), bank == null ? "NULL" : "'" + bank.getName() + "'", String.valueOf(account.getBankBalance()), account.isBankOwner(), bankRequest == null ? "NULL" : "'" + bankRequest.getName() + "'", lastModificationTime);
 				}
 			}
 			closeMySQLConnection();

@@ -22,6 +22,8 @@ public class PluginConfig extends Skyoconfig {
 	public String accountsDir;
 	@ConfigOptions(name = "options.banks-directory")
 	public String banksDir;
+	@ConfigOptions(name = "options.banks-default-require-approval")
+	public boolean banksRequireApproval = true;
 	@ConfigOptions(name = "options.extensions-directory")
 	public String extensionsDir;
 	@ConfigOptions(name = "options.auto-sync-interval")

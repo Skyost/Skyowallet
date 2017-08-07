@@ -22,7 +22,7 @@ public class KillerIncome extends SkyowalletExtension {
 	private ExtensionConfig config;
 	
 	public KillerIncome(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "Win some money for killing an entity.");
 	}
 	
 	@Override

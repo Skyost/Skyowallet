@@ -9,11 +9,11 @@ import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 
-public class BankJoin implements CommandInterface {
+public class BankCancel implements CommandInterface {
 	
 	@Override
 	public final String[] getNames() {
-		return new String[]{"join"};
+		return new String[]{"cancel"};
 	}
 
 	@Override
@@ -23,17 +23,17 @@ public class BankJoin implements CommandInterface {
 
 	@Override
 	public final String getPermission() {
-		return "skyowallet.bank.join";
+		return "skyowallet.bank.cancel";
 	}
 
 	@Override
 	public final int getMinArgsLength() {
-		return 1;
+		return 0;
 	}
 
 	@Override
 	public final String getUsage() {
-		return "<bank>";
+		return null;
 	}
 
 	@Override
@@ -43,23 +43,13 @@ public class BankJoin implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message33);
 			return true;
 		}
-		if(account.getBank() != null) {
-			sender.sendMessage(Skyowallet.messages.message24);
-			return true;
-		}
-		final SkyowalletBank bank = SkyowalletAPI.getBank(args[0]);
+		final SkyowalletBank bank = account.getBankRequest();
 		if(bank == null) {
-			sender.sendMessage(Skyowallet.messages.message19);
+			sender.sendMessage(Skyowallet.messages.message35);
 			return true;
 		}
-		if(bank.isApprovalRequired()) {
-			account.setBank(bank);
-			sender.sendMessage(Skyowallet.messages.message25.replace("/bank/", bank.getName()));
-		}
-		else {
-			account.setBankRequest(bank);
-			sender.sendMessage(Skyowallet.messages.message34.replace("/bank/", bank.getName()));
-		}
+		account.setBankRequest(null);
+		sender.sendMessage(Skyowallet.messages.message37.replace("/bank/", bank.getName()));
 		return true;
 	}
 

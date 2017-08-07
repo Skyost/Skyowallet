@@ -351,13 +351,17 @@ public class SkyowalletAPI {
 	 * 
 	 * @return An HashMap containing deleted accounts.
 	 * <br><b>Key :</b> The account.
-	 * <br><b>Value :</b> The account's bank balance.
+	 * <br><b>Value :</b> The account's bank balance (-1d if the account was just asking to join the bank).
 	 */
 	
 	public static final HashMap<SkyowalletAccount, Double> deleteBank(final SkyowalletBank bank) {
 		final HashMap<SkyowalletAccount, Double> members = bank.getMembers();
 		for(final SkyowalletAccount account : members.keySet()) {
 			account.setBank(null, false);
+		}
+		for(final SkyowalletAccount account : bank.getPendingMembers()) {
+			account.setBankRequest(null, false);
+			members.put(account, -1d);
 		}
 		banks.put(bank.getName(), null);
 		return members;

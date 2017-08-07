@@ -40,7 +40,7 @@ public class Bounties extends SkyowalletExtension {
 	private HashMap<UUID, Bounty> bounties = new HashMap<UUID, Bounty>();
 	
 	public Bounties(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "Place bounties on the head of other players !");
 	}
 	
 	@Override

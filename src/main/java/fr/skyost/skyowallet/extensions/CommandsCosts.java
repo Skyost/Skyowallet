@@ -21,7 +21,7 @@ public class CommandsCosts extends SkyowalletExtension {
 	private ExtensionConfig config;
 	
 	public CommandsCosts(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "It costs money to a player if he wants to use a command.");
 	}
 	
 	@Override

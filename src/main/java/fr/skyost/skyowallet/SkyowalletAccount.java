@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 
 import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
 import fr.skyost.skyowallet.events.BankChangeEvent;
+import fr.skyost.skyowallet.events.BankRequestEvent;
 import fr.skyost.skyowallet.events.StatusChangeEvent;
 import fr.skyost.skyowallet.events.WalletChangeEvent;
 import fr.skyost.skyowallet.tasks.SyncTask;
@@ -25,6 +26,7 @@ public class SkyowalletAccount {
 	private String bank;
 	private double bankBalance;
 	private boolean isBankOwner;
+	private String bankRequest;
 	private long lastModificationTime;
 	
 	/**
@@ -34,7 +36,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public SkyowalletAccount(final UUID uuid) {
-		this(uuid, 0d, null, 0d, false, System.currentTimeMillis());
+		this(uuid, 0d, null, 0d, false, null, System.currentTimeMillis());
 	}
 	
 	/**
@@ -45,15 +47,17 @@ public class SkyowalletAccount {
 	 * @param bank The account's bank.
 	 * @param bankBalance The account's bank balance.
 	 * @param isBankOwner If the player is an owner of his bank.
+	 * @param bankRequest The bank that this player is asking to join.
 	 * @param lastModificationTime The last modification time of the specified account.
 	 */
 	
-	protected SkyowalletAccount(final UUID uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final long lastModificationTime) {
+	protected SkyowalletAccount(final UUID uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final String bankRequest, final long lastModificationTime) {
 		this.uuid = uuid;
 		this.wallet = wallet;
 		this.bank = bank;
 		this.bankBalance = bankBalance;
 		this.isBankOwner = isBankOwner;
+		this.bankRequest = bankRequest;
 		this.lastModificationTime = lastModificationTime;
 	}
 	
@@ -194,7 +198,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final double setBank(SkyowalletBank bank, final boolean sync, final boolean round) {
-		if(hasBank() && (bank != null && this.bank.equals(bank.getName()))) {
+		if(hasBank()) {
 			return -1d;
 		}
 		final BankChangeEvent event = new BankChangeEvent(this, bank);
@@ -203,6 +207,9 @@ public class SkyowalletAccount {
 			return -1d;
 		}
 		bank = event.getNewBank();
+		if(bank != null && this.bank.equals(bank.getName())) {
+			return -1d;
+		}
 		final double balance = bankBalance;
 		if(bank == null) {
 			setBankOwner(false, false);
@@ -321,7 +328,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setBankOwner(final boolean isOwner, final boolean sync) {
-		if(!hasBank() || isBankOwner() == isOwner) {
+		if(!hasBank()) {
 			return;
 		}
 		final StatusChangeEvent event = new StatusChangeEvent(this, isOwner);
@@ -330,6 +337,63 @@ public class SkyowalletAccount {
 			return;
 		}
 		isBankOwner = event.getNewStatus();
+		lastModificationTime = System.currentTimeMillis();
+		if(sync) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+		}
+	}
+	
+	/**
+	 * Gets the current bank request.
+	 * 
+	 * @return The current bank request.
+	 */
+	
+	public final SkyowalletBank getBankRequest() {
+		if(!hasBankRequest()) {
+			return null;
+		}
+		return SkyowalletAPI.getBank(bankRequest);
+	}
+	
+	/**
+	 * Checks if this account has a bank request.
+	 * 
+	 * @return Whether this account has a bank request.
+	 */
+	
+	public final boolean hasBankRequest() {
+		return bankRequest != null;
+	}
+	
+	/**
+	 * Sets the bank that this player is asking to join.
+	 * 
+	 * @param bank The bank that this player is asking to join.
+	 */
+	
+	public final void setBankRequest(final SkyowalletBank bank) {
+		setBankRequest(bank, true);
+	}
+	
+	/**
+	 * Sets the bank that this player is asking to join.
+	 * 
+	 * @param bank The bank that this player is asking to join.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 */
+	
+	public final void setBankRequest(SkyowalletBank bank, final boolean sync) {
+		if(hasBank() || hasBankRequest()) {
+			return;
+		}
+		final BankRequestEvent event = new BankRequestEvent(this, bank);
+		Bukkit.getPluginManager().callEvent(event);
+		if(event.isCancelled()) {
+			return;
+		}
+		bank = event.getBank();
+		bankRequest = bank == null ? null : bank.getName();
 		lastModificationTime = System.currentTimeMillis();
 		if(sync) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
@@ -354,6 +418,7 @@ public class SkyowalletAccount {
 		json.put("bank", bank);
 		json.put("bankBalance", bankBalance);
 		json.put("isBankOwner", isBankOwner);
+		json.put("bankRequest", bankRequest);
 		json.put("lastModificationTime", lastModificationTime);
 		return json.toJSONString();
 	}
@@ -389,7 +454,8 @@ public class SkyowalletAccount {
 			bankBalance = 0.0;
 		}
 		final Object isBankOwner = jsonObject.get("isBankOwner");
-		return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), Long.parseLong(lastModificationTime.toString()));
+		final Object bankRequest = jsonObject.get("bankRequest");
+		return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), bankRequest == null ? null : bankRequest.toString(), Long.parseLong(lastModificationTime.toString()));
 	}
 
 }

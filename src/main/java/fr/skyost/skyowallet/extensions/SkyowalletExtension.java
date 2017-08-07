@@ -19,10 +19,13 @@ import fr.skyost.skyowallet.utils.Skyoconfig;
 public abstract class SkyowalletExtension implements Listener {
 	
 	private boolean loaded = false;
-	private final JavaPlugin plugin;
 	
-	protected SkyowalletExtension(final JavaPlugin plugin) {
+	private final JavaPlugin plugin;
+	private final String description;
+	
+	protected SkyowalletExtension(final JavaPlugin plugin, final String description) {
 		this.plugin = plugin;
+		this.description = description;
 	}
 	
 	/**
@@ -33,6 +36,16 @@ public abstract class SkyowalletExtension implements Listener {
 	
 	public final JavaPlugin getPlugin() {
 		return plugin;
+	}
+	
+	/**
+	 * Gets the extension's description.
+	 * 
+	 * @return The description of this extension.
+	 */
+	
+	public final String getDescription() {
+		return description;
 	}
 	
 	/**
@@ -169,7 +182,7 @@ public abstract class SkyowalletExtension implements Listener {
 		public boolean enable = false;
 
 		public SkyowalletExtensionConfig() {
-			super(getConfigurationFile(), Arrays.asList(getName() + " Configuration"));
+			super(getConfigurationFile(), Arrays.asList(getName() + " Configuration", "", description));
 		}
 		
 	}

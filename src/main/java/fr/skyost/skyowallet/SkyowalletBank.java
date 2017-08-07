@@ -2,11 +2,16 @@ package fr.skyost.skyowallet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+
+import fr.skyost.skyowallet.tasks.SyncTask;
+import fr.skyost.skyowallet.utils.Utils;
 
 /**
  * Used to handle banks.
@@ -15,6 +20,7 @@ import org.json.simple.parser.ParseException;
 public class SkyowalletBank {
 	
 	private String name;
+	private boolean approvalRequired;
 	
 	/**
 	 * Creates a new bank.
@@ -23,7 +29,19 @@ public class SkyowalletBank {
 	 */
 	
 	public SkyowalletBank(final String name) {
+		this(name, Skyowallet.config.banksRequireApproval);
+	}
+	
+	/**
+	 * Creates a new bank.
+	 * 
+	 * @param name The bank's name.
+	 * @param approvalRequired Whether an approval is required to join this bank.
+	 */
+	
+	protected SkyowalletBank(final String name, final boolean approvalRequired) {
 		this.name = name;
+		this.approvalRequired = approvalRequired;
 	}
 	
 	/**
@@ -34,6 +52,40 @@ public class SkyowalletBank {
 	
 	public final String getName() {
 		return name;
+	}
+	
+	/**
+	 * Sets whether an approval is required to join this bank.
+	 * 
+	 * @param approvalRequired Whether an approval is required to join this bank.
+	 */
+	
+	public final void setApprovalRequired(final boolean approvalRequired) {
+		setApprovalRequired(approvalRequired, true);
+	}
+	
+	/**
+	 * Sets whether an approval is required to join this bank.
+	 * 
+	 * @param approvalRequired Whether an approval is required to join this bank.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 */
+	
+	public final void setApprovalRequired(final boolean approvalRequired, final boolean sync) {
+		this.approvalRequired = approvalRequired;
+		if(sync) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+		}
+	}
+	
+	/**
+	 * Checks whether an approval is required to join this bank.
+	 * 
+	 * @return Whether an approval is required to join this bank.
+	 */
+	
+	public final boolean isApprovalRequired() {
+		return approvalRequired;
 	}
 	
 	/**
@@ -81,6 +133,20 @@ public class SkyowalletBank {
 	}
 	
 	/**
+	 * Checks if the specified account is asking to become a member of this bank.
+	 * 
+	 * @param account The account.
+	 * 
+	 * @return <b>true</b> If the account is asking to become a member of this bank.
+	 * <br><b>false</b> Otherwise.
+	 */
+	
+	public final boolean isAsking(final SkyowalletAccount account) {
+		final SkyowalletBank bank = account.getBankRequest();
+		return bank != null && bank.getName().equals(name);
+	}
+	
+	/**
 	 * Gets the bank's members.
 	 * 
 	 * @return An HashMap containing the bank's members.
@@ -99,10 +165,28 @@ public class SkyowalletBank {
 		return members;
 	}
 	
+	/**
+	 * Gets the pending bank's members.
+	 * 
+	 * @return An array containing the pending bank's members.
+	 */
+	
+	public final SkyowalletAccount[] getPendingMembers() {
+		final HashSet<SkyowalletAccount> members = new HashSet<SkyowalletAccount>();
+		for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
+			if(!isAsking(account)) {
+				continue;
+			}
+			members.add(account);
+		}
+		return members.toArray(new SkyowalletAccount[members.size()]);
+	}
+	
 	@Override
 	public final String toString() {
 		final JSONObject json = new JSONObject();
 		json.put("name", name);
+		json.put("approvalRequired", approvalRequired);
 		return json.toJSONString();
 	}
 	
@@ -122,7 +206,17 @@ public class SkyowalletBank {
 		if(name == null) {
 			throw new IllegalArgumentException("Name cannot be null.");
 		}
-		return new SkyowalletBank(name.toString());
+		Object approvalRequired = jsonObject.get("approvalRequired");
+		if(approvalRequired == null) {
+			approvalRequired = Skyowallet.config.banksRequireApproval;
+		}
+		else {
+			approvalRequired = Utils.booleanTryParse(approvalRequired.toString());
+			if(approvalRequired == null) {
+				approvalRequired = Skyowallet.config.banksRequireApproval;
+			}
+		}
+		return new SkyowalletBank(name.toString(), (Boolean)approvalRequired);
 	}
 
 }

@@ -22,7 +22,7 @@ public class Mine4Cash extends SkyowalletExtension {
 	private ExtensionConfig config;
 	
 	public Mine4Cash(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "Gives money to a player if he mines a specific block.");
 	}
 	
 	@Override

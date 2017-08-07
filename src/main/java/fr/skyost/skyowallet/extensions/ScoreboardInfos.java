@@ -22,7 +22,7 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	private ExtensionConfig config;
 	
 	public ScoreboardInfos(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "Displays informations in the sidebar.");
 	}
 	
 	@Override

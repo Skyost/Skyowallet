@@ -23,7 +23,7 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	private final Set<UUID> players = new HashSet<UUID>();
 	
 	public GoodbyeWallet(final JavaPlugin plugin) {
-		super(plugin);
+		super(plugin, "When a player dies, he loses his wallet.");
 	}
 	
 	@Override
