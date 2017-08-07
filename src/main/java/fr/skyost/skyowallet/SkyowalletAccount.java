@@ -119,7 +119,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setWallet(final double wallet, final boolean sync, final boolean round) {
-		final WalletChangeEvent event = new WalletChangeEvent(this, SkyowalletAPI.round(wallet));
+		final WalletChangeEvent event = new WalletChangeEvent(this, round ? SkyowalletAPI.round(wallet) : wallet);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
 			return;
@@ -211,9 +211,13 @@ public class SkyowalletAccount {
 		else {
 			this.bank = bank.getName();
 		}
-		setWallet(SkyowalletAPI.round(wallet + balance), false);
-		setBankBalance(0d, sync);
-		return SkyowalletAPI.round(balance);
+		setBankBalance(0d, false);
+		if(round) {
+			setWallet(SkyowalletAPI.round(wallet + balance), sync);
+			return SkyowalletAPI.round(balance);
+		}
+		setWallet(wallet + balance, sync);
+		return balance;
 	}
 	
 	/**
@@ -342,7 +346,6 @@ public class SkyowalletAccount {
 		return lastModificationTime;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public final String toString() {
 		final JSONObject json = new JSONObject();

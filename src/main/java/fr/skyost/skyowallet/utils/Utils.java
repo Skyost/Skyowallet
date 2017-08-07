@@ -12,7 +12,6 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 
 public class Utils {
 	
-	@SuppressWarnings("deprecation")
 	public static final OfflinePlayer getPlayerByArgument(final String arg) {
 		final UUID uuid = uuidTryParse(arg);
 		final OfflinePlayer player = uuid == null ? Bukkit.getOfflinePlayer(arg) : Bukkit.getOfflinePlayer(uuid);

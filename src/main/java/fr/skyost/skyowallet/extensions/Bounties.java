@@ -647,7 +647,6 @@ public class Bounties extends SkyowalletExtension {
 			}
 		}
 		
-		@SuppressWarnings("unchecked")
 		@Override
 		public final String toString() {
 			if(bounties.size() == 0) {
