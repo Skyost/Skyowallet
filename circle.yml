@@ -1,0 +1,3 @@
+test:
+  post:
+     - sudo mv */target/*.jar $CIRCLE_ARTIFACTS
