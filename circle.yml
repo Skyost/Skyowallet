@@ -1,4 +1,4 @@
 test:
   post:
      - sudo mv /home/ubuntu/Skyowallet/target/*.jar $CIRCLE_ARTIFACTS
-     - ls $CIRCLE_ARTIFACTS/*.jar | xargs -I {} mv {} {}-SNAPSHOT
+     - for file in $CIRCLE_ARTIFACTS/*.jar; do mv '%s' "${file%.jar}-SNAPSHOT.jar"; done
