@@ -2,6 +2,8 @@ package fr.skyost.skyowallet.commands.subcommands.bank;
 
 import java.util.Arrays;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -38,7 +40,7 @@ public class BankDeny implements CommandInterface {
 
 	@Override
 	public final String getUsage() {
-		return "<player | uuid> [reason]";
+		return "[player | uuid] [reason]";
 	}
 
 	@Override
@@ -49,6 +51,21 @@ public class BankDeny implements CommandInterface {
 		}
 		
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
+		if(!account.isBankOwner() && !sender.hasPermission("skyowallet.admin")) {
+			sender.sendMessage(Skyowallet.messages.message1);
+			return true;
+		}
+		
+		if(args.length == 0) {
+			for(final SkyowalletAccount pendingAccount : account.getBank().getPendingMembers()) {
+				final OfflinePlayer pending = Bukkit.getOfflinePlayer(pendingAccount.getUUID());
+				sender.sendMessage(ChatColor.AQUA + (pending == null ? pendingAccount.getUUID().toString() : pending.getName()));
+			}
+			sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
+			sender.sendMessage(Skyowallet.messages.message43);
+			return true;
+		}
+		
 		final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
 		if(player == null || !SkyowalletAPI.hasAccount(player)) {
 			sender.sendMessage(Skyowallet.messages.message3);
@@ -58,11 +75,11 @@ public class BankDeny implements CommandInterface {
 		final SkyowalletAccount playerAccount = SkyowalletAPI.getAccount(player);
 		final SkyowalletBank bank = playerAccount.getBankRequest();
 		if(bank == null) {
-			sender.sendMessage(Skyowallet.messages.message36);
+			sender.sendMessage(Skyowallet.messages.message37);
 			return true;
 		}
 		
-		if((account.isBankOwner() || account.getBank() == null || !account.getBank().equals(bank)) && !sender.hasPermission("skyowallet.admin")) {
+		if(account.getBank() == null || !account.getBank().equals(bank)) {
 			sender.sendMessage(Skyowallet.messages.message1);
 			return true;
 		}
@@ -71,11 +88,11 @@ public class BankDeny implements CommandInterface {
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(player.isOnline()) {
-			String reason = Skyowallet.messages.message40;
+			String reason = Skyowallet.messages.message41;
 			if(args.length > 1) {
 				reason = Joiner.on(' ').join(Arrays.copyOfRange(args, 1, args.length));
 			}
-			player.getPlayer().sendMessage(Skyowallet.messages.message39.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", reason));
+			player.getPlayer().sendMessage(Skyowallet.messages.message40.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", reason));
 		}
 		return true;
 	}

@@ -1,5 +1,6 @@
 package fr.skyost.skyowallet.commands.subcommands.bank;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -59,6 +60,14 @@ public class BankJoin implements CommandInterface {
 		else {
 			account.setBankRequest(bank);
 			sender.sendMessage(Skyowallet.messages.message34.replace("/bank/", bank.getName()));
+			
+			final String message = Skyowallet.messages.message36.replace("/player/", sender.getName());
+			for(final SkyowalletAccount owner : bank.getOwners()) {
+				final OfflinePlayer player = Bukkit.getOfflinePlayer(owner.getUUID());
+				if(player != null && player.isOnline()) {
+					player.getPlayer().sendMessage(message);
+				}
+			}
 		}
 		return true;
 	}

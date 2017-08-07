@@ -52,7 +52,7 @@ public class BankToggleApprovalNeeded implements CommandInterface {
 		}
 		
 		if(bank.isApprovalRequired()) {
-			final String message = Skyowallet.messages.message38.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", Skyowallet.messages.message40);
+			final String message = Skyowallet.messages.message39.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", Skyowallet.messages.message41);
 			for(final SkyowalletAccount playerAccount : bank.getPendingMembers()) {
 				playerAccount.setBankRequest(null, false);
 				playerAccount.setBank(bank, false);

@@ -249,6 +249,8 @@ public class SyncManager {
 	 * Synchronizes the accounts' databases.
 	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
 	 * 
+	 * TODO: Sync a single UUID.
+	 * 
 	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
 	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
 	 */

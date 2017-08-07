@@ -80,17 +80,21 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.35")
 	public String message35 = ChatColor.RED + "You did not have requested to join a bank.";
 	@ConfigOptions(name = "messages.36")
-	public String message36 = ChatColor.RED + "The player did not have requested to join a bank.";
+	public String message36 = ChatColor.AQUA + "/player/ wants to join your bank. You can accept his request with " + ChatColor.GOLD + "/bank approve <player | uuid>" + ChatColor.AQUA + " or you can deny it with " + ChatColor.GOLD + "/bank deny <player | uuid> [reason]" + ChatColor.AQUA + ".";
 	@ConfigOptions(name = "messages.37")
-	public String message37 = ChatColor.RED + "You have cancelled your request of joining /bank/.";
+	public String message37 = ChatColor.RED + "The player did not have requested to join a bank.";
 	@ConfigOptions(name = "messages.38")
-	public String message38 = ChatColor.GREEN + "/player/ has accepted your request of joining the bank /bank/ !";
+	public String message38 = ChatColor.RED + "You have cancelled your request of joining /bank/.";
 	@ConfigOptions(name = "messages.39")
-	public String message39 = ChatColor.RED + "/player/ has denied your request of joining the bank /bank/ (/reason/).";
+	public String message39 = ChatColor.GREEN + "/player/ has accepted your request of joining the bank /bank/ !";
 	@ConfigOptions(name = "messages.40")
-	public String message40 = "No reason";
+	public String message40 = ChatColor.RED + "/player/ has denied your request of joining the bank /bank/ (/reason/).";
 	@ConfigOptions(name = "messages.41")
-	public String message41 = "The bank has been deleted";
+	public String message41 = "No reason";
+	@ConfigOptions(name = "messages.42")
+	public String message42 = "The bank has been deleted";
+	@ConfigOptions(name = "messages.43")
+	public String message43 = "You have currently /members/ members that are willing to join your bank.";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

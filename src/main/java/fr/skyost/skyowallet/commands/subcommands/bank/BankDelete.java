@@ -78,7 +78,7 @@ public class BankDelete implements CommandInterface {
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey().getUUID());
 				if(player != null && player.isOnline()) {
 					final double amount = entry.getValue();
-					player.getPlayer().sendMessage(amount < 1d ? Skyowallet.messages.message39.replace("/player/", sender.getName()).replace("/bank/", bankName).replace("/reason/", Skyowallet.messages.message41) : Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+					player.getPlayer().sendMessage(amount < 1d ? Skyowallet.messages.message40.replace("/player/", sender.getName()).replace("/bank/", bankName).replace("/reason/", Skyowallet.messages.message42) : Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
 				}
 			}
 			sender.sendMessage(Skyowallet.messages.message10);
