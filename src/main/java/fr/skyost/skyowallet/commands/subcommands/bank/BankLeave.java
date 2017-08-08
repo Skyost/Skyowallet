@@ -50,9 +50,7 @@ public class BankLeave implements CommandInterface {
 		}
 		
 		final double amount = account.setBank(null);
-		if(amount >= 0) {
-			sender.sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message26, sender, amount, amount));
-		}
+		sender.sendMessage(amount > 0 ? PlaceholderFormatter.defaultFormat(Skyowallet.messages.message26, sender, amount, amount) : Skyowallet.messages.message10);
 		return true;
 	}
 

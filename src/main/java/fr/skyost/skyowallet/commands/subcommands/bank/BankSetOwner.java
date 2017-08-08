@@ -53,7 +53,7 @@ public class BankSetOwner implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message31);
 			return true;
 		}
-		if(!sender.hasPermission("skyowallet.admin") || (sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false)) {
+		if(!sender.hasPermission("skyowallet.admin") && (sender instanceof Player ? !bank.isOwner(SkyowalletAPI.getAccount((OfflinePlayer)sender)) : false)) {
 			sender.sendMessage(Skyowallet.messages.message28);
 			return true;
 		}

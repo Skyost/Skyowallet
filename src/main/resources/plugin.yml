@@ -1,7 +1,7 @@
-name: Skyowallet
+name: ${project.name}
 main: fr.skyost.skyowallet.Skyowallet
-description: Simple & lightweight economy plugin.
-version: 1.1
+description: ${project.description}
+version: ${project.version}
 author: Skyost
 website: http://dev.bukkit.org/bukkit-plugins/skyowallet/
 loadbefore: [Vault]
@@ -72,7 +72,7 @@ permissions:
   description: Allows you to use /bank removeowner <player | uuid> [bank].
  skyowallet.bank.toggleapprovalneeded:
   default: true
-  description: Allows you to use /bank toggleapprovalneeded.
+  description: Allows you to use /bank toggleapprovalneeded [bank].
  skyowallet.bank.withdraw:
   default: true
   description: Allows you to use /bank withdraw <amount>.

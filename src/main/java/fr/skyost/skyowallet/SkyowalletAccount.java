@@ -198,7 +198,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final double setBank(SkyowalletBank bank, final boolean sync, final boolean round) {
-		if(hasBank()) {
+		if(hasBank() && (bank != null && this.bank.equals(bank.getName()))) {
 			return -1d;
 		}
 		final BankChangeEvent event = new BankChangeEvent(this, bank);
@@ -207,9 +207,6 @@ public class SkyowalletAccount {
 			return -1d;
 		}
 		bank = event.getNewBank();
-		if(bank != null && this.bank.equals(bank.getName())) {
-			return -1d;
-		}
 		final double balance = bankBalance;
 		if(bank == null) {
 			setBankOwner(false, false);
@@ -373,7 +370,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setBankRequest(final SkyowalletBank bank) {
-		setBankRequest(bank, true);
+		setBankRequest(bank, Skyowallet.config.syncEachModification);
 	}
 	
 	/**
@@ -384,7 +381,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final void setBankRequest(SkyowalletBank bank, final boolean sync) {
-		if(hasBank() || hasBankRequest()) {
+		if(hasBank() || (bank != null && hasBankRequest())) {
 			return;
 		}
 		final BankRequestEvent event = new BankRequestEvent(this, bank);
@@ -435,27 +432,36 @@ public class SkyowalletAccount {
 	
 	public static final SkyowalletAccount fromJson(final String json) throws ParseException {
 		final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
+		
 		Object uuid = jsonObject.get("uuid");
-		final Object lastModificationTime = jsonObject.get("lastModificationTime");
-		if(uuid == null || lastModificationTime == null) {
-			throw new NullPointerException("UUID / Last modification is null.");
+		if(uuid == null) {
+			throw new NullPointerException("UUID is null.");
 		}
 		uuid = Utils.uuidTryParse(uuid.toString());
 		if(uuid == null) {
 			throw new IllegalArgumentException("This is not a true UUID !");
 		}
+		
 		Object wallet = jsonObject.get("wallet");
 		if(wallet == null || Utils.doubleTryParse(wallet.toString()) == null) {
 			wallet = 0.0;
 		}
+		
 		final Object bank = jsonObject.get("bank");
 		Object bankBalance = jsonObject.get("bankBalance");
 		if(bankBalance == null || Utils.doubleTryParse(bankBalance.toString()) == null) {
 			bankBalance = 0.0;
 		}
+		
 		final Object isBankOwner = jsonObject.get("isBankOwner");
 		final Object bankRequest = jsonObject.get("bankRequest");
-		return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), bankRequest == null ? null : bankRequest.toString(), Long.parseLong(lastModificationTime.toString()));
+		
+		Object lastModificationTime = jsonObject.get("lastModificationTime");
+		if(lastModificationTime == null) {
+			lastModificationTime = 0l;
+		}
+		
+		return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), bankRequest == null ? null : bankRequest.toString(), Utils.longTryParse(lastModificationTime.toString()));
 	}
 
 }

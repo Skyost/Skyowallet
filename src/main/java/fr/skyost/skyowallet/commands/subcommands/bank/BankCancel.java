@@ -47,7 +47,7 @@ public class BankCancel implements CommandInterface {
 		}
 		final SkyowalletBank bank = account.getBankRequest();
 		if(bank == null) {
-			sender.sendMessage(Skyowallet.messages.message36);
+			sender.sendMessage(Skyowallet.messages.message35);
 			return true;
 		}
 		account.setBankRequest(null);

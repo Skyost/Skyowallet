@@ -61,7 +61,7 @@ public class Skyowallet extends JavaPlugin {
 			skyowallet.setUsage("/" + skyowallet.getName() + " " + skyowalletCmd.getUsage());
 			skyowallet.setExecutor(skyowalletCmd);
 			final BankCommand bankCmd = new BankCommand();
-			for(final CommandInterface command : new CommandInterface[]{new BankSetOwner(), new BankCreate(), new BankDelete(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankWithdraw()}) {
+			for(final CommandInterface command : new CommandInterface[]{new BankApprove(), new BankCancel(), new BankCreate(), new BankDelete(), new BankDeny(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankSetOwner(), new BankToggleApprovalNeeded(), new BankWithdraw()}) {
 				bankCmd.registerSubCommand(command);
 			}
 			final PluginCommand bank = getCommand("bank");

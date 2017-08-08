@@ -156,7 +156,7 @@ public class PlaceholderFormatter {
 	public static class LineBreakPlaceholder extends Placeholder {
 		
 		public LineBreakPlaceholder() {
-			super("/bank/", "/n/");
+			super("/n/", "\n");
 		}
 		
 	}

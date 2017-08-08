@@ -54,7 +54,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.22")
 	public String message22 = "You have /members/ members in your bank.";
 	@ConfigOptions(name = "messages.23")
-	public String message23 = "There are /members/ members in the specified bank.";
+	public String message23 = "There are /members/ member(s) in the specified bank.";
 	@ConfigOptions(name = "messages.24")
 	public String message24 = ChatColor.RED + "You already have a bank account. You can leave your bank with " + ChatColor.GRAY + "/bank leave" + ChatColor.RED + ".";
 	@ConfigOptions(name = "messages.25")
@@ -72,15 +72,15 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.31")
 	public String message31 = ChatColor.RED + "This player does not have any bank !";
 	@ConfigOptions(name = "messages.32")
-	public String message32 = "There are /banks/ banks here.";
+	public String message32 = "There are /banks/ bank(s) here.";
 	@ConfigOptions(name = "messages.33")
 	public String message33 = ChatColor.RED + "You do not have an economy account on this server.";
 	@ConfigOptions(name = "messages.34")
 	public String message34 = ChatColor.GREEN + "You have successfully requested to join /bank/. The owners will approve or deny your request.";
 	@ConfigOptions(name = "messages.35")
-	public String message35 = ChatColor.RED + "You did not have requested to join a bank.";
+	public String message35 = ChatColor.RED + "You do not have requested to join a bank.";
 	@ConfigOptions(name = "messages.36")
-	public String message36 = ChatColor.AQUA + "/player/ wants to join your bank. You can accept his request with " + ChatColor.GOLD + "/bank approve <player | uuid>" + ChatColor.AQUA + " or you can deny it with " + ChatColor.GOLD + "/bank deny <player | uuid> [reason]" + ChatColor.AQUA + ".";
+	public String message36 = ChatColor.AQUA + "/player/ wants to join your bank. You can accept his request with " + ChatColor.GOLD + "/bank approve <player | uuid>" + ChatColor.AQUA + "./n/You can deny it with " + ChatColor.GOLD + "/bank deny <player | uuid> [reason]" + ChatColor.AQUA + ".";
 	@ConfigOptions(name = "messages.37")
 	public String message37 = ChatColor.RED + "The player did not have requested to join a bank.";
 	@ConfigOptions(name = "messages.38")
@@ -95,6 +95,8 @@ public class PluginMessages extends Skyoconfig {
 	public String message42 = "The bank has been deleted";
 	@ConfigOptions(name = "messages.43")
 	public String message43 = "You have currently /members/ members that are willing to join your bank.";
+	@ConfigOptions(name = "messages.44")
+	public String message44 = ChatColor.RED + "You already have asked to join /bank/./n/You can cancel your request with " + ChatColor.GRAY + "/bank cancel" + ChatColor.RED + ".";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

@@ -47,7 +47,11 @@ public class BankJoin implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message33);
 			return true;
 		}
-		if(account.getBank() != null) {
+		if(account.hasBankRequest()) {
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message44, new BankPlaceholder(account.getBankRequest())));
+			return true;
+		}
+		if(account.hasBank()) {
 			sender.sendMessage(Skyowallet.messages.message24);
 			return true;
 		}
@@ -57,10 +61,6 @@ public class BankJoin implements CommandInterface {
 			return true;
 		}
 		if(bank.isApprovalRequired()) {
-			account.setBank(bank);
-			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message25, new BankPlaceholder(bank)));
-		}
-		else {
 			account.setBankRequest(bank);
 			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message34, new BankPlaceholder(bank)));
 			
@@ -71,6 +71,10 @@ public class BankJoin implements CommandInterface {
 					player.getPlayer().sendMessage(message);
 				}
 			}
+		}
+		else {
+			account.setBank(bank);
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message25, new BankPlaceholder(bank)));
 		}
 		return true;
 	}

@@ -21,6 +21,7 @@ public class SkyowalletBank {
 	
 	private String name;
 	private boolean approvalRequired;
+	private long lastModificationTime;
 	
 	/**
 	 * Creates a new bank.
@@ -29,7 +30,7 @@ public class SkyowalletBank {
 	 */
 	
 	public SkyowalletBank(final String name) {
-		this(name, Skyowallet.config.banksRequireApproval);
+		this(name, Skyowallet.config.banksRequireApproval, System.currentTimeMillis());
 	}
 	
 	/**
@@ -39,9 +40,10 @@ public class SkyowalletBank {
 	 * @param approvalRequired Whether an approval is required to join this bank.
 	 */
 	
-	protected SkyowalletBank(final String name, final boolean approvalRequired) {
+	protected SkyowalletBank(final String name, final boolean approvalRequired, final long lastModificationTime) {
 		this.name = name;
 		this.approvalRequired = approvalRequired;
+		this.lastModificationTime = lastModificationTime;
 	}
 	
 	/**
@@ -61,7 +63,7 @@ public class SkyowalletBank {
 	 */
 	
 	public final void setApprovalRequired(final boolean approvalRequired) {
-		setApprovalRequired(approvalRequired, true);
+		setApprovalRequired(approvalRequired, Skyowallet.config.syncEachModification);
 	}
 	
 	/**
@@ -73,6 +75,7 @@ public class SkyowalletBank {
 	
 	public final void setApprovalRequired(final boolean approvalRequired, final boolean sync) {
 		this.approvalRequired = approvalRequired;
+		lastModificationTime = System.currentTimeMillis();
 		if(sync) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
 		}
@@ -141,7 +144,7 @@ public class SkyowalletBank {
 	 * <br><b>false</b> Otherwise.
 	 */
 	
-	public final boolean isAsking(final SkyowalletAccount account) {
+	public final boolean isAwaitingApproval(final SkyowalletAccount account) {
 		final SkyowalletBank bank = account.getBankRequest();
 		return bank != null && bank.getName().equals(name);
 	}
@@ -174,7 +177,7 @@ public class SkyowalletBank {
 	public final SkyowalletAccount[] getPendingMembers() {
 		final HashSet<SkyowalletAccount> members = new HashSet<SkyowalletAccount>();
 		for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
-			if(!isAsking(account)) {
+			if(!isAwaitingApproval(account)) {
 				continue;
 			}
 			members.add(account);
@@ -182,11 +185,22 @@ public class SkyowalletBank {
 		return members.toArray(new SkyowalletAccount[members.size()]);
 	}
 	
+	/**
+	 * Gets the last modification time in millis of the bank.
+	 * 
+	 * @return The last modification time.
+	 */
+	
+	public final long getLastModificationTime() {
+		return lastModificationTime;
+	}
+	
 	@Override
 	public final String toString() {
 		final JSONObject json = new JSONObject();
 		json.put("name", name);
 		json.put("approvalRequired", approvalRequired);
+		json.put("lastModificationTime", lastModificationTime);
 		return json.toJSONString();
 	}
 	
@@ -202,10 +216,12 @@ public class SkyowalletBank {
 	
 	public static final SkyowalletBank fromJSON(final String json) throws ParseException {
 		final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
+		
 		final Object name = jsonObject.get("name");
 		if(name == null) {
-			throw new IllegalArgumentException("Name cannot be null.");
+			throw new IllegalArgumentException("Name is null.");
 		}
+		
 		Object approvalRequired = jsonObject.get("approvalRequired");
 		if(approvalRequired == null) {
 			approvalRequired = Skyowallet.config.banksRequireApproval;
@@ -216,7 +232,13 @@ public class SkyowalletBank {
 				approvalRequired = Skyowallet.config.banksRequireApproval;
 			}
 		}
-		return new SkyowalletBank(name.toString(), (Boolean)approvalRequired);
+		
+		Object lastModificationTime = jsonObject.get("lastModificationTime");
+		if(lastModificationTime == null) {
+			lastModificationTime = 0l;
+		}
+		
+		return new SkyowalletBank(name.toString(), (Boolean)approvalRequired, Utils.longTryParse(lastModificationTime.toString()));
 	}
 
 }

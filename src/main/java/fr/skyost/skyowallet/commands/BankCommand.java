@@ -21,36 +21,34 @@ public class BankCommand extends SubCommandsExecutor {
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, String[] args) {
 		if(args.length <= 0) {
-			if(sender instanceof Player) {
-				if(!SkyowalletAPI.hasAccount((Player)sender)) {
-					sender.sendMessage(Skyowallet.messages.message33);
-					return true;
-				}
-				final SkyowalletAccount account = SkyowalletAPI.getAccount((Player)sender);
-				final SkyowalletBank bank = account.getBank();
-				if(bank == null) {
-					sender.sendMessage(Skyowallet.messages.message21);
-					return true;
-				}
-				if(bank.isOwner(account)) {
-					sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message14, new BankPlaceholder(bank)));
-				}
-				else {
-					final String owners;
-					final StringBuilder builder = new StringBuilder();
-					for(final SkyowalletAccount ownerAccount : bank.getOwners()) {
-						final OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerAccount.getUUID());
-						builder.append((owner == null ? ownerAccount.getUUID().toString() : owner.getName()) + ", ");
-					}
-					owners = builder.toString();
-					sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message15, new BankPlaceholder(bank), new Placeholder("/owners/", owners.length() == 0 ? "X" : owners.substring(0, owners.length() - 2))));
-				}
-				final double bankBalance = account.getBankBalance();
-				sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message16, new AmountPlaceholder(bankBalance), new CurrencyNamePlaceholder(bankBalance)));
+			if(!(sender instanceof Player)) {
+				return false;
+			}
+			if(!SkyowalletAPI.hasAccount((Player)sender)) {
+				sender.sendMessage(Skyowallet.messages.message33);
+				return true;
+			}
+			final SkyowalletAccount account = SkyowalletAPI.getAccount((Player)sender);
+			final SkyowalletBank bank = account.getBank();
+			if(bank == null) {
+				sender.sendMessage(Skyowallet.messages.message21);
+				return true;
+			}
+			if(bank.isOwner(account)) {
+				sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message14, new BankPlaceholder(bank)));
 			}
 			else {
-				sender.sendMessage(Skyowallet.messages.message2);
+				final String owners;
+				final StringBuilder builder = new StringBuilder();
+				for(final SkyowalletAccount ownerAccount : bank.getOwners()) {
+					final OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerAccount.getUUID());
+					builder.append((owner == null ? ownerAccount.getUUID().toString() : owner.getName()) + ", ");
+				}
+				owners = builder.toString();
+				sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message15, new BankPlaceholder(bank), new Placeholder("/owners/", owners.length() == 0 ? "X" : owners.substring(0, owners.length() - 2))));
 			}
+			final double bankBalance = account.getBankBalance();
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message16, new AmountPlaceholder(bankBalance), new CurrencyNamePlaceholder(bankBalance)));
 			return true;
 		}
 		return super.onCommand(sender, command, label, args);

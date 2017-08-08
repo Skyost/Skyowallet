@@ -337,6 +337,17 @@ public class SyncManager {
 			for(final File file : SkyowalletAPI.getBanksDirectory().listFiles()) {
 				if(file.isFile()) {
 					final SkyowalletBank bank = SkyowalletBank.fromJSON(Files.readFirstLine(file, Charsets.UTF_8));
+					if(SkyowalletAPI.isBankExists(bank.getName())) { // Deleted bank check
+						continue;
+					}
+					final SkyowalletBank localBank = SkyowalletAPI.getBank(bank.getName());
+					if(localBank == null) {
+						SkyowalletAPI.createBank(bank);
+						continue;
+					}
+					if(localBank.getLastModificationTime() > bank.getLastModificationTime()) {
+						continue;
+					}
 					SkyowalletAPI.createBank(bank);
 				}
 			}

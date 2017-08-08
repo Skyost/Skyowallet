@@ -1,8 +1,10 @@
 package fr.skyost.skyowallet.commands.subcommands.bank;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
@@ -23,7 +25,7 @@ public class BankToggleApprovalNeeded implements CommandInterface {
 
 	@Override
 	public final boolean mustBePlayer() {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -38,21 +40,37 @@ public class BankToggleApprovalNeeded implements CommandInterface {
 
 	@Override
 	public final String getUsage() {
-		return null;
+		return "[bank]";
 	}
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
-			sender.sendMessage(Skyowallet.messages.message33);
-			return true;
-		}
+		SkyowalletBank bank;
 		
-		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
-		final SkyowalletBank bank = account.getBank();
-		if((bank == null || !account.isBankOwner()) && !sender.hasPermission("skyowallet.admin")) {
-			sender.sendMessage(Skyowallet.messages.message1);
-			return true;
+		if(args.length > 0) {
+			bank = SkyowalletAPI.getBank(args[0]);
+			if(bank == null) {
+				sender.sendMessage(Skyowallet.messages.message19);
+				return true;
+			}
+		}
+		else {
+			if(!(sender instanceof Player)) {
+				sender.sendMessage(ChatColor.RED + "Console : " + getUsage().replace("[", "<").replace("]", ">"));
+				return true;
+			}
+			
+			if(!SkyowalletAPI.hasAccount((OfflinePlayer)sender)) {
+				sender.sendMessage(Skyowallet.messages.message33);
+				return true;
+			}
+			
+			final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
+			bank = account.getBank();
+			if((bank == null || !account.isBankOwner()) && !sender.hasPermission("skyowallet.admin")) {
+				sender.sendMessage(Skyowallet.messages.message1);
+				return true;
+			}
 		}
 		
 		if(bank.isApprovalRequired()) {
