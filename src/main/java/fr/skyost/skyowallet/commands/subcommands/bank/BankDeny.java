@@ -14,7 +14,11 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.PlayerPlaceholder;
 
 public class BankDeny implements CommandInterface {
 	
@@ -92,7 +96,7 @@ public class BankDeny implements CommandInterface {
 			if(args.length > 1) {
 				reason = Joiner.on(' ').join(Arrays.copyOfRange(args, 1, args.length));
 			}
-			player.getPlayer().sendMessage(Skyowallet.messages.message40.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", reason));
+			player.getPlayer().sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message40, new PlayerPlaceholder(sender), new BankPlaceholder(bank), new Placeholder("/reason/", reason)));
 		}
 		return true;
 	}

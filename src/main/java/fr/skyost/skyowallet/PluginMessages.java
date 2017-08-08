@@ -16,7 +16,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.3")
 	public String message3 = ChatColor.RED + "This player does not exist or does not have any account !";
 	@ConfigOptions(name = "messages.4")
-	public String message4 = ChatColor.AQUA + "Welcome !/n/You have /amount/ /currency-name/ in your wallet.";
+	public String message4 = ChatColor.AQUA + "Welcome /player/ !/n/You have /amount/ /currency-name/ in your wallet.";
 	@ConfigOptions(name = "messages.5")
 	public String message5 = "Total accounts : /total-accounts/";
 	@ConfigOptions(name = "messages.6")
@@ -44,7 +44,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.17")
 	public String message17 = ChatColor.RED + "This bank already exists !";
 	@ConfigOptions(name = "messages.18")
-	public String message18 = ChatColor.RED + "/bank/ is not a valid name !";
+	public String message18 = ChatColor.RED + "/name/ is not a valid name !";
 	@ConfigOptions(name = "messages.19")
 	public String message19 = ChatColor.RED + "No bank exists with the given name !";
 	@ConfigOptions(name = "messages.20")

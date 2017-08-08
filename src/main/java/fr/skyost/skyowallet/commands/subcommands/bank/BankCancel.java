@@ -8,6 +8,8 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
 
 public class BankCancel implements CommandInterface {
 	
@@ -49,7 +51,7 @@ public class BankCancel implements CommandInterface {
 			return true;
 		}
 		account.setBankRequest(null);
-		sender.sendMessage(Skyowallet.messages.message38.replace("/bank/", bank.getName()));
+		sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message38, new BankPlaceholder(bank)));
 		return true;
 	}
 

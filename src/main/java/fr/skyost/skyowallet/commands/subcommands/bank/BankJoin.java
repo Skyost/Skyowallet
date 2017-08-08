@@ -9,6 +9,9 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.PlayerPlaceholder;
 
 public class BankJoin implements CommandInterface {
 	
@@ -55,13 +58,13 @@ public class BankJoin implements CommandInterface {
 		}
 		if(bank.isApprovalRequired()) {
 			account.setBank(bank);
-			sender.sendMessage(Skyowallet.messages.message25.replace("/bank/", bank.getName()));
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message25, new BankPlaceholder(bank)));
 		}
 		else {
 			account.setBankRequest(bank);
-			sender.sendMessage(Skyowallet.messages.message34.replace("/bank/", bank.getName()));
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message34, new BankPlaceholder(bank)));
 			
-			final String message = Skyowallet.messages.message36.replace("/player/", sender.getName());
+			final String message = PlaceholderFormatter.format(Skyowallet.messages.message36, new PlayerPlaceholder(sender));
 			for(final SkyowalletAccount owner : bank.getOwners()) {
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(owner.getUUID());
 				if(player != null && player.isOnline()) {

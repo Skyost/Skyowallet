@@ -9,6 +9,8 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class BankSetOwner implements CommandInterface {
@@ -58,7 +60,7 @@ public class BankSetOwner implements CommandInterface {
 		if(!bank.isOwner(account)) {
 			account.setBankOwner(true);
 			if(player.isOnline()) {
-				player.getPlayer().sendMessage(Skyowallet.messages.message29.replace("/bank/", bank.getName()));
+				player.getPlayer().sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message29, new BankPlaceholder(bank)));
 			}
 		}
 		sender.sendMessage(Skyowallet.messages.message10);

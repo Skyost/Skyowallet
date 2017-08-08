@@ -8,6 +8,8 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class BankCreate implements CommandInterface {
@@ -48,7 +50,7 @@ public class BankCreate implements CommandInterface {
 			return true;
 		}
 		if(!Utils.isValidFileName(args[0])) {
-			sender.sendMessage(Skyowallet.messages.message18.replace("/bank/", args[0]));
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message18, new Placeholder("/name/", args[0])));
 			return true;
 		}
 		final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);

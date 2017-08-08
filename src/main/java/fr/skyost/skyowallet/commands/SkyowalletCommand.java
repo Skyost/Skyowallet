@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 
 public class SkyowalletCommand extends SubCommandsExecutor {
 	
@@ -18,7 +19,7 @@ public class SkyowalletCommand extends SubCommandsExecutor {
 					return true;
 				}
 				final double wallet = SkyowalletAPI.getAccount((Player)sender).getWallet();
-				sender.sendMessage(Skyowallet.messages.message4.replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)).replace("/n/", "\n"));
+				sender.sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message4, sender, wallet, wallet));
 			}
 			else {
 				sender.sendMessage(Skyowallet.messages.message2);

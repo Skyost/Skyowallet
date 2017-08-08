@@ -14,6 +14,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class CommandsCosts extends SkyowalletExtension {
@@ -62,7 +65,7 @@ public class CommandsCosts extends SkyowalletExtension {
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
 		final double wallet = account.getWallet() - cost;
 		if(wallet < 0.0) {
-			player.sendMessage(config.message1.replace("/cost/", String.valueOf(cost)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(cost)));
+			player.sendMessage(PlaceholderFormatter.format(config.message1, new Placeholder("/cost/", String.valueOf(cost)), new CurrencyNamePlaceholder(cost)));
 			event.setCancelled(true);
 			return;
 		}

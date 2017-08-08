@@ -15,6 +15,8 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
 
 public class BankInfos implements CommandInterface {
 	
@@ -81,7 +83,7 @@ public class BankInfos implements CommandInterface {
 				sender.sendMessage((player == null ? uuid.toString() : player.getName()) + " " + ChatColor.AQUA + balance + " " + SkyowalletAPI.getCurrencyName(balance));
 			}
 			sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
-			sender.sendMessage((args.length < 1 ? Skyowallet.messages.message22 : Skyowallet.messages.message23).replace("/members/", String.valueOf(members.size())));
+			sender.sendMessage(PlaceholderFormatter.format(args.length < 1 ? Skyowallet.messages.message22 : Skyowallet.messages.message23, new Placeholder("/members/", String.valueOf(members.size()))));
 		}
 		else {
 			sender.sendMessage(Skyowallet.messages.message28);

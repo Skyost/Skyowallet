@@ -11,6 +11,11 @@ import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.AmountPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
 
 public class BankList implements CommandInterface {
 	
@@ -48,12 +53,12 @@ public class BankList implements CommandInterface {
 			for(final double balance : balances) {
 				bankBalance += balance;
 			}
-			banksData.put(SkyowalletAPI.round(bankBalance), new Object[]{bank.getName(), balances.size()});
+			banksData.put(SkyowalletAPI.round(bankBalance), new Object[]{bank, balances.size()});
 		}
 		for(final Entry<Double, Object[]> entry : banksData.entrySet()) {
 			final Object[] data = entry.getValue();
 			final double amount = entry.getKey();
-			sender.sendMessage(Skyowallet.messages.message27.replace("/bank/", data[0].toString()).replace("/accounts/", data[1].toString()).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message27, new AmountPlaceholder(amount), new CurrencyNamePlaceholder(amount), new BankPlaceholder((SkyowalletBank)data[0]), new Placeholder("/accounts/", data[1].toString())));
 		}
 		sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
 		sender.sendMessage(Skyowallet.messages.message32.replace("/banks/", String.valueOf(banksData.size())));

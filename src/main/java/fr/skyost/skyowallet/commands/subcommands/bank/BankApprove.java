@@ -10,6 +10,9 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.PlayerPlaceholder;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class BankApprove implements CommandInterface {
@@ -85,7 +88,7 @@ public class BankApprove implements CommandInterface {
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(player.isOnline()) {
-			player.getPlayer().sendMessage(Skyowallet.messages.message39.replace("/player/", sender.getName()).replace("/bank/", bank.getName()));
+			player.getPlayer().sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message39, new PlayerPlaceholder(sender), new BankPlaceholder(bank)));
 		}
 		return true;
 	}

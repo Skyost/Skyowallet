@@ -9,6 +9,10 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.PlayerPlaceholder;
 
 public class BankToggleApprovalNeeded implements CommandInterface {
 	
@@ -52,7 +56,7 @@ public class BankToggleApprovalNeeded implements CommandInterface {
 		}
 		
 		if(bank.isApprovalRequired()) {
-			final String message = Skyowallet.messages.message39.replace("/player/", sender.getName()).replace("/bank/", bank.getName()).replace("/reason/", Skyowallet.messages.message41);
+			final String message = PlaceholderFormatter.format(Skyowallet.messages.message39, new PlayerPlaceholder(sender), new BankPlaceholder(bank), new Placeholder("/reason/", Skyowallet.messages.message41));
 			for(final SkyowalletAccount playerAccount : bank.getPendingMembers()) {
 				playerAccount.setBankRequest(null, false);
 				playerAccount.setBank(bank, false);

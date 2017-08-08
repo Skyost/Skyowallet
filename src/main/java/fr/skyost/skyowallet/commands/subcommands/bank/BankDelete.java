@@ -14,6 +14,10 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.PlayerPlaceholder;
 
 public class BankDelete implements CommandInterface {
 	
@@ -72,13 +76,12 @@ public class BankDelete implements CommandInterface {
 		}
 		
 		if(sender.hasPermission("skyowallet.admin") || (account == null ? !(sender instanceof Player) : bank.isOwner(account))) {
-			final String bankName = bank.getName();
 			final HashMap<SkyowalletAccount, Double> accounts = SkyowalletAPI.deleteBank(bank);
 			for(final Entry<SkyowalletAccount, Double> entry : accounts.entrySet()) {
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey().getUUID());
 				if(player != null && player.isOnline()) {
 					final double amount = entry.getValue();
-					player.getPlayer().sendMessage(amount < 1d ? Skyowallet.messages.message40.replace("/player/", sender.getName()).replace("/bank/", bankName).replace("/reason/", Skyowallet.messages.message42) : Skyowallet.messages.message20.replace("/bank/", bankName).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+					player.getPlayer().sendMessage(amount < 1d ? PlaceholderFormatter.format(Skyowallet.messages.message40, new PlayerPlaceholder(sender), new BankPlaceholder(bank), new Placeholder("/reason/", Skyowallet.messages.message42)) : PlaceholderFormatter.defaultFormat(Skyowallet.messages.message20, sender, bank, amount, amount));
 				}
 			}
 			sender.sendMessage(Skyowallet.messages.message10);

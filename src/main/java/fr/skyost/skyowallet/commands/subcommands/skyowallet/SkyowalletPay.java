@@ -7,6 +7,7 @@ import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class SkyowalletPay implements CommandInterface {
@@ -72,7 +73,7 @@ public class SkyowalletPay implements CommandInterface {
 		targetAccount.setWallet(targetWallet);
 		
 		if(player.isOnline()) {
-			player.getPlayer().sendMessage(Skyowallet.messages.message9.replace("/player/", sender.getName()).replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message9, sender, amount, amount));
 		}
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;

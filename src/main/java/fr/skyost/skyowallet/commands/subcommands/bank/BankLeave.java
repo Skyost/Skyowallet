@@ -7,6 +7,7 @@ import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 
 public class BankLeave implements CommandInterface {
 	
@@ -50,7 +51,7 @@ public class BankLeave implements CommandInterface {
 		
 		final double amount = account.setBank(null);
 		if(amount >= 0) {
-			sender.sendMessage(Skyowallet.messages.message26.replace("/amount/", String.valueOf(amount)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(amount)));
+			sender.sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message26, sender, amount, amount));
 		}
 		return true;
 	}

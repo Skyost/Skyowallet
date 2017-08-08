@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
 
 public class SkyowalletView implements CommandInterface {
@@ -43,7 +44,7 @@ public class SkyowalletView implements CommandInterface {
 			return true;
 		}
 		final double wallet = SkyowalletAPI.getAccount(player).getWallet();
-		sender.sendMessage(Skyowallet.messages.message12.replace("/player/", player.getName()).replace("/amount/", String.valueOf(wallet)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(wallet)));
+		sender.sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message12, player, wallet, wallet));
 		return true;
 	}
 
