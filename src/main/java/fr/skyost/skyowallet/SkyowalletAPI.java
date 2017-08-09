@@ -38,7 +38,7 @@ public class SkyowalletAPI {
 	private static final Skyowallet PLUGIN = (Skyowallet)Bukkit.getPluginManager().getPlugin("Skyowallet");
 	private static final SyncManager SYNC_MANAGER = new SyncManager();
 	
-	protected static final HashMap<UUID, SkyowalletAccount> accounts = new HashMap<UUID, SkyowalletAccount>();
+	protected static final HashMap<String, SkyowalletAccount> accounts = new HashMap<String, SkyowalletAccount>();
 	protected static final HashMap<String, SkyowalletBank> banks = new HashMap<String, SkyowalletBank>();
 	
 	private static final HashSet<SkyowalletExtension> extensions = new HashSet<SkyowalletExtension>();
@@ -130,7 +130,7 @@ public class SkyowalletAPI {
 	public static final File getAccountsDirectory() {
 		final File accountsDir = new File(Skyowallet.config.accountsDir);
 		if(!accountsDir.exists()) {
-			accountsDir.mkdir();
+			accountsDir.mkdirs();
 		}
 		return accountsDir;
 	}
@@ -145,7 +145,7 @@ public class SkyowalletAPI {
 	public static final File getBanksDirectory() {
 		final File banksDir = new File(Skyowallet.config.banksDir);
 		if(!banksDir.exists()) {
-			banksDir.mkdir();
+			banksDir.mkdirs();
 		}
 		return banksDir;
 	}
@@ -160,7 +160,7 @@ public class SkyowalletAPI {
 	public static final File getExtensionsDirectory() {
 		final File extensionsDir = new File(Skyowallet.config.extensionsDir);
 		if(!extensionsDir.exists()) {
-			extensionsDir.mkdir();
+			extensionsDir.mkdirs();
 		}
 		return extensionsDir;
 	}
@@ -211,7 +211,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final boolean hasAccount(final UUID uuid) {
-		return accounts.containsKey(uuid);
+		return accounts.containsKey(uuid.toString());
 	}
 	
 	/**
@@ -251,7 +251,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount getAccount(final UUID uuid) {
-		return accounts.get(uuid);
+		return accounts.get(uuid.toString());
 	}
 	
 	/**
@@ -295,6 +295,20 @@ public class SkyowalletAPI {
 	}
 	
 	/**
+	 * Registers the specified object by its identifier.
+	 * 
+	 * @param object The object.
+	 */
+	
+	protected static final void register(final SkyowalletObject object) {
+		if(object instanceof SkyowalletAccount) {
+			registerAccount((SkyowalletAccount)object);
+			return;
+		}
+		createBank((SkyowalletBank)object);
+	}
+	
+	/**
 	 * Registers a new account for the specified UUID.
 	 * 
 	 * @param uuid The UUID.
@@ -315,7 +329,7 @@ public class SkyowalletAPI {
 	 */
 	
 	protected static final SkyowalletAccount registerAccount(final SkyowalletAccount account) {
-		accounts.put(account.getUUID(), account);
+		accounts.put(account.getUUID().toString(), account);
 		return account;
 	}
 	
@@ -363,16 +377,28 @@ public class SkyowalletAPI {
 			account.setBankRequest(null, false);
 			members.put(account, -1d);
 		}
-		banks.put(bank.getName(), null);
+		final File bankFile = new File(SkyowalletAPI.getBanksDirectory(), bank.getName());
+		if(bankFile.exists() && bankFile.isFile()) {
+			bankFile.delete();
+		}
+		banks.remove(bank.getName());
 		return members;
 	}
 	
 	/**
-	 * Convenience method for {@link fr.skyost.skyowallet.SyncManager#sync(CommandSender)}.
+	 * Convenience method for {@link fr.skyost.skyowallet.SyncManager#runFullSync(CommandSender)}.
 	 */
 	
 	public static final void sync(final CommandSender sender) {
-		SYNC_MANAGER.sync(sender);
+		SYNC_MANAGER.runFullSync(sender);
+	}
+	
+	/**
+	 * Convenience method for {@link fr.skyost.skyowallet.SyncManager#runSync(CommandSender, SkyowalletAccount)}.
+	 */
+	
+	public static final void sync(final CommandSender sender, final SkyowalletAccount account) {
+		SYNC_MANAGER.runSync(sender, account);
 	}
 	
 	/**

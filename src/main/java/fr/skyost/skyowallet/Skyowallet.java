@@ -42,7 +42,7 @@ public class Skyowallet extends JavaPlugin {
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
-			final SyncTask syncTask = new SyncTask(config.silentSync);
+			final SyncTask syncTask = new SyncTask(config.silentSync ? null : Bukkit.getConsoleSender(), null);
 			if(config.mySQLEnable) {
 				SkyowalletAPI.getSyncManager().enableMySQL(config.mySQLHost, config.mySQLPort, config.mySQLDB, config.mySQLUser, config.mySQLPassword);
 			}
@@ -104,7 +104,7 @@ public class Skyowallet extends JavaPlugin {
 			for(final SkyowalletExtension extension : SkyowalletAPI.getLoadedExtensions()) {
 				SkyowalletAPI.unregisterExtension(extension, true);
 			}
-			final SyncTask task = new SyncTask(config.silentSync);
+			final SyncTask task = new SyncTask(config.silentSync ? null : Bukkit.getConsoleSender(), null);
 			task.start();
 			task.join();
 			SkyowalletAPI.getSyncManager().closeMySQLConnection();

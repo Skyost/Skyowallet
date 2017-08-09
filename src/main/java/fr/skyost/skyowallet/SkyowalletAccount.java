@@ -3,8 +3,6 @@ package fr.skyost.skyowallet;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
@@ -13,21 +11,34 @@ import fr.skyost.skyowallet.events.BankRequestEvent;
 import fr.skyost.skyowallet.events.StatusChangeEvent;
 import fr.skyost.skyowallet.events.WalletChangeEvent;
 import fr.skyost.skyowallet.tasks.SyncTask;
-import fr.skyost.skyowallet.utils.Utils;
 
 /**
  * Used to manage players' accounts.
  */
 
-public class SkyowalletAccount {
+public class SkyowalletAccount extends SkyowalletObject {
 	
-	private final UUID uuid;
+	@MustBePresent
+	private String uuid;
 	private double wallet;
 	private String bank;
 	private double bankBalance;
 	private boolean isBankOwner;
 	private String bankRequest;
-	private long lastModificationTime;
+	
+	/**
+	 * Constructs a new Skyowallet's account.
+	 * 
+	 * @param json The JSON string.
+	 * 
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
+	 */
+	
+	private SkyowalletAccount(final String json) throws IllegalArgumentException, IllegalAccessException, ParseException {
+		super(json);
+	}
 	
 	/**
 	 * Constructs a new Skyowallet's account.
@@ -52,13 +63,18 @@ public class SkyowalletAccount {
 	 */
 	
 	protected SkyowalletAccount(final UUID uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final String bankRequest, final long lastModificationTime) {
-		this.uuid = uuid;
+		super(lastModificationTime);
+		this.uuid = uuid.toString();
 		this.wallet = wallet;
 		this.bank = bank;
 		this.bankBalance = bankBalance;
 		this.isBankOwner = isBankOwner;
 		this.bankRequest = bankRequest;
-		this.lastModificationTime = lastModificationTime;
+	}
+	
+	@Override
+	public final String getIdentifier() {
+		return uuid;
 	}
 	
 	/**
@@ -68,7 +84,7 @@ public class SkyowalletAccount {
 	 */
 	
 	public final UUID getUUID() {
-		return uuid;
+		return UUID.fromString(uuid);
 	}
 	
 	/**
@@ -129,9 +145,9 @@ public class SkyowalletAccount {
 			return;
 		}
 		this.wallet = event.getNewWallet();
-		lastModificationTime = System.currentTimeMillis();
+		updateLastModificationTime();
 		if(sync) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync ? null : Bukkit.getConsoleSender(), UUID.fromString(uuid)));
 		}
 	}
 	
@@ -286,7 +302,7 @@ public class SkyowalletAccount {
 		}
 		this.bankBalance = event.getNewBankBalance();
 		if(sync) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync ? null : Bukkit.getConsoleSender(), UUID.fromString(uuid)));
 		}
 	}
 	
@@ -334,9 +350,9 @@ public class SkyowalletAccount {
 			return;
 		}
 		isBankOwner = event.getNewStatus();
-		lastModificationTime = System.currentTimeMillis();
+		updateLastModificationTime();
 		if(sync) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync ? null : Bukkit.getConsoleSender(), UUID.fromString(uuid)));
 		}
 	}
 	
@@ -391,33 +407,10 @@ public class SkyowalletAccount {
 		}
 		bank = event.getBank();
 		bankRequest = bank == null ? null : bank.getName();
-		lastModificationTime = System.currentTimeMillis();
+		updateLastModificationTime();
 		if(sync) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync ? null : Bukkit.getConsoleSender(), UUID.fromString(uuid)));
 		}
-	}
-	
-	/**
-	 * Gets the last modification time in millis of the account.
-	 * 
-	 * @return The last modification time.
-	 */
-	
-	public final long getLastModificationTime() {
-		return lastModificationTime;
-	}
-	
-	@Override
-	public final String toString() {
-		final JSONObject json = new JSONObject();
-		json.put("uuid", uuid.toString());
-		json.put("wallet", wallet);
-		json.put("bank", bank);
-		json.put("bankBalance", bankBalance);
-		json.put("isBankOwner", isBankOwner);
-		json.put("bankRequest", bankRequest);
-		json.put("lastModificationTime", lastModificationTime);
-		return json.toJSONString();
 	}
 	
 	/**
@@ -427,41 +420,13 @@ public class SkyowalletAccount {
 	 * 
 	 * @return A new instance of this class.
 	 * 
-	 * @throws ParseException If an error occurred while parsing the data.
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
 	 */
 	
-	public static final SkyowalletAccount fromJson(final String json) throws ParseException {
-		final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
-		
-		Object uuid = jsonObject.get("uuid");
-		if(uuid == null) {
-			throw new NullPointerException("UUID is null.");
-		}
-		uuid = Utils.uuidTryParse(uuid.toString());
-		if(uuid == null) {
-			throw new IllegalArgumentException("This is not a true UUID !");
-		}
-		
-		Object wallet = jsonObject.get("wallet");
-		if(wallet == null || Utils.doubleTryParse(wallet.toString()) == null) {
-			wallet = 0.0;
-		}
-		
-		final Object bank = jsonObject.get("bank");
-		Object bankBalance = jsonObject.get("bankBalance");
-		if(bankBalance == null || Utils.doubleTryParse(bankBalance.toString()) == null) {
-			bankBalance = 0.0;
-		}
-		
-		final Object isBankOwner = jsonObject.get("isBankOwner");
-		final Object bankRequest = jsonObject.get("bankRequest");
-		
-		Object lastModificationTime = jsonObject.get("lastModificationTime");
-		if(lastModificationTime == null) {
-			lastModificationTime = 0l;
-		}
-		
-		return new SkyowalletAccount((UUID)uuid, Double.parseDouble(wallet.toString()), bank == null ? null : bank.toString(), Double.parseDouble(bankBalance.toString()), isBankOwner == null ? false : Boolean.valueOf(isBankOwner.toString()), bankRequest == null ? null : bankRequest.toString(), Utils.longTryParse(lastModificationTime.toString()));
+	public static final SkyowalletAccount fromJSON(final String json) throws ParseException, IllegalArgumentException, IllegalAccessException {	
+		return new SkyowalletAccount(json);
 	}
 
 }

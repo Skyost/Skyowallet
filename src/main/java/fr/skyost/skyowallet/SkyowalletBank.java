@@ -6,22 +6,34 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 import fr.skyost.skyowallet.tasks.SyncTask;
-import fr.skyost.skyowallet.utils.Utils;
 
 /**
  * Used to handle banks.
  */
 
-public class SkyowalletBank {
+public class SkyowalletBank extends SkyowalletObject {
 	
+	@MustBePresent
 	private String name;
 	private boolean approvalRequired;
-	private long lastModificationTime;
+	
+	/**
+	 * Creates a new bank.
+	 * 
+	 * @param name The JSON string.
+	 * @param b We need to have a different constructor than SkyowalletBank(name).
+	 * 
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
+	 */
+	
+	private SkyowalletBank(final String json, final boolean b) throws IllegalArgumentException, IllegalAccessException, ParseException {
+		super(json);
+	}
 	
 	/**
 	 * Creates a new bank.
@@ -41,9 +53,14 @@ public class SkyowalletBank {
 	 */
 	
 	protected SkyowalletBank(final String name, final boolean approvalRequired, final long lastModificationTime) {
+		super(lastModificationTime);
 		this.name = name;
 		this.approvalRequired = approvalRequired;
-		this.lastModificationTime = lastModificationTime;
+	}
+	
+	@Override
+	public final String getIdentifier() {
+		return name;
 	}
 	
 	/**
@@ -75,9 +92,9 @@ public class SkyowalletBank {
 	
 	public final void setApprovalRequired(final boolean approvalRequired, final boolean sync) {
 		this.approvalRequired = approvalRequired;
-		lastModificationTime = System.currentTimeMillis();
+		updateLastModificationTime();
 		if(sync) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SkyowalletAPI.getPlugin(), new SyncTask(Skyowallet.config.silentSync ? null : Bukkit.getConsoleSender(), null));
 		}
 	}
 	
@@ -186,59 +203,19 @@ public class SkyowalletBank {
 	}
 	
 	/**
-	 * Gets the last modification time in millis of the bank.
-	 * 
-	 * @return The last modification time.
-	 */
-	
-	public final long getLastModificationTime() {
-		return lastModificationTime;
-	}
-	
-	@Override
-	public final String toString() {
-		final JSONObject json = new JSONObject();
-		json.put("name", name);
-		json.put("approvalRequired", approvalRequired);
-		json.put("lastModificationTime", lastModificationTime);
-		return json.toJSONString();
-	}
-	
-	/**
 	 * Constructs an instance from a JSON String.
 	 * 
 	 * @param json The JSON String.
 	 * 
 	 * @return A new instance of this class.
 	 * 
-	 * @throws ParseException If an error occurred while parsing the data.
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
 	 */
 	
-	public static final SkyowalletBank fromJSON(final String json) throws ParseException {
-		final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
-		
-		final Object name = jsonObject.get("name");
-		if(name == null) {
-			throw new IllegalArgumentException("Name is null.");
-		}
-		
-		Object approvalRequired = jsonObject.get("approvalRequired");
-		if(approvalRequired == null) {
-			approvalRequired = Skyowallet.config.banksRequireApproval;
-		}
-		else {
-			approvalRequired = Utils.booleanTryParse(approvalRequired.toString());
-			if(approvalRequired == null) {
-				approvalRequired = Skyowallet.config.banksRequireApproval;
-			}
-		}
-		
-		Object lastModificationTime = jsonObject.get("lastModificationTime");
-		if(lastModificationTime == null) {
-			lastModificationTime = 0l;
-		}
-		
-		return new SkyowalletBank(name.toString(), (Boolean)approvalRequired, Utils.longTryParse(lastModificationTime.toString()));
+	public static final SkyowalletBank fromJSON(final String json) throws IllegalArgumentException, IllegalAccessException, ParseException {	
+		return new SkyowalletBank(json, true);
 	}
 
 }

@@ -1,9 +1,13 @@
 package fr.skyost.skyowallet.commands.subcommands.skyowallet;
 
+import java.util.UUID;
+
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.tasks.SyncTask;
+import fr.skyost.skyowallet.utils.Utils;
 
 public class SkyowalletSync implements CommandInterface {
 
@@ -29,12 +33,19 @@ public class SkyowalletSync implements CommandInterface {
 
 	@Override
 	public final String getUsage() {
-		return null;
+		return "[player | uuid]";
 	}
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
-		new SyncTask(false, sender).start();
+		UUID uuid = null;
+		if(args.length > 0) {
+			final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+			if(player != null) {
+				uuid = player.getUniqueId();
+			}
+		}
+		new SyncTask(sender, uuid).start();
 		return true;
 	}
 

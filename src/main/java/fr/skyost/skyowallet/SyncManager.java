@@ -1,19 +1,19 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
+import org.json.simple.parser.ParseException;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -246,20 +246,25 @@ public class SyncManager {
 	}
 	
 	/**
-	 * Synchronizes the accounts' databases.
-	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
+	 * Runs a full synchronization :
+	 * <ol>
+	 * <li>Loads all accounts located in the accounts folder and compare them with those located in the memory.</li>
+	 * <li>Same with banks.</li>
+	 * <li>If MySQL is enabled, then runs a MySQL sync (only for accounts).</li>
+	 * <li>Saves all accounts in their file.</li>
+	 * <li>Same with banks.</li>
+	 * </ol>
 	 * 
-	 * TODO: Sync a single UUID.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
+	 * @param sender sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
 	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
 	 */
 	
-	public final void sync(final CommandSender sender) {
+	public final void runFullSync(final CommandSender sender) {
 		final PluginManager manager = Bukkit.getPluginManager();
+		
 		final String prefix = sender instanceof Player ? "" : "[" + SkyowalletAPI.getPlugin().getName() + "] ";
 		if(sender != null) {
-			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization started...");
+			sender.sendMessage(prefix + ChatColor.GOLD + "Full synchronization started...");
 		}
 		final SyncBeginEvent syncBeginEvent = new SyncBeginEvent();
 		manager.callEvent(syncBeginEvent);
@@ -269,49 +274,10 @@ public class SyncManager {
 			}
 			return;
 		}
-		loadAccounts(sender, prefix);
-		loadBanks(sender, prefix);
-		if(mySQL) {
-			mySQLSync(sender, prefix);
-		}
-		saveAccounts(sender, prefix);
-		saveBanks(sender, prefix);
-		if(sender != null) {
-			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
-		}
-		manager.callEvent(new SyncEndEvent());
-	}
-	
-	/**
-	 * Loads accounts.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
-	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
-	 */
-	
-	public final void loadAccounts(final CommandSender sender, final String prefix) {
+		
+		// LOADS ACCOUNTS
 		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Loading accounts...");
-			}
-			for(final File file : SkyowalletAPI.getAccountsDirectory().listFiles()) {
-				if(file.isFile()) {
-					final SkyowalletAccount account = SkyowalletAccount.fromJson(Files.readFirstLine(file, Charsets.UTF_8));
-					final SkyowalletAccount localAccount = SkyowalletAPI.getAccount(account.getUUID());
-					if(localAccount == null) {
-						SkyowalletAPI.registerAccount(account);
-						continue;
-					}
-					if(localAccount.getLastModificationTime() > account.getLastModificationTime()) {
-						continue;
-					}
-					SkyowalletAPI.registerAccount(account);
-				}
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Accounts loaded.");
-			}
+			loadObjects(true);
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -319,41 +285,10 @@ public class SyncManager {
 				sender.sendMessage(prefix + ChatColor.RED + "Failed to load accounts.");
 			}
 		}
-	}
-	
-	/**
-	 * Loads banks.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
-	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
-	 */
-	
-	public final void loadBanks(final CommandSender sender, final String prefix) {
+		
+		// LOADS BANKS
 		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Loading banks...");
-			}
-			for(final File file : SkyowalletAPI.getBanksDirectory().listFiles()) {
-				if(file.isFile()) {
-					final SkyowalletBank bank = SkyowalletBank.fromJSON(Files.readFirstLine(file, Charsets.UTF_8));
-					if(SkyowalletAPI.isBankExists(bank.getName())) { // Deleted bank check
-						continue;
-					}
-					final SkyowalletBank localBank = SkyowalletAPI.getBank(bank.getName());
-					if(localBank == null) {
-						SkyowalletAPI.createBank(bank);
-						continue;
-					}
-					if(localBank.getLastModificationTime() > bank.getLastModificationTime()) {
-						continue;
-					}
-					SkyowalletAPI.createBank(bank);
-				}
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Banks loaded.");
-			}
+			loadObjects(false);
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -361,91 +296,23 @@ public class SyncManager {
 				sender.sendMessage(prefix + ChatColor.RED + "Failed to load banks.");
 			}
 		}
-	}
-	
-	/**
-	 * Runs a MySQL sync.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
-	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
-	 */
-	
-	public final void mySQLSync(final CommandSender sender, final String prefix) {
-		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Synchronization with the MySQL database...");
-				sender.sendMessage(prefix + ChatColor.AQUA + "Logging in to the specified MySQL server...");
+		
+		// MYSQL SYNC
+		if(mySQL) {
+			try {
+				mySQLSync(null);
 			}
-			openMySQLConnection();
-			executeUpdate(MYSQL_CREATE_TABLE);
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Done !");
-			}
-			final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
-			final ResultSet result = executeQuery(MYSQL_SELECT);
-			while(result.next()) {
-				final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString(MYSQL_FIELD_UUID)));
-				if(uuid == null) {
-					continue;
+			catch(final Exception ex) {
+				ex.printStackTrace();
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
 				}
-				final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), result.getString(MYSQL_FIELD_BANK), result.getDouble(MYSQL_FIELD_BANK_BALANCE), result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), result.getString(MYSQL_FIELD_BANK_REQUEST), result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
-				remoteAccounts.put(uuid, remoteAccount);
-			}
-			for(final SkyowalletAccount account : remoteAccounts.values()) {
-				final SkyowalletAccount localAccount = SkyowalletAPI.getAccount(account.getUUID());
-				if(localAccount == null || localAccount.getLastModificationTime() < account.getLastModificationTime()) {
-					SkyowalletAPI.registerAccount(account);
-				}
-			}
-			for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
-				final SkyowalletAccount remoteAccount = remoteAccounts.get(account.getUUID());
-				final long lastModificationTime = account.getLastModificationTime();
-				if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
-					final SkyowalletBank bank = account.getBank();
-					final SkyowalletBank bankRequest = account.getBankRequest();
-					executeUpdate(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), bank == null ? "NULL" : "'" + bank.getName() + "'", String.valueOf(account.getBankBalance()), account.isBankOwner(), bankRequest == null ? "NULL" : "'" + bankRequest.getName() + "'", lastModificationTime);
-				}
-			}
-			closeMySQLConnection();
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Successfully synchronized MySQL database.");
 			}
 		}
-		catch(final Exception ex) {
-			ex.printStackTrace();
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
-			}
-		}
-	}
-	
-	/**
-	 * Saves accounts.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
-	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
-	 */
-	
-	public final void saveAccounts(final CommandSender sender, final String prefix) {
+		
+		// SAVES ACCOUNTS
 		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Saving accounts...");
-			}
-			final File accountsDirectory = SkyowalletAPI.getAccountsDirectory();
-			if(!accountsDirectory.exists()) {
-				accountsDirectory.mkdirs();
-			}
-			for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
-				if(account == null) {
-					continue;
-				}
-				Files.write(account.toString(), new File(accountsDirectory, account.getUUID().toString()), Charsets.UTF_8);
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Accounts saved with success.");
-			}
+			saveObjects(SkyowalletAPI.getAccounts());
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -453,45 +320,10 @@ public class SyncManager {
 				sender.sendMessage(prefix + ChatColor.RED + "Failed to save accounts !");
 			}
 		}
-	}
-	
-	/**
-	 * Saves banks.
-	 * 
-	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
-	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
-	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
-	 */
-	
-	public final void saveBanks(final CommandSender sender, final String prefix) {
+		
+		// SAVES BANKS
 		try {
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.AQUA + "Saving banks...");
-			}
-			final File banksDirectory = SkyowalletAPI.getBanksDirectory();
-			if(!banksDirectory.exists()) {
-				banksDirectory.mkdirs();
-			}
-			final HashSet<String> deletedBanks = new HashSet<String>();
-			for(final Entry<String, SkyowalletBank> entry : SkyowalletAPI.banks.entrySet()) {
-				final String name = entry.getKey();
-				final SkyowalletBank bank = entry.getValue();
-				final File file = new File(banksDirectory, name);
-				if(entry.getValue() == null) {
-					deletedBanks.add(name);
-					if(file.exists() && file.isFile()) {
-						file.delete();
-					}
-					continue;
-				}
-				Files.write(bank.toString(), file, Charsets.UTF_8);
-			}
-			for(final String deletedBank : deletedBanks) {
-				SkyowalletAPI.banks.remove(deletedBank);
-			}
-			if(sender != null) {
-				sender.sendMessage(prefix + ChatColor.GREEN + "Banks saved with success.");
-			}
+			saveObjects(SkyowalletAPI.banks.values().toArray(new SkyowalletBank[SkyowalletAPI.banks.size()]));
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -499,6 +331,226 @@ public class SyncManager {
 				sender.sendMessage(prefix + ChatColor.RED + "Failed to save banks !");
 			}
 		}
+		
+		if(sender != null) {
+			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
+		}
+		manager.callEvent(new SyncEndEvent());
+	}
+	
+	/**
+	 * Runs a partial synchronization :
+	 * <ol>
+	 * <li>Loads the account located in the accounts folder and compare it with the one located in the memory.</li>
+	 * <li>Same with its bank.</li>
+	 * <li>If MySQL is enabled, then runs a MySQL sync (only for the account).</li>
+	 * <li>Saves the account in its file.</li>
+	 * <li>Same with its bank.</li>
+	 * </ol>
+	 * 
+	 * @param sender sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
+	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
+	 */
+	
+	public final void runSync(final CommandSender sender, final SkyowalletAccount account) {
+		final PluginManager manager = Bukkit.getPluginManager();
+		
+		final String prefix = sender instanceof Player ? "" : "[" + SkyowalletAPI.getPlugin().getName() + "] ";
+		if(sender != null) {
+			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronizing the account of " + account.getUUID() + "...");
+		}
+		final SyncBeginEvent syncBeginEvent = new SyncBeginEvent();
+		manager.callEvent(syncBeginEvent);
+		if(syncBeginEvent.isCancelled()) {
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.DARK_RED + "Synchronization cancelled !");
+			}
+			return;
+		}
+		
+		// LOADS ACCOUNT
+		try {
+			loadObject(true, new File(SkyowalletAPI.getAccountsDirectory(), account.getIdentifier()));
+		}
+		catch(final Exception ex) {
+			ex.printStackTrace();
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.RED + "Failed to load account.");
+			}
+		}
+		
+		// LOADS BANK
+		final SkyowalletBank bank = account.getBank();
+		if(bank != null) {
+			try {
+				loadObject(false,  new File(SkyowalletAPI.getBanksDirectory(), bank.getIdentifier()));
+			}
+			catch(final Exception ex) {
+				ex.printStackTrace();
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Failed to load bank.");
+				}
+			}
+		}
+		
+		// MYSQL SYNC
+		if(mySQL) {
+			try {
+				mySQLSync(account.getUUID());
+			}
+			catch(final Exception ex) {
+				ex.printStackTrace();
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Error in a MySQL statement !");
+				}
+			}
+		}
+		
+		// SAVES ACCOUNT
+		try {
+			saveObject(account);
+		}
+		catch(final Exception ex) {
+			ex.printStackTrace();
+			if(sender != null) {
+				sender.sendMessage(prefix + ChatColor.RED + "Failed to save account !");
+			}
+		}
+		
+		// SAVES BANK
+		if(bank != null) {
+			try {
+				saveObject(bank);
+			}
+			catch(final Exception ex) {
+				ex.printStackTrace();
+				if(sender != null) {
+					sender.sendMessage(prefix + ChatColor.RED + "Failed to save bank !");
+				}
+			}
+		}
+		
+		if(sender != null) {
+			sender.sendMessage(prefix + ChatColor.GOLD + "Synchronization finished.");
+		}
+		manager.callEvent(new SyncEndEvent());
+	}
+	
+	/**
+	 * Loads all objects.
+	 * 
+	 * @param accounts Whether these objects are accounts or banks.
+	 * 
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
+	 * @throws IOException If an exception occurs while trying to read a file.
+	 */
+	
+	public final void loadObjects(final boolean accounts) throws IllegalArgumentException, IllegalAccessException, ParseException, IOException {
+		for(final File file : (accounts ? SkyowalletAPI.getAccountsDirectory() : SkyowalletAPI.getBanksDirectory()).listFiles()) {
+			loadObject(accounts, file);
+		}
+	}
+	
+	/**
+	 * Loads an object.
+	 * 
+	 * @param accounts Whether this object is an account or a banks.
+	 * @param file The file.
+	 * 
+	 * @throws ParseException If an exception occurs while parsing JSON.
+	 * @throws IllegalAccessException  If an exception occurs while accessing fields.
+	 * @throws IllegalArgumentException If an exception occurs while reading JSON.
+	 * @throws IOException If an exception occurs while trying to read the file.
+	 */
+	
+	public final void loadObject(final boolean accounts, final File file) throws IllegalArgumentException, IllegalAccessException, ParseException, IOException {
+		final HashMap<?, ?> currentMap = accounts ? SkyowalletAPI.accounts : SkyowalletAPI.banks;
+		if(!file.isFile()) {
+			return;
+		}
+		final SkyowalletObject object = accounts ? SkyowalletAccount.fromJSON(Files.readFirstLine(file, Charsets.UTF_8)) : SkyowalletBank.fromJSON(Files.readFirstLine(file, Charsets.UTF_8));
+		final SkyowalletObject localObject = (SkyowalletObject)currentMap.get(object.getIdentifier());
+		if(!currentMap.containsKey(file.getName())) {
+			SkyowalletAPI.register(object);
+			return;
+		}
+		if(localObject.getLastModificationTime() > object.getLastModificationTime()) {
+			return;
+		}
+		SkyowalletAPI.register(object);
+	}
+	
+	/**
+	 * Runs a MySQL sync.
+	 * <br>Thanks to http://stackoverflow.com/a/10951183/3608831.
+	 * 
+	 * @param sender Used to send some informations, you can obtain the console with <b>Bukkit.getConsoleSender()</b>.
+	 * <br>Set it to <b>null</b> if you want to disable the sending of informations.
+	 * @param prefix The prefix to send before informations to the <b>CommandSender</b>.
+	 * 
+	 * @throws SQLException If an error occurs with a MySQL statement.
+	 */
+	
+	private final void mySQLSync(final UUID localUUID) throws SQLException {
+		openMySQLConnection();
+		executeUpdate(MYSQL_CREATE_TABLE);
+		final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
+		final ResultSet result = executeQuery(MYSQL_SELECT + (localUUID == null ? "" : " WHERE " + MYSQL_FIELD_UUID + "=UNHEX('" + localUUID  + "')"));
+		while(result.next()) {
+			final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString(MYSQL_FIELD_UUID)));
+			if(uuid == null) {
+				continue;
+			}
+			final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), result.getString(MYSQL_FIELD_BANK), result.getDouble(MYSQL_FIELD_BANK_BALANCE), result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), result.getString(MYSQL_FIELD_BANK_REQUEST), result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
+			remoteAccounts.put(uuid, remoteAccount);
+		}
+		for(final SkyowalletAccount account : remoteAccounts.values()) {
+			final SkyowalletAccount localAccount = SkyowalletAPI.getAccount(account.getUUID());
+			if(localAccount == null || localAccount.getLastModificationTime() < account.getLastModificationTime()) {
+				SkyowalletAPI.registerAccount(account);
+			}
+		}
+		for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
+			final SkyowalletAccount remoteAccount = remoteAccounts.get(account.getUUID());
+			final long lastModificationTime = account.getLastModificationTime();
+			if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
+				final SkyowalletBank bank = account.getBank();
+				final SkyowalletBank bankRequest = account.getBankRequest();
+				executeUpdate(MYSQL_INSERT_REQUEST, account.getUUID().toString().replace("-", ""), String.valueOf(account.getWallet()), bank == null ? "NULL" : "'" + bank.getName() + "'", String.valueOf(account.getBankBalance()), account.isBankOwner(), bankRequest == null ? "NULL" : "'" + bankRequest.getName() + "'", lastModificationTime);
+			}
+		}
+		closeMySQLConnection();
+	}
+	
+	/**
+	 * Saves all objects.
+	 * 
+	 * @param objects The objects.
+	 * 
+	 * @throws IOException If an exception occurs while trying to read a file.
+	 */
+	
+	public final void saveObjects(final SkyowalletObject... objects) throws IOException {
+		for(final SkyowalletObject object : objects) {
+			if(object == null) {
+				continue;
+			}
+			saveObject(object);
+		}
+	}
+	
+	/**
+	 * Saves an object.
+	 * 
+	 * @param object The object.
+	 * 
+	 * @throws IOException If an exception occurs while trying to read the file.
+	 */
+	
+	public final void saveObject(final SkyowalletObject object) throws IOException {
+		Files.write(object.toString(), new File(object instanceof SkyowalletAccount ? SkyowalletAPI.getAccountsDirectory() : SkyowalletAPI.getBanksDirectory(), object.getIdentifier()), Charsets.UTF_8);
 	}
 	
 }
