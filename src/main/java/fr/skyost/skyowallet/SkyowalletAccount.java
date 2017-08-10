@@ -65,9 +65,9 @@ public class SkyowalletAccount extends SkyowalletObject {
 	protected SkyowalletAccount(final UUID uuid, final double wallet, final String bank, final double bankBalance, final boolean isBankOwner, final String bankRequest, final long lastModificationTime) {
 		super(lastModificationTime);
 		this.uuid = uuid.toString();
-		this.wallet = wallet;
+		this.wallet = SkyowalletAPI.round(wallet);
 		this.bank = bank;
-		this.bankBalance = bankBalance;
+		this.bankBalance = SkyowalletAPI.round(bankBalance);
 		this.isBankOwner = isBankOwner;
 		this.bankRequest = bankRequest;
 	}

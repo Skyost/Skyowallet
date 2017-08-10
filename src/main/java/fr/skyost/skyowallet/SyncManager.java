@@ -82,7 +82,7 @@ public class SyncManager {
 	 * The MySQL query that allows to create a table.
 	 */
 	
-	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (" + MYSQL_FIELD_UUID + " BINARY(16) NOT NULL, " + MYSQL_FIELD_WALLET + " DOUBLE NOT NULL DEFAULT 0.0, " + MYSQL_FIELD_BANK + " VARCHAR(30), " + MYSQL_FIELD_BANK_BALANCE + " DOUBLE NOT NULL DEFAULT 0.0, " + MYSQL_FIELD_IS_BANK_OWNER + " BOOLEAN NOT NULL DEFAULT false, " + MYSQL_FIELD_BANK_REQUEST + " VARCHAR(30), " + MYSQL_FIELD_LAST_MODIFICATION_TIME + " BIGINT NOT NULL, PRIMARY KEY(" + MYSQL_FIELD_UUID + "))";
+	private static final String MYSQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + MYSQL_TABLE_ACCOUNTS + " (" + MYSQL_FIELD_UUID + " BINARY(16) NOT NULL COMMENT 'UUID of the player, inserted with UNHEX(...) and with dashes removed.', " + MYSQL_FIELD_WALLET + " DOUBLE NOT NULL DEFAULT 0.0 COMMENT 'Wallet of the player.', " + MYSQL_FIELD_BANK + " VARCHAR(30) COMMENT 'Bank name of the player (or NULL if no bank).', " + MYSQL_FIELD_BANK_BALANCE + " DOUBLE NOT NULL DEFAULT 0.0 COMMENT 'Bank balance of the player.', " + MYSQL_FIELD_IS_BANK_OWNER + " BOOLEAN NOT NULL DEFAULT false COMMENT '0 if the player is an owner of its bank, 1 otherwise. The bank field must not be NULL if you want to change this field.', " + MYSQL_FIELD_BANK_REQUEST + " VARCHAR(30) COMMENT 'Name of the bank this player requested to join. The bank must be NULL if you want to change this field.', " + MYSQL_FIELD_LAST_MODIFICATION_TIME + " BIGINT NOT NULL COMMENT 'The ellapsed time since January 1st 1970 in milliseconds. MUST BE UPDATED AFTER EACH CHANGE !', PRIMARY KEY(" + MYSQL_FIELD_UUID + "))";
 	
 	/**
 	 * The MySQL query that selects necessary data from the table.
@@ -501,7 +501,14 @@ public class SyncManager {
 			if(uuid == null) {
 				continue;
 			}
-			final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), result.getString(MYSQL_FIELD_BANK), result.getDouble(MYSQL_FIELD_BANK_BALANCE), result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), result.getString(MYSQL_FIELD_BANK_REQUEST), result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
+			
+			final SkyowalletBank bank = SkyowalletAPI.getBank(result.getString(MYSQL_FIELD_BANK));
+			final SkyowalletBank bankRequest = SkyowalletAPI.getBank(result.getString(MYSQL_FIELD_BANK_REQUEST));
+			
+			final String bankName = bank == null ? null : bank.getName();
+			final String bankRequestName = bank == null ? (bankRequest == null ? null : bankRequest.getName()) : null;
+			
+			final SkyowalletAccount remoteAccount = new SkyowalletAccount(uuid, result.getDouble(MYSQL_FIELD_WALLET), bankName, result.getDouble(MYSQL_FIELD_BANK_BALANCE), bank == null ? false : result.getBoolean(MYSQL_FIELD_IS_BANK_OWNER), bankRequestName, result.getLong(MYSQL_FIELD_LAST_MODIFICATION_TIME));
 			remoteAccounts.put(uuid, remoteAccount);
 		}
 		for(final SkyowalletAccount account : remoteAccounts.values()) {
