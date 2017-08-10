@@ -3,7 +3,6 @@ package fr.skyost.skyowallet;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -211,6 +210,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final boolean hasAccount(final UUID uuid) {
+		if(uuid == null) {
+			return false;
+		}
 		return accounts.containsKey(uuid.toString());
 	}
 	
@@ -224,6 +226,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final boolean isBankExists(final String name) {
+		if(name == null || name.length() == 0) {
+			return false;
+		}
 		return banks.containsKey(name);
 	}
 	
@@ -251,6 +256,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount getAccount(final UUID uuid) {
+		if(uuid == null) {
+			return null;
+		}
 		return accounts.get(uuid.toString());
 	}
 	
@@ -263,6 +271,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletBank getBank(final String name) {
+		if(name == null || name.length() == 0) {
+			return null;
+		}
 		return banks.get(name);
 	}
 	
@@ -273,8 +284,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount[] getAccounts() {
-		final Collection<SkyowalletAccount> accounts = SkyowalletAPI.accounts.values();
-		return accounts.toArray(new SkyowalletAccount[accounts.size()]);
+		return accounts.values().toArray(new SkyowalletAccount[accounts.size()]);
 	}
 	
 	/**
@@ -284,14 +294,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletBank[] getBanks() {
-		final Collection<SkyowalletBank> banks = SkyowalletAPI.banks.values();
-		for(final SkyowalletBank bank : new HashSet<SkyowalletBank>(banks)) {
-			if(bank != null) {
-				continue;
-			}
-			banks.remove(bank);
-		}
-		return banks.toArray(new SkyowalletBank[banks.size()]);
+		return banks.values().toArray(new SkyowalletBank[banks.size()]);
 	}
 	
 	/**
@@ -317,6 +320,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletAccount registerAccount(final UUID uuid) {
+		if(uuid == null) {
+			return null;
+		}
 		return registerAccount(new SkyowalletAccount(uuid));
 	}
 	
@@ -342,6 +348,9 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final SkyowalletBank createBank(final String name) {
+		if(name == null || name.length() == 0) {
+			return null;
+		}
 		return createBank(new SkyowalletBank(name));
 	}
 	
@@ -356,6 +365,59 @@ public class SkyowalletAPI {
 	protected static final SkyowalletBank createBank(final SkyowalletBank bank) {
 		banks.put(bank.getName(), bank);
 		return bank;
+	}
+	
+	/**
+	 * Deletes an account.
+	 * 
+	 * @param uuid The account uuid.
+	 * 
+	 * @return An array containing its wallet and its bank balance.
+	 */
+	
+	public static final double[] deleteAccount(final UUID uuid) {
+		if(uuid == null) {
+			return new double[]{-1d, -1d};
+		}
+		return deleteAccount(SkyowalletAPI.getAccount(uuid));
+	}
+	
+	/**
+	 * Deletes an account.
+	 * 
+	 * @param account The account.
+	 * 
+	 * @return An array containing its wallet and its bank balance.
+	 */
+	
+	public static final double[] deleteAccount(final SkyowalletAccount account) {
+		if(account == null) {
+			return new double[]{-1d, -1d};
+		}
+		final String identifier = account.getIdentifier();
+		final File accountFile = new File(SkyowalletAPI.getAccountsDirectory(), identifier);
+		if(accountFile.exists() && accountFile.isFile()) {
+			accountFile.delete();
+		}
+		accounts.remove(identifier);
+		return new double[]{account.getWallet(), account.getBankBalance()};
+	}
+	
+	/**
+	 * Deletes a bank.
+	 * 
+	 * @param bank The bank's name.
+	 * 
+	 * @return An HashMap containing deleted accounts.
+	 * <br><b>Key :</b> The account.
+	 * <br><b>Value :</b> The account's bank balance (-1d if the account was just asking to join the bank).
+	 */
+	
+	public static final HashMap<SkyowalletAccount, Double> deleteBank(final String bank) {
+		if(bank == null) {
+			return null;
+		}
+		return deleteBank(SkyowalletAPI.getBank(bank));
 	}
 	
 	/**
@@ -377,11 +439,12 @@ public class SkyowalletAPI {
 			account.setBankRequest(null, false);
 			members.put(account, -1d);
 		}
-		final File bankFile = new File(SkyowalletAPI.getBanksDirectory(), bank.getName());
+		final String identifier = bank.getIdentifier();
+		final File bankFile = new File(SkyowalletAPI.getBanksDirectory(), identifier);
 		if(bankFile.exists() && bankFile.isFile()) {
 			bankFile.delete();
 		}
-		banks.remove(bank.getName());
+		banks.remove(identifier);
 		return members;
 	}
 	

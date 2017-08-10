@@ -310,7 +310,7 @@ public class SyncManager {
 		
 		// SAVES ACCOUNTS
 		try {
-			saveObjects(SkyowalletAPI.getAccounts());
+			saveObjects(SkyowalletAPI.getAccountsDirectory(), SkyowalletAPI.getAccounts());
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -321,7 +321,7 @@ public class SyncManager {
 		
 		// SAVES BANKS
 		try {
-			saveObjects(SkyowalletAPI.banks.values().toArray(new SkyowalletBank[SkyowalletAPI.banks.size()]));
+			saveObjects(SkyowalletAPI.getBanksDirectory(), SkyowalletAPI.getBanks());
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -406,7 +406,7 @@ public class SyncManager {
 		
 		// SAVES ACCOUNT
 		try {
-			saveObject(account);
+			saveObject(SkyowalletAPI.getAccountsDirectory(), account);
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -418,7 +418,7 @@ public class SyncManager {
 		// SAVES BANK
 		if(bank != null) {
 			try {
-				saveObject(bank);
+				saveObject(SkyowalletAPI.getBanksDirectory(), bank);
 			}
 			catch(final Exception ex) {
 				ex.printStackTrace();
@@ -532,30 +532,32 @@ public class SyncManager {
 	/**
 	 * Saves all objects.
 	 * 
+	 * @param directory Where to save objects.
 	 * @param objects The objects.
 	 * 
 	 * @throws IOException If an exception occurs while trying to read a file.
 	 */
 	
-	public final void saveObjects(final SkyowalletObject... objects) throws IOException {
+	public final void saveObjects(final File directory, final SkyowalletObject... objects) throws IOException {
 		for(final SkyowalletObject object : objects) {
 			if(object == null) {
 				continue;
 			}
-			saveObject(object);
+			saveObject(directory, object);
 		}
 	}
 	
 	/**
 	 * Saves an object.
 	 * 
+	 * @param directory Where to save object.
 	 * @param object The object.
 	 * 
 	 * @throws IOException If an exception occurs while trying to read the file.
 	 */
 	
-	public final void saveObject(final SkyowalletObject object) throws IOException {
-		Files.write(object.toString(), new File(object instanceof SkyowalletAccount ? SkyowalletAPI.getAccountsDirectory() : SkyowalletAPI.getBanksDirectory(), object.getIdentifier()), Charsets.UTF_8);
+	public final void saveObject(final File directory, final SkyowalletObject object) throws IOException {
+		Files.write(object.toString(), new File(directory, object.getIdentifier()), Charsets.UTF_8);
 	}
 	
 }
