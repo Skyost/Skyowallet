@@ -45,7 +45,7 @@ public abstract class SkyowalletObject {
 	SkyowalletObject(final String json) throws ParseException, IllegalArgumentException, IllegalAccessException {
 		final JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(json);
 		Class<?> clazz = getClass();
-		while(clazz != SkyowalletObject.class) {
+		while(clazz != SkyowalletObject.class.getSuperclass()) {
 			for(final Field field : clazz.getDeclaredFields()) {
 				field.setAccessible(true);
 				final Class<?> fieldClazz = field.getType();
@@ -57,20 +57,20 @@ public abstract class SkyowalletObject {
 				if(field.getAnnotation(MustBePresent.class) != null) {
 					throw new IllegalArgumentException("Invalid JSON : " + field.getName() + " is null.");
 				}
-				if(Long.class.isAssignableFrom(fieldClazz)) {
+				if(long.class.isAssignableFrom(fieldClazz)) {
 					field.set(this, 0l);
 					continue;
 				}
-				if(Double.class.isAssignableFrom(fieldClazz)) {
+				if(double.class.isAssignableFrom(fieldClazz)) {
 					field.set(this, 0d);
+					continue;
+				}
+				if(boolean.class.isAssignableFrom(fieldClazz)) {
+					field.set(this, false);
 					continue;
 				}
 				if(String.class.isAssignableFrom(fieldClazz)) {
 					field.set(this, null);
-					continue;
-				}
-				if(Boolean.class.isAssignableFrom(fieldClazz)) {
-					field.set(this, false);
 					continue;
 				}
 				throw new IllegalArgumentException("Invalid JSON : " + field.getName() + " is null and no default value found.");
@@ -110,7 +110,7 @@ public abstract class SkyowalletObject {
 		try {
 			final JSONObject json = new JSONObject();
 			Class<?> clazz = getClass();
-			while(clazz != SkyowalletObject.class) {
+			while(clazz != SkyowalletObject.class.getSuperclass()) {
 				for(final Field field : clazz.getDeclaredFields()) {
 					field.setAccessible(true);
 					json.put(field.getName(), field.get(this));

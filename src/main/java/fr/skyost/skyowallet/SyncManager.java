@@ -184,9 +184,8 @@ public class SyncManager {
 	 * @throws SQLException If an exception occurs while executing the update.
 	 */
 	
-	public final int executeUpdate(String request, final Object... parameters) throws SQLException {
-		request = String.format(request, (Object[])parameters);
-		return statement.executeUpdate(request);
+	public final int executeUpdate(final String request, final Object... parameters) throws SQLException {
+		return statement.executeUpdate(String.format(request, (Object[])parameters));
 	}
 	
 	/**
@@ -200,9 +199,8 @@ public class SyncManager {
 	 * @throws SQLException If an exception occurs while executing the query.
 	 */
 	
-	public final ResultSet executeQuery(String request, final Object... parameters) throws SQLException {
-		request = String.format(request, (Object[])parameters);
-		return statement.executeQuery(request);
+	public final ResultSet executeQuery(final String request, final Object... parameters) throws SQLException {
+		return statement.executeQuery(String.format(request, (Object[])parameters));
 	}
 	
 	/**
@@ -466,7 +464,7 @@ public class SyncManager {
 	 */
 	
 	public final void loadObject(final boolean accounts, final File file) throws IllegalArgumentException, IllegalAccessException, ParseException, IOException {
-		final HashMap<?, ?> currentMap = accounts ? SkyowalletAPI.accounts : SkyowalletAPI.banks;
+		final HashMap<String, ?> currentMap = accounts ? SkyowalletAPI.accounts : SkyowalletAPI.banks;
 		if(!file.isFile()) {
 			return;
 		}
@@ -497,7 +495,7 @@ public class SyncManager {
 		openMySQLConnection();
 		executeUpdate(MYSQL_CREATE_TABLE);
 		final HashMap<UUID, SkyowalletAccount> remoteAccounts = new HashMap<UUID, SkyowalletAccount>();
-		final ResultSet result = executeQuery(MYSQL_SELECT + (localUUID == null ? "" : " WHERE " + MYSQL_FIELD_UUID + "=UNHEX('" + localUUID  + "')"));
+		final ResultSet result = executeQuery(MYSQL_SELECT + (localUUID == null ? "" : " WHERE " + MYSQL_FIELD_UUID + " LIKE CONCAT(\"%%\", UNHEX('" + localUUID.toString().replace("-", "")  + "'), \"%%\")"));
 		while(result.next()) {
 			final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(result.getString(MYSQL_FIELD_UUID)));
 			if(uuid == null) {
@@ -512,7 +510,7 @@ public class SyncManager {
 				SkyowalletAPI.registerAccount(account);
 			}
 		}
-		for(final SkyowalletAccount account : SkyowalletAPI.getAccounts()) {
+		for(final SkyowalletAccount account : localUUID == null ? SkyowalletAPI.getAccounts() : new SkyowalletAccount[]{SkyowalletAPI.getAccount(localUUID)}) {
 			final SkyowalletAccount remoteAccount = remoteAccounts.get(account.getUUID());
 			final long lastModificationTime = account.getLastModificationTime();
 			if(remoteAccount == null || remoteAccount.getLastModificationTime() < lastModificationTime) {
