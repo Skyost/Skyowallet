@@ -47,7 +47,7 @@ public class SkyowalletTop implements CommandInterface {
 		Integer number = 10;
 		if(args.length > 0) {
 			number = Utils.integerTryParse(args[0]);
-			if(number == null) {
+			if(number == null || number < 1) {
 				sender.sendMessage(Skyowallet.messages.message45);
 				return true;
 			}

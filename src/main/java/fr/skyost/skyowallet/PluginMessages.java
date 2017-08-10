@@ -54,7 +54,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.22")
 	public String message22 = "You have /members/ members in your bank.";
 	@ConfigOptions(name = "messages.23")
-	public String message23 = "There are /members/ member(s) in the specified bank.";
+	public String message23 = "There are /members/ members in the specified bank.";
 	@ConfigOptions(name = "messages.24")
 	public String message24 = ChatColor.RED + "You already have a bank account. You can leave your bank with " + ChatColor.GRAY + "/bank leave" + ChatColor.RED + ".";
 	@ConfigOptions(name = "messages.25")
@@ -72,7 +72,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.31")
 	public String message31 = ChatColor.RED + "This player does not have any bank !";
 	@ConfigOptions(name = "messages.32")
-	public String message32 = "There are /banks/ bank(s) here.";
+	public String message32 = "There are /banks/ banks here.";
 	@ConfigOptions(name = "messages.33")
 	public String message33 = ChatColor.RED + "You do not have an economy account on this server.";
 	@ConfigOptions(name = "messages.34")
@@ -98,7 +98,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.44")
 	public String message44 = ChatColor.RED + "You already have asked to join /bank/./n/You can cancel your request with " + ChatColor.GRAY + "/bank cancel" + ChatColor.RED + ".";
 	@ConfigOptions(name = "messages.45")
-	public String message45 = ChatColor.RED + "This is not a valid integer !";
+	public String message45 = ChatColor.RED + "This is not a valid integer (must also be strictly positive) !";
 	@ConfigOptions(name = "messages.46")
 	public String message46 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/player/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/ /currency-name/";
 	@ConfigOptions(name = "messages.47")
