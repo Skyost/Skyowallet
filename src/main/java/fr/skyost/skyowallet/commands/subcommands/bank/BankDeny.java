@@ -80,7 +80,7 @@ public class BankDeny implements CommandInterface {
 					final OfflinePlayer pending = Bukkit.getOfflinePlayer(pendingAccount.getUUID());
 					sender.sendMessage(ChatColor.AQUA + (pending == null ? pendingAccount.getUUID().toString() : pending.getName()));
 				}
-				sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
+				sender.sendMessage(Utils.SEPARATOR);
 				sender.sendMessage(Skyowallet.messages.message43);
 				return true;
 			}

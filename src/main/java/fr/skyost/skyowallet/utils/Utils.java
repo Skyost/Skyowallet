@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import com.google.common.base.Charsets;
@@ -11,6 +12,8 @@ import com.google.common.base.Charsets;
 import fr.skyost.skyowallet.SkyowalletAPI;
 
 public class Utils {
+	
+	public static final String SEPARATOR = ChatColor.GRAY + "-----------------------------------------------------";
 	
 	public static final OfflinePlayer getPlayerByArgument(final String arg) {
 		final UUID uuid = uuidTryParse(arg);
@@ -36,6 +39,14 @@ public class Utils {
 	public static final Double doubleTryParse(final String string) {
 		try {
 			return Double.parseDouble(string);
+		}
+		catch(final Exception ex) {}
+		return null;
+	}
+	
+	public static final Integer integerTryParse(final String string) {
+		try {
+			return Integer.parseInt(string);
 		}
 		catch(final Exception ex) {}
 		return null;

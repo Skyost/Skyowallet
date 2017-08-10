@@ -31,6 +31,9 @@ permissions:
  skyowallet.sync:
   default: op
   description: Allows you to use /skyowallet sync [player | uuid].
+ skyowallet.top:
+  default: true
+  description: Allows you to use /skyowallet top [number].
  skyowallet.view:
   default: op
   description: Allows you to use /skyowallet view <player | uuid>.

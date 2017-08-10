@@ -54,7 +54,7 @@ public class Skyowallet extends JavaPlugin {
 				syncTask.join();
 			}
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
-			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletView()}) {
+			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletTop(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
 			}
 			final PluginCommand skyowallet = getCommand("skyowallet");

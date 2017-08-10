@@ -22,7 +22,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.6")
 	public String message6 = "Total money (on the server) : /amount/ /currency-name/";
 	@ConfigOptions(name = "messages.7")
-	public String message7 = "Best money amount : /amount/ /currency-name/ by /player/";
+	public String message7 = "Best amount of money : /amount/ /currency-name/ by /player/";
 	@ConfigOptions(name = "messages.8")
 	public String message8 = ChatColor.RED + "You do not have enough money !";
 	@ConfigOptions(name = "messages.9")
@@ -97,6 +97,12 @@ public class PluginMessages extends Skyoconfig {
 	public String message43 = "You have currently /members/ members that are willing to join your bank.";
 	@ConfigOptions(name = "messages.44")
 	public String message44 = ChatColor.RED + "You already have asked to join /bank/./n/You can cancel your request with " + ChatColor.GRAY + "/bank cancel" + ChatColor.RED + ".";
+	@ConfigOptions(name = "messages.45")
+	public String message45 = ChatColor.RED + "This is not a valid integer !";
+	@ConfigOptions(name = "messages.46")
+	public String message46 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/player/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/ /currency-name/";
+	@ConfigOptions(name = "messages.47")
+	public String message47 = "There are /players/ players here. They are ranked in descending order.";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

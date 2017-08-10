@@ -12,6 +12,7 @@ import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletBank;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.Utils;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.AmountPlaceholder;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
@@ -60,7 +61,7 @@ public class BankList implements CommandInterface {
 			final double amount = entry.getKey();
 			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message27, new AmountPlaceholder(amount), new CurrencyNamePlaceholder(amount), new BankPlaceholder((SkyowalletBank)data[0]), new Placeholder("/accounts/", data[1].toString())));
 		}
-		sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
+		sender.sendMessage(Utils.SEPARATOR);
 		sender.sendMessage(Skyowallet.messages.message32.replace("/banks/", String.valueOf(banksData.size())));
 		return true;
 	}

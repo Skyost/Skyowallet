@@ -335,7 +335,7 @@ public class SkyowalletAPI {
 	 */
 	
 	protected static final SkyowalletAccount registerAccount(final SkyowalletAccount account) {
-		accounts.put(account.getUUID().toString(), account);
+		accounts.put(account.getIdentifier(), account);
 		return account;
 	}
 	
@@ -363,7 +363,7 @@ public class SkyowalletAPI {
 	 */
 	
 	protected static final SkyowalletBank createBank(final SkyowalletBank bank) {
-		banks.put(bank.getName(), bank);
+		banks.put(bank.getIdentifier(), bank);
 		return bank;
 	}
 	

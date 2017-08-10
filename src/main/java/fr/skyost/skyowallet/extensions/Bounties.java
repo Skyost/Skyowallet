@@ -485,7 +485,7 @@ public class Bounties extends SkyowalletExtension {
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(bounty.getTarget());
 				sender.sendMessage(PlaceholderFormatter.defaultFormat(config.message15, (player == null ? bounty.getTarget().toString() : player.getName()), amount, amount));
 			}
-			sender.sendMessage(ChatColor.GRAY + "-----------------------------------------------------");
+			sender.sendMessage(Utils.SEPARATOR);
 			sender.sendMessage(PlaceholderFormatter.format(config.message16, new Placeholder("/bounties/", String.valueOf(bounties.size()))));
 			return true;
 		}
