@@ -102,7 +102,7 @@ public class PluginMessages extends Skyoconfig {
 	@ConfigOptions(name = "messages.46")
 	public String message46 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/player/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/ /currency-name/";
 	@ConfigOptions(name = "messages.47")
-	public String message47 = "There are /players/ players here. They are ranked in descending order.";
+	public String message47 = "There are /players/ players here. They are ranked in ascending order.";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

@@ -57,7 +57,7 @@ public class SkyowalletTop implements CommandInterface {
 			
 		    @Override
 		    public final int compare(final SkyowalletAccount account1, final SkyowalletAccount account2) {
-		        return Double.compare(account1.getWallet() + account1.getBankBalance(), account2.getWallet() + account2.getBankBalance());
+		        return Double.compare(account2.getWallet() + account2.getBankBalance(), account1.getWallet() + account1.getBankBalance());
 		    }
 		    
 		});
