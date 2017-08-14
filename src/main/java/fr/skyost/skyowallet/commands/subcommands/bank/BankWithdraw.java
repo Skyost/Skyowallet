@@ -7,6 +7,7 @@ import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
+import fr.skyost.skyowallet.SyncManager;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.Utils;
 
@@ -64,7 +65,7 @@ public class BankWithdraw implements CommandInterface {
 		}
 		
 		account.setBankBalance(balance, false);
-		account.setWallet(account.getWallet() + amount);
+		account.setWallet(account.getWallet() + amount, SyncManager.shouldSyncEachModification(), true, SkyowalletAPI.getBankWithdrawTaxRate());
 		sender.sendMessage(Skyowallet.messages.message10);
 		return true;
 	}

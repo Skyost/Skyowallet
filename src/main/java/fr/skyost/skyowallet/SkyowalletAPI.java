@@ -26,6 +26,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.commands.SubCommandsExecutor;
 import fr.skyost.skyowallet.extensions.SkyowalletExtension;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.AmountPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
 import fr.skyost.skyowallet.utils.Utils;
 
 /**
@@ -187,17 +190,57 @@ public class SkyowalletAPI {
 	}
 	
 	/**
+	 * Gets the global tax rate as specified in the configuration.
+	 * 
+	 * @return The global tax rate as specified in the configuration.
+	 */
+	
+	public static final double getGlobalTaxRate() {
+		return Skyowallet.config.taxesRateGlobal;
+	}
+	
+	/**
+	 * Gets the /skyowallet pay tax rate as specified in the configuration.
+	 * 
+	 * @return The /skyowallet pay tax rate as specified in the configuration.
+	 */
+	
+	public static final double getSkyowalletPayTaxRate() {
+		return Skyowallet.config.taxesRateSkyowalletPay;
+	}
+	
+	/**
+	 * Gets the /bank deposit tax rate as specified in the configuration.
+	 * 
+	 * @return The /bank deposit tax rate as specified in the configuration.
+	 */
+	
+	public static final double getBankDepositTaxRate() {
+		return Skyowallet.config.taxesRateBankDeposit;
+	}
+	
+	/**
+	 * Gets the /bank withdraw tax rate as specified in the configuration.
+	 * 
+	 * @return The /bank withdraw tax rate as specified in the configuration.
+	 */
+	
+	public static final double getBankWithdrawTaxRate() {
+		return Skyowallet.config.taxesRateBankWithdraw;
+	}
+	
+	/**
 	 * Taxes a specified amount of money and allocate the taxed money to the accounts specified in the configuration.
 	 * 
 	 * @param amount Amount of money to tax.
-	 * @param rate The tax rate.
+	 * @param taxRate The tax rate.
 	 * 
 	 * @return The remaining money, once taxed.
 	 */
 	
-	public static final double tax(final double amount, final int rate) {
+	public static final double tax(final double amount, final double taxRate) {
 		final ConsoleCommandSender console = Bukkit.getConsoleSender();
-		final double taxedAmount = (rate * amount) / 100d;
+		final double taxedAmount = (taxRate * amount) / 100d;
 		for(final Entry<String, String> entry : Skyowallet.config.taxesAccounts.entrySet()) {
 			final UUID uuid = Utils.uuidTryParse(entry.getKey());
 			
@@ -217,11 +260,23 @@ public class SkyowalletAPI {
 			}
 			
 			final double newAmount = ((accountRate * taxedAmount) / 100);
+			if(newAmount == 0d) {
+				continue;
+			}
+			
 			if(Skyowallet.config.taxesToBank && account.getBank() != null) {
 				account.setBankBalance(account.getBankBalance() + newAmount, false);
 			}
 			else {
-				account.setWallet(account.getWallet() + newAmount);
+				account.setWallet(account.getWallet() + newAmount, false);
+			}
+			
+			if(!Skyowallet.config.taxesNotify) {
+				continue;
+			}
+			final OfflinePlayer player = Bukkit.getOfflinePlayer(account.getUUID());
+			if(player != null && player.isOnline()) {
+				player.getPlayer().sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message48, new AmountPlaceholder(newAmount), new CurrencyNamePlaceholder(newAmount)));
 			}
 		}
 		return amount - taxedAmount;

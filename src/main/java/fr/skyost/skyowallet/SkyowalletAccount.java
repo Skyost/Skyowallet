@@ -3,6 +3,7 @@ package fr.skyost.skyowallet;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.json.simple.parser.ParseException;
 
 import fr.skyost.skyowallet.events.BankBalanceChangeEvent;
@@ -139,6 +140,25 @@ public class SkyowalletAccount extends SkyowalletObject {
 	 */
 	
 	public final void setWallet(final double wallet, final boolean sync, final boolean round) {
+		setWallet(wallet, sync, round, Skyowallet.config.taxesRateGlobal);
+	}
+	
+	/**
+	 * Sets the wallet.
+	 * 
+	 * @param wallet The wallet.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified amount (will not round the amount if changed by an event).
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new wallet is superior than the wallet and if the account does not have the bypass permission.
+	 */
+	
+	public final void setWallet(double wallet, final boolean sync, final boolean round, final double taxRate) {
+		if(taxRate > 0d && wallet > this.wallet) {
+			final Player player = Bukkit.getPlayer(UUID.fromString(uuid));
+			if(player == null || !player.hasPermission("skyowallet.taxes.bypass")) {
+				wallet = this.wallet + SkyowalletAPI.tax(wallet - this.wallet, taxRate);
+			}
+		}
 		final WalletChangeEvent event = new WalletChangeEvent(this, round ? SkyowalletAPI.round(wallet) : wallet);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
@@ -292,10 +312,29 @@ public class SkyowalletAccount extends SkyowalletObject {
 	 */
 	
 	public final void setBankBalance(final double bankBalance, final boolean sync, final boolean round) {
+		setBankBalance(bankBalance, sync, round, Skyowallet.config.taxesRateGlobal);
+	}
+	
+	/**
+	 * Sets the account's bank balance.
+	 * 
+	 * @param bankBalance The new bank balance.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new bank balance is superior than the old bank balance and if the account does not have the bypass permission.
+	 */
+	
+	public final void setBankBalance(double bankBalance, final boolean sync, final boolean round, final double taxRate) {
 		if(!hasBank()) {
 			return;
 		}
-		final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, SkyowalletAPI.round(bankBalance));
+		if(taxRate > 0d && bankBalance > this.bankBalance) {
+			final Player player = Bukkit.getPlayer(UUID.fromString(uuid));
+			if(player == null || !player.hasPermission("skyowallet.taxes.bypass")) {
+				bankBalance = this.bankBalance + SkyowalletAPI.tax(bankBalance - this.bankBalance, taxRate);
+			}
+		}
+		final BankBalanceChangeEvent event = new BankBalanceChangeEvent(this, round ? SkyowalletAPI.round(bankBalance) : bankBalance);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
 			return;

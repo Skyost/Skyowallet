@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
+import fr.skyost.skyowallet.SyncManager;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
@@ -70,7 +71,7 @@ public class SkyowalletPay implements CommandInterface {
 		
 		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player);
 		final double targetWallet = targetAccount.getWallet() + amount;
-		targetAccount.setWallet(targetWallet);
+		targetAccount.setWallet(targetWallet, SyncManager.shouldSyncEachModification(), true, SkyowalletAPI.getSkyowalletPayTaxRate());
 		
 		if(player.isOnline()) {
 			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message9, sender, amount, amount));

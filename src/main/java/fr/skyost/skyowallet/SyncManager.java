@@ -244,6 +244,16 @@ public class SyncManager {
 	}
 	
 	/**
+	 * Checks whether the sync manager should runs at each modification.
+	 * 
+	 * @return If the sync manager should runs at each modification.
+	 */
+	
+	public static final boolean shouldSyncEachModification() {
+		return Skyowallet.config.syncEachModification;
+	}
+	
+	/**
 	 * Runs a full synchronization :
 	 * <ol>
 	 * <li>Loads all accounts located in the accounts folder and compare them with those located in the memory.</li>

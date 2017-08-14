@@ -103,6 +103,8 @@ public class PluginMessages extends Skyoconfig {
 	public String message46 = "¤ " + ChatColor.GRAY + "Name : " + ChatColor.WHITE + "/player/ " + ChatColor.GRAY + "Total amount : " + ChatColor.WHITE + "/amount/ /currency-name/";
 	@ConfigOptions(name = "messages.47")
 	public String message47 = "There are /players/ players here. They are ranked in ascending order.";
+	@ConfigOptions(name = "messages.48")
+	public String message48 = "[Taxes] " + ChatColor.GOLD + "/amount/ /currency-name/ were added to your wallet / bank balance.";
 	
 	protected PluginMessages(final File dataFolder) {
 		super(new File(dataFolder, "messages.yml"), Arrays.asList("Skyowallet Messages"));

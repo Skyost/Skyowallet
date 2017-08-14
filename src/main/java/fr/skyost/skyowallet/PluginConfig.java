@@ -38,14 +38,16 @@ public class PluginConfig extends Skyoconfig {
 	@ConfigOptions(name = "options.rounding-digits")
 	public int roundingDigits = -1;
 	
-	@ConfigOptions(name = "taxes.amount.global")
-	public int taxesAmountGlobal = 0;
-	@ConfigOptions(name = "taxes.amount.skyowallet-pay")
-	public int taxesAmountSkyowalletPay = 0;
-	@ConfigOptions(name = "taxes.amount.bank-deposit")
-	public int taxesAmountBankDeposit = 0;
-	@ConfigOptions(name = "taxes.amount.bank-withdraw")
-	public int taxesAmountBankWithdraw = 0;
+	@ConfigOptions(name = "taxes.rate.global")
+	public double taxesRateGlobal = 0d;
+	@ConfigOptions(name = "taxes.rate.skyowallet-pay")
+	public double taxesRateSkyowalletPay = 0d;
+	@ConfigOptions(name = "taxes.rate.bank-deposit")
+	public double taxesRateBankDeposit = 0d;
+	@ConfigOptions(name = "taxes.rate.bank-withdraw")
+	public double taxesRateBankWithdraw = 0d;
+	@ConfigOptions(name = "taxes.notify")
+	public boolean taxesNotify = true;
 	@ConfigOptions(name = "taxes.to-bank")
 	public boolean taxesToBank = true;
 	@ConfigOptions(name = "taxes.accounts")
