@@ -2,6 +2,7 @@ package fr.skyost.skyowallet;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import fr.skyost.skyowallet.utils.Skyoconfig;
 
@@ -37,6 +38,16 @@ public class PluginConfig extends Skyoconfig {
 	@ConfigOptions(name = "options.rounding-digits")
 	public int roundingDigits = -1;
 	
+	@ConfigOptions(name = "taxes.amount.global")
+	public int taxesAmountGlobal = 0;
+	@ConfigOptions(name = "taxes.amount.skyowallet-pay")
+	public int taxesAmountSkyowalletPay = 0;
+	@ConfigOptions(name = "taxes.amount.bank-deposit")
+	public int taxesAmountBankDeposit = 0;
+	@ConfigOptions(name = "taxes.amount.bank-withdraw")
+	public int taxesAmountBankWithdraw = 0;
+	@ConfigOptions(name = "taxes.accounts")
+	public HashMap<String, String> taxesAccounts = new HashMap<String, String>();
 	
 	@ConfigOptions(name = "mysql.enable")
 	public boolean mySQLEnable = false;
@@ -53,9 +64,13 @@ public class PluginConfig extends Skyoconfig {
 
 	protected PluginConfig(final File dataFolder) {
 		super(new File(dataFolder, "config.yml"), Arrays.asList("Skyowallet Configuration"));
+		
 		accountsDir = new File(dataFolder + File.separator + "accounts").getPath();
 		banksDir = new File(dataFolder + File.separator + "banks").getPath();
 		extensionsDir = new File(dataFolder + File.separator + "extensions").getPath();
+		
+		taxesAccounts.put("2a74ab4f-8294-46af-af5b-0a9cd65fc1aa", "60");
+		taxesAccounts.put("4f3b1387-6967-403d-a648-5feb796ec997", "40");
 	}
 
 }
