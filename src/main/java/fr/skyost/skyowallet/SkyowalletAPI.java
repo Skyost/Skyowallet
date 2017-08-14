@@ -230,6 +230,16 @@ public class SkyowalletAPI {
 	}
 	
 	/**
+	 * Gets the delete bank tax rate as specified in the configuration.
+	 * 
+	 * @return The delete bank tax rate as specified in the configuration.
+	 */
+	
+	public static final double getDeleteBankTaxRate() {
+		return Skyowallet.config.taxesRateBankDelete;
+	}
+	
+	/**
 	 * Taxes a specified amount of money and allocate the taxed money to the accounts specified in the configuration.
 	 * 
 	 * @param amount Amount of money to tax.

@@ -10,6 +10,9 @@ import fr.skyost.skyowallet.SyncManager;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.AmountPlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
+import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
 
 public class SkyowalletPay implements CommandInterface {
 
@@ -67,16 +70,23 @@ public class SkyowalletPay implements CommandInterface {
 			sender.sendMessage(Skyowallet.messages.message8);
 			return true;
 		}
-		playerAccount.setWallet(wallet, false);
 		
 		final SkyowalletAccount targetAccount = SkyowalletAPI.getAccount(player);
+		
 		final double targetWallet = targetAccount.getWallet() + amount;
-		targetAccount.setWallet(targetWallet, SyncManager.shouldSyncEachModification(), true, SkyowalletAPI.getSkyowalletPayTaxRate());
+		final double taxRate = SkyowalletAPI.getSkyowalletPayTaxRate();
+		
+		targetAccount.setWallet(targetWallet, false, true, taxRate);
+		playerAccount.setWallet(wallet, SyncManager.shouldSyncEachModification(), true, 0d);
 		
 		if(player.isOnline()) {
 			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message9, sender, amount, amount));
 		}
 		sender.sendMessage(Skyowallet.messages.message10);
+		
+		if(taxRate > 0d) {
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(targetWallet - targetAccount.getWallet()), new CurrencyNamePlaceholder(targetWallet - targetAccount.getWallet())));
+		}
 		return true;
 	}
 

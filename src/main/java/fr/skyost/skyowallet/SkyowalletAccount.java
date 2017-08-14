@@ -251,13 +251,9 @@ public class SkyowalletAccount extends SkyowalletObject {
 		else {
 			this.bank = bank.getName();
 		}
-		setBankBalance(0d, false);
-		if(round) {
-			setWallet(SkyowalletAPI.round(wallet + balance), sync);
-			return SkyowalletAPI.round(balance);
-		}
-		setWallet(wallet + balance, sync);
-		return balance;
+		setBankBalance(0d, false, round, 0d);
+		setWallet(wallet + balance, sync, round, SkyowalletAPI.getDeleteBankTaxRate());
+		return round ? SkyowalletAPI.round(balance) : balance;
 	}
 	
 	/**

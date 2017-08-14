@@ -46,6 +46,8 @@ public class PluginConfig extends Skyoconfig {
 	public double taxesRateBankDeposit = 0d;
 	@ConfigOptions(name = "taxes.rate.bank-withdraw")
 	public double taxesRateBankWithdraw = 0d;
+	@ConfigOptions(name = "taxes.rate.bank-delete")
+	public double taxesRateBankDelete = 0d;
 	@ConfigOptions(name = "taxes.notify")
 	public boolean taxesNotify = true;
 	@ConfigOptions(name = "taxes.to-bank")
