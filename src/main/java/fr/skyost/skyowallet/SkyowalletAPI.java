@@ -16,6 +16,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.permissions.Permission;
@@ -25,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.skyost.skyowallet.commands.SubCommandsExecutor;
 import fr.skyost.skyowallet.extensions.SkyowalletExtension;
+import fr.skyost.skyowallet.utils.Utils;
 
 /**
  * Skyowallet API.
@@ -182,6 +184,47 @@ public class SkyowalletAPI {
 	
 	public static final String getBanksDirectoryName() {
 		return Skyowallet.config.banksDir;
+	}
+	
+	/**
+	 * Taxes a specified amount of money and allocate the taxed money to the accounts specified in the configuration.
+	 * 
+	 * @param amount Amount of money to tax.
+	 * @param rate The tax rate.
+	 * 
+	 * @return The remaining money, once taxed.
+	 */
+	
+	public static final double tax(final double amount, final int rate) {
+		final ConsoleCommandSender console = Bukkit.getConsoleSender();
+		final double taxedAmount = (rate * amount) / 100d;
+		for(final Entry<String, String> entry : Skyowallet.config.taxesAccounts.entrySet()) {
+			final UUID uuid = Utils.uuidTryParse(entry.getKey());
+			
+			if(uuid == null) {
+				console.sendMessage("[" + PLUGIN.getName() + "] " + ChatColor.RED + "Unable to give tax to \"" + uuid + "\" because it is not a valid UUID.");
+				continue;
+			}
+			final Double accountRate = Utils.doubleTryParse(entry.getValue());
+			if(accountRate == null) {
+				console.sendMessage("[" + PLUGIN.getName() + "] " + ChatColor.RED + "Unable to give tax to \"" + uuid + "\" because the specified rate " + accountRate + " is invalid.");
+				continue;
+			}
+			
+			SkyowalletAccount account = getAccount(uuid);
+			if(account == null) {
+				account = registerAccount(uuid);
+			}
+			
+			final double newAmount = ((accountRate * taxedAmount) / 100);
+			if(Skyowallet.config.taxesToBank && account.getBank() != null) {
+				account.setBankBalance(account.getBankBalance() + newAmount, false);
+			}
+			else {
+				account.setWallet(account.getWallet() + newAmount);
+			}
+		}
+		return amount - taxedAmount;
 	}
 	
 	/**

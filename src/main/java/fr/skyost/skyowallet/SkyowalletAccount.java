@@ -275,7 +275,7 @@ public class SkyowalletAccount extends SkyowalletObject {
 	/**
 	 * Sets the account's bank balance.
 	 * 
-	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+	 * @param bankBalance The new bank balance.
 	 * @param sync If you want to synchronizes the database (asynchronously).
 	 */
 	
@@ -286,7 +286,7 @@ public class SkyowalletAccount extends SkyowalletObject {
 	/**
 	 * Sets the account's bank balance.
 	 * 
-	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+	 * @param bankBalance The new bank balance.
 	 * @param sync If you want to synchronizes the database (asynchronously).
 	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
 	 */

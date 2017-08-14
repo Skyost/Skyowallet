@@ -46,6 +46,8 @@ public class PluginConfig extends Skyoconfig {
 	public int taxesAmountBankDeposit = 0;
 	@ConfigOptions(name = "taxes.amount.bank-withdraw")
 	public int taxesAmountBankWithdraw = 0;
+	@ConfigOptions(name = "taxes.to-bank")
+	public boolean taxesToBank = true;
 	@ConfigOptions(name = "taxes.accounts")
 	public HashMap<String, String> taxesAccounts = new HashMap<String, String>();
 	
@@ -69,8 +71,8 @@ public class PluginConfig extends Skyoconfig {
 		banksDir = new File(dataFolder + File.separator + "banks").getPath();
 		extensionsDir = new File(dataFolder + File.separator + "extensions").getPath();
 		
-		taxesAccounts.put("2a74ab4f-8294-46af-af5b-0a9cd65fc1aa", "60");
-		taxesAccounts.put("4f3b1387-6967-403d-a648-5feb796ec997", "40");
+		taxesAccounts.put("2a74ab4f-8294-46af-af5b-0a9cd65fc1aa", "60.5");
+		taxesAccounts.put("4f3b1387-6967-403d-a648-5feb796ec997", "39.5");
 	}
 
 }
