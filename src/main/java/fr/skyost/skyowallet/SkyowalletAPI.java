@@ -230,16 +230,6 @@ public class SkyowalletAPI {
 	}
 	
 	/**
-	 * Gets the delete bank tax rate as specified in the configuration.
-	 * 
-	 * @return The delete bank tax rate as specified in the configuration.
-	 */
-	
-	public static final double getDeleteBankTaxRate() {
-		return Skyowallet.config.taxesRateBankDelete;
-	}
-	
-	/**
 	 * Taxes a specified amount of money and allocate the taxed money to the accounts specified in the configuration.
 	 * 
 	 * @param amount Amount of money to tax.
@@ -275,10 +265,10 @@ public class SkyowalletAPI {
 			}
 			
 			if(Skyowallet.config.taxesToBank && account.getBank() != null) {
-				account.setBankBalance(account.getBankBalance() + newAmount, false);
+				account.setBankBalance(account.getBankBalance() + newAmount, 0d, false);
 			}
 			else {
-				account.setWallet(account.getWallet() + newAmount, false);
+				account.setWallet(account.getWallet() + newAmount, 0d, false);
 			}
 			
 			if(!Skyowallet.config.taxesNotify) {

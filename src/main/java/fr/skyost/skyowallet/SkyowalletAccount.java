@@ -48,7 +48,7 @@ public class SkyowalletAccount extends SkyowalletObject {
 	 */
 	
 	public SkyowalletAccount(final UUID uuid) {
-		this(uuid, 0d, null, 0d, false, null, System.currentTimeMillis());
+		this(uuid, Skyowallet.config.defaultWallet, null, 0d, false, null, System.currentTimeMillis());
 	}
 	
 	/**
@@ -111,48 +111,48 @@ public class SkyowalletAccount extends SkyowalletObject {
 	}
 	
 	/**
-	 * Sets the wallet. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+	 * Sets the wallet.
 	 * 
 	 * @param wallet The wallet.
 	 */
 	
 	public final void setWallet(final double wallet) {
-		setWallet(wallet, Skyowallet.config.syncEachModification);
+		setWallet(wallet, Skyowallet.config.taxesRateGlobal);
 	}
 	
 	/**
 	 * Sets the wallet.
 	 * 
 	 * @param wallet The wallet.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 */
-	
-	public final void setWallet(final double wallet, final boolean sync) {
-		setWallet(wallet, sync, true);
-	}
-	
-	/**
-	 * Sets the wallet.
-	 * 
-	 * @param wallet The wallet.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 * @param round If you want to round the specified amount (will not round the amount if changed by an event).
-	 */
-	
-	public final void setWallet(final double wallet, final boolean sync, final boolean round) {
-		setWallet(wallet, sync, round, Skyowallet.config.taxesRateGlobal);
-	}
-	
-	/**
-	 * Sets the wallet.
-	 * 
-	 * @param wallet The wallet.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 * @param round If you want to round the specified amount (will not round the amount if changed by an event).
 	 * @param taxRate The tax rate for the new amount. Will be applied only if the new wallet is superior than the wallet and if the account does not have the bypass permission.
 	 */
 	
-	public final void setWallet(double wallet, final boolean sync, final boolean round, final double taxRate) {
+	public final void setWallet(final double wallet, final double taxRate) {
+		setWallet(wallet, taxRate, Skyowallet.config.syncEachModification);
+	}
+	
+	/**
+	 * Sets the wallet.
+	 * 
+	 * @param wallet The wallet.
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new wallet is superior than the wallet and if the account does not have the bypass permission.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 */
+	
+	public final void setWallet(final double wallet, final double taxRate, final boolean sync) {
+		setWallet(wallet, taxRate, sync, true);
+	}
+	
+	/**
+	 * Sets the wallet.
+	 * 
+	 * @param wallet The wallet.
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new wallet is superior than the wallet and if the account does not have the bypass permission.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified amount (will not round the amount if changed by an event).
+	 */
+	
+	public final void setWallet(double wallet, final double taxRate, final boolean sync, final boolean round) {
 		if(taxRate > 0d && wallet > this.wallet) {
 			final Player player = Bukkit.getPlayer(UUID.fromString(uuid));
 			if(player == null || !player.hasPermission("skyowallet.taxes.bypass")) {
@@ -197,7 +197,7 @@ public class SkyowalletAccount extends SkyowalletObject {
 	
 	/**
 	 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
-	 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+	 * <br>The player's wallet will be set to the current wallet + its bank balance. The bank balance will be set to 0.
 	 * 
 	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
 	 * 
@@ -210,8 +210,10 @@ public class SkyowalletAccount extends SkyowalletObject {
 	
 	/**
 	 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
+	 * <br>The player's wallet will be set to the current wallet + its bank balance. The bank balance will be set to 0.
 	 * 
 	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new wallet is superior than the wallet and if the account does not have the bypass permission.
 	 * @param sync If you want to synchronizes the database (asynchronously).
 	 * 
 	 * @return The old bank balance.
@@ -224,6 +226,7 @@ public class SkyowalletAccount extends SkyowalletObject {
 	
 	/**
 	 * Sets the bank of the account. <b>null</b> if you want to clear the account's bank.
+	 * <br>The player's wallet will be set to the current wallet + its bank balance. The bank balance will be set to 0.
 	 * 
 	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
 	 * @param sync If you want to synchronizes the database (asynchronously).
@@ -251,8 +254,8 @@ public class SkyowalletAccount extends SkyowalletObject {
 		else {
 			this.bank = bank.getName();
 		}
-		setBankBalance(0d, false, round, 0d);
-		setWallet(wallet + balance, sync, round, SkyowalletAPI.getDeleteBankTaxRate());
+		setBankBalance(0d, 0d, false, round);
+		setWallet(wallet + balance, 0d, sync, round);
 		return round ? SkyowalletAPI.round(balance) : balance;
 	}
 	
@@ -279,48 +282,48 @@ public class SkyowalletAccount extends SkyowalletObject {
 	}
 	
 	/**
-	 * Sets the account's bank balance. The database will be synchronized if the user has enabled "sync-each-modification" in the config.
+	 * Sets the account's bank balance.
 	 * 
 	 * @param bank The bank. <b>null</b> if you want to clear the account's bank.
 	 */
 	
 	public final void setBankBalance(final double bankBalance) {
-		setBankBalance(bankBalance, Skyowallet.config.syncEachModification);
+		setBankBalance(bankBalance, Skyowallet.config.taxesRateGlobal);
 	}
 	
 	/**
 	 * Sets the account's bank balance.
 	 * 
 	 * @param bankBalance The new bank balance.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 */
-	
-	public final void setBankBalance(final double bankBalance, final boolean sync) {
-		setBankBalance(bankBalance, sync, true);
-	}
-	
-	/**
-	 * Sets the account's bank balance.
-	 * 
-	 * @param bankBalance The new bank balance.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
-	 */
-	
-	public final void setBankBalance(final double bankBalance, final boolean sync, final boolean round) {
-		setBankBalance(bankBalance, sync, round, Skyowallet.config.taxesRateGlobal);
-	}
-	
-	/**
-	 * Sets the account's bank balance.
-	 * 
-	 * @param bankBalance The new bank balance.
-	 * @param sync If you want to synchronizes the database (asynchronously).
-	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
 	 * @param taxRate The tax rate for the new amount. Will be applied only if the new bank balance is superior than the old bank balance and if the account does not have the bypass permission.
 	 */
 	
-	public final void setBankBalance(double bankBalance, final boolean sync, final boolean round, final double taxRate) {
+	public final void setBankBalance(final double bankBalance, final double taxRate) {
+		setBankBalance(bankBalance, taxRate, Skyowallet.config.syncEachModification);
+	}
+	
+	/**
+	 * Sets the account's bank balance.
+	 * 
+	 * @param bankBalance The new bank balance.
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new bank balance is superior than the old bank balance and if the account does not have the bypass permission.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 */
+	
+	public final void setBankBalance(final double bankBalance, final double taxRate, final boolean sync) {
+		setBankBalance(bankBalance, taxRate, sync, true);
+	}
+	
+	/**
+	 * Sets the account's bank balance.
+	 * 
+	 * @param bankBalance The new bank balance.
+	 * @param taxRate The tax rate for the new amount. Will be applied only if the new bank balance is superior than the old bank balance and if the account does not have the bypass permission.
+	 * @param sync If you want to synchronizes the database (asynchronously).
+	 * @param round If you want to round the specified balance (will not round the amount if changed by an event).
+	 */
+	
+	public final void setBankBalance(double bankBalance, final double taxRate, final boolean sync, final boolean round) {
 		if(!hasBank()) {
 			return;
 		}
@@ -356,7 +359,6 @@ public class SkyowalletAccount extends SkyowalletObject {
 	
 	/**
 	 * Sets if this account should be an owner of its bank.
-	 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
 	 * 
 	 * @param isOwner <b>true</b> If this account should be an owner of its bank.
 	 * <br><b>false</b> Otherwise.
@@ -368,7 +370,6 @@ public class SkyowalletAccount extends SkyowalletObject {
 	
 	/**
 	 * Sets if this account should be an owner of its bank.
-	 * <br>The database will be synchronized if the user has enabled "sync-each-modification" in the config.
 	 * 
 	 * @param isOwner <b>true</b> If this account should be an owner of its bank.
 	 * <br><b>false</b> Otherwise.

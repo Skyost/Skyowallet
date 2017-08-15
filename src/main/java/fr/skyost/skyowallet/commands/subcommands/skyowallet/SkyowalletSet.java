@@ -69,7 +69,7 @@ public class SkyowalletSet implements CommandInterface {
 		}
 		
 		final SkyowalletAccount account = SkyowalletAPI.getAccount(player);
-		account.setWallet(parsedDouble);
+		account.setWallet(parsedDouble, 0d);
 		if(player.isOnline()) {
 			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message11, sender, account.getWallet(), account.getWallet()));
 		}

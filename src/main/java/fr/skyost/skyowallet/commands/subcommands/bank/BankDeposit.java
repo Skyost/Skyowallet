@@ -7,7 +7,6 @@ import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.SkyowalletAPI;
 import fr.skyost.skyowallet.SkyowalletAccount;
 import fr.skyost.skyowallet.SkyowalletBank;
-import fr.skyost.skyowallet.SyncManager;
 import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter;
 import fr.skyost.skyowallet.utils.Utils;
@@ -72,8 +71,8 @@ public class BankDeposit implements CommandInterface {
 		final double balance = account.getBankBalance() + amount;
 		final double taxRate = SkyowalletAPI.getBankDepositTaxRate();
 		
-		account.setBankBalance(balance, false, true, taxRate);
-		account.setWallet(wallet, SyncManager.shouldSyncEachModification(), true, 0d);
+		account.setBankBalance(balance, taxRate, false);
+		account.setWallet(wallet, 0d);
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(taxRate > 0d) {

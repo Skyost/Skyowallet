@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import fr.skyost.skyowallet.Skyowallet;

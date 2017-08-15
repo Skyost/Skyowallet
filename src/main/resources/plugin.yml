@@ -80,5 +80,5 @@ permissions:
   default: true
   description: Allows you to use /bank withdraw <amount>.
  skyowallet.taxes.bypass:
-  default: false
+  default: op
   description: Allows you to bypass taxes.
