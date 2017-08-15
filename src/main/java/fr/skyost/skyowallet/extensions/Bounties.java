@@ -261,7 +261,7 @@ public class Bounties extends SkyowalletExtension {
 			bounty.setBounty(account.getUUID(), amount);
 			sender.sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.message4, new Placeholder("/bounty/", String.valueOf(bounty.getTotalBounty()))), player, amount, amount));
 			if(config.bountyNotify && player.isOnline()) {
-				((Player)player).sendMessage(PlaceholderFormatter.defaultFormat(config.message5, sender, amount, amount));
+				player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(config.message5, sender, amount, amount));
 			}
 			return true;
 		}
@@ -305,7 +305,7 @@ public class Bounties extends SkyowalletExtension {
 			final UUID uuid = ((OfflinePlayer)sender).getUniqueId();
 			final Bounty bounty = getBounty(player.getUniqueId());
 			if(!bounty.bounties.containsKey(uuid)) {
-				sender.sendMessage(config.message6.replace("/player/", player.getName()));
+				sender.sendMessage(PlaceholderFormatter.defaultFormat(config.message6, player));
 				return true;
 			}
 			final SkyowalletAccount account = SkyowalletAPI.getAccount(uuid);
@@ -313,7 +313,7 @@ public class Bounties extends SkyowalletExtension {
 			bounty.removeBounty(uuid);
 			sender.sendMessage(PlaceholderFormatter.format(config.message7, new PlayerPlaceholder(player)));
 			if(config.bountyNotify && player.isOnline()) {
-				((Player)player).sendMessage(PlaceholderFormatter.defaultFormat(config.message8, sender));
+				player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(config.message8, sender));
 			}
 			return true;
 		}
@@ -369,14 +369,14 @@ public class Bounties extends SkyowalletExtension {
 					final double amount = entry.getValue();
 					account.setWallet(account.getWallet() + amount);
 					if(offline.isOnline()) {
-						((Player)offline).sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.message12, new Placeholder("/target/", player.getName())), sender, amount, amount));
+						((Player)offline).sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.message12, new Placeholder("/target/", Utils.getName(player))), sender, amount, amount));
 					}
 				}
 			}
 			bounty.clearBounties();
-			sender.sendMessage(config.message10.replace("/player/", player.getName()));
+			sender.sendMessage(PlaceholderFormatter.defaultFormat(config.message10, player));
 			if(config.bountyNotify && player.isOnline()) {
-				((Player)player).sendMessage(PlaceholderFormatter.defaultFormat(config.message11, sender));
+				player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(config.message11, sender));
 			}
 			return true;
 		}
@@ -483,7 +483,7 @@ public class Bounties extends SkyowalletExtension {
 			for(final Bounty bounty : bounties) {
 				final double amount = bounty.getTotalBounty();
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(bounty.getTarget());
-				sender.sendMessage(PlaceholderFormatter.defaultFormat(config.message15, (player == null ? bounty.getTarget().toString() : player.getName()), amount, amount));
+				sender.sendMessage(PlaceholderFormatter.defaultFormat(config.message15, (player == null ? bounty.getTarget() : player), amount, amount));
 			}
 			sender.sendMessage(Utils.SEPARATOR);
 			sender.sendMessage(PlaceholderFormatter.format(config.message16, new Placeholder("/bounties/", String.valueOf(bounties.size()))));
@@ -653,7 +653,7 @@ public class Bounties extends SkyowalletExtension {
 			final OfflinePlayer player = Bukkit.getOfflinePlayer(target);
 			if(player.isOnline()) {
 				final double bounty = getTotalBounty();
-				((Player)player).setPlayerListName(config.playerListDisplay.replace("/player/", player.getName()).replace("/amount/", String.valueOf(bounty)).replace("/currency-name/", SkyowalletAPI.getCurrencyName(bounty)));
+				player.getPlayer().setPlayerListName(PlaceholderFormatter.defaultFormat(config.playerListDisplay, player, bounty, bounty));
 			}
 		}
 		

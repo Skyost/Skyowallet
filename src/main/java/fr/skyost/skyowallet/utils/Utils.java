@@ -24,6 +24,10 @@ public class Utils {
 		return player;
 	}
 	
+	public static final String getName(final OfflinePlayer player) {
+		return player.hasPlayedBefore() ? player.getName() : player.getUniqueId().toString();
+	}
+	
 	public static final boolean isValidFileName(final String name) {
 		final File file = new File(SkyowalletAPI.getPlugin().getDataFolder(), name);
 		try {

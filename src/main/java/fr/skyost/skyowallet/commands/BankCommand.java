@@ -15,6 +15,7 @@ import fr.skyost.skyowallet.utils.PlaceholderFormatter.AmountPlaceholder;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.CurrencyNamePlaceholder;
 import fr.skyost.skyowallet.utils.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.utils.Utils;
 
 public class BankCommand extends SubCommandsExecutor {
 	
@@ -42,7 +43,7 @@ public class BankCommand extends SubCommandsExecutor {
 				final StringBuilder builder = new StringBuilder();
 				for(final SkyowalletAccount ownerAccount : bank.getOwners()) {
 					final OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerAccount.getUUID());
-					builder.append((owner == null ? ownerAccount.getUUID().toString() : owner.getName()) + ", ");
+					builder.append((owner == null ? ownerAccount.getUUID().toString() : Utils.getName(owner)) + ", ");
 				}
 				owners = builder.toString();
 				sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message15, new BankPlaceholder(bank), new Placeholder("/owners/", owners.length() == 0 ? "X" : owners.substring(0, owners.length() - 2))));

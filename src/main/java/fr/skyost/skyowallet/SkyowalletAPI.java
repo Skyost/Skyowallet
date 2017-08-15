@@ -292,10 +292,7 @@ public class SkyowalletAPI {
 	 */
 	
 	public static final boolean hasAccount(final OfflinePlayer player) {
-		if(!player.hasPlayedBefore()) {
-			return false;
-		}
-		return hasAccount(player.getUniqueId());
+		return hasAccount(player == null ? null : player.getUniqueId());
 	}
 	
 	/**

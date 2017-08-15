@@ -208,11 +208,11 @@ public class PlaceholderFormatter {
 		}
 		
 		public PlayerPlaceholder(final OfflinePlayer player) {
-			super("/player/", player.getName());
+			super("/player/", Utils.getName(player));
 		}
 		
 		public PlayerPlaceholder(final UUID uuid) {
-			super("/player/", Bukkit.getOfflinePlayer(uuid) == null ? uuid.toString() : Bukkit.getOfflinePlayer(uuid).getName());
+			super("/player/", Bukkit.getOfflinePlayer(uuid) == null ? uuid.toString() : Utils.getName(Bukkit.getOfflinePlayer(uuid)));
 		}
 		
 	}

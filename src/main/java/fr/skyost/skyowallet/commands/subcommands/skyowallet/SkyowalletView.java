@@ -39,7 +39,7 @@ public class SkyowalletView implements CommandInterface {
 	@Override
 	public boolean onCommand(final CommandSender sender, final String[] args) {
 		final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
-		if(player == null || !SkyowalletAPI.hasAccount(player)) {
+		if(!SkyowalletAPI.hasAccount(player)) {
 			sender.sendMessage(Skyowallet.messages.message3);
 			return true;
 		}

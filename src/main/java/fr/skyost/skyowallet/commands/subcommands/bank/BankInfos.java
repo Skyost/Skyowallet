@@ -81,7 +81,7 @@ public class BankInfos implements CommandInterface {
 				final UUID uuid = entry.getKey().getUUID();
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
 				final Double balance = entry.getValue();
-				sender.sendMessage((player == null ? uuid.toString() : player.getName()) + " " + ChatColor.AQUA + balance + " " + SkyowalletAPI.getCurrencyName(balance));
+				sender.sendMessage((player == null ? uuid.toString() : Utils.getName(player)) + " " + ChatColor.AQUA + balance + " " + SkyowalletAPI.getCurrencyName(balance));
 			}
 			sender.sendMessage(Utils.SEPARATOR);
 			sender.sendMessage(PlaceholderFormatter.format(args.length < 1 ? Skyowallet.messages.message22 : Skyowallet.messages.message23, new Placeholder("/members/", String.valueOf(members.size()))));
