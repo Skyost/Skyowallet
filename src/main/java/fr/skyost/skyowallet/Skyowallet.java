@@ -1,6 +1,8 @@
 package fr.skyost.skyowallet;
 
 import java.io.File;
+import java.lang.Thread.UncaughtExceptionHandler;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
@@ -37,11 +39,23 @@ public class Skyowallet extends JavaPlugin {
 	public final void onEnable() {
 		final PluginManager manager = Bukkit.getPluginManager();
 		try {
+			Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
+				@Override
+				public final void uncaughtException(final Thread thread, final Throwable throwable) {
+					Bukkit.getConsoleSender().sendMessage("[" + getName() + "] " + ChatColor.RED + "An uncaught error occured. Don't hesitate to report it here : https://github.com/Skyost/Skyowallet/issues.");
+					throwable.printStackTrace();
+				}
+				
+			});
+			
 			final File dataFolder = this.getDataFolder();
+			
 			config = new PluginConfig(dataFolder);
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
+			
 			final SyncTask syncTask = new SyncTask(config.silentSync ? null : Bukkit.getConsoleSender(), null);
 			if(config.mySQLEnable) {
 				SkyowalletAPI.getSyncManager().enableMySQL(config.mySQLHost, config.mySQLPort, config.mySQLDB, config.mySQLUser, config.mySQLPassword);
@@ -53,6 +67,7 @@ public class Skyowallet extends JavaPlugin {
 				syncTask.start();
 				syncTask.join();
 			}
+			
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletTop(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
@@ -60,6 +75,7 @@ public class Skyowallet extends JavaPlugin {
 			final PluginCommand skyowallet = getCommand("skyowallet");
 			skyowallet.setUsage("/" + skyowallet.getName() + " " + skyowalletCmd.getUsage());
 			skyowallet.setExecutor(skyowalletCmd);
+			
 			final BankCommand bankCmd = new BankCommand();
 			for(final CommandInterface command : new CommandInterface[]{new BankApprove(), new BankCancel(), new BankCreate(), new BankDelete(), new BankDeny(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankSetOwner(), new BankToggleApprovalNeeded(), new BankWithdraw()}) {
 				bankCmd.registerSubCommand(command);
@@ -68,12 +84,15 @@ public class Skyowallet extends JavaPlugin {
 			bank.setUsage("/" + bank.getName() + " " + bankCmd.getUsage());
 			bank.setExecutor(bankCmd);
 			manager.registerEvents(new GlobalEvents(), this);
+			
 			if(config.enableUpdater) {
 				new Skyupdater(this, 82182, this.getFile(), true, true);
 			}
+			
 			if(config.enableMetrics) {
 				new MetricsLite(this);
 			}
+			
 			if(config.warnOfflineMode && !Bukkit.getOnlineMode()) {
 				final ConsoleCommandSender console = Bukkit.getConsoleSender();
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -87,7 +106,9 @@ public class Skyowallet extends JavaPlugin {
 				console.sendMessage(ChatColor.RED + "!!                                                  !!");
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
+			
 			loadExtensions();
+			
 			if(manager.getPlugin("Vault") != null) {
 				VaultHook.addToVault();
 			}
