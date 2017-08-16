@@ -76,7 +76,8 @@ public class BankDeposit implements CommandInterface {
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(taxRate > 0d) {
-			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(balance - account.getBankBalance()), new CurrencyNamePlaceholder(balance - account.getBankBalance())));
+			final double totalAmount = amount - (balance - account.getBankBalance());
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(totalAmount), new CurrencyNamePlaceholder(totalAmount)));
 		}
 		return true;
 	}

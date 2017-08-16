@@ -66,7 +66,7 @@ public class BankApprove implements CommandInterface {
 			
 			final SkyowalletAccount account = SkyowalletAPI.getAccount((OfflinePlayer)sender);
 			if(!account.isBankOwner() && !sender.hasPermission("skyowallet.admin")) {
-				sender.sendMessage(Skyowallet.messages.message1);
+				sender.sendMessage(Skyowallet.messages.message28);
 				return true;
 			}
 			
@@ -81,7 +81,7 @@ public class BankApprove implements CommandInterface {
 			}
 			
 			if(account.getBank() == null || !account.getBank().equals(bank)) {
-				sender.sendMessage(Skyowallet.messages.message1);
+				sender.sendMessage(Skyowallet.messages.message28);
 				return true;
 			}
 		}

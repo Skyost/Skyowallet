@@ -49,6 +49,9 @@ public class Mine4Cash extends SkyowalletExtension {
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	private final void onBlockBreak(final BlockBreakEvent event) {
+		if(event.isCancelled()) {
+			return;
+		}
 		final Block block = event.getBlock();
 		final String rawReward = config.rewards.get(block.getType().name());
 		if(rawReward == null) {

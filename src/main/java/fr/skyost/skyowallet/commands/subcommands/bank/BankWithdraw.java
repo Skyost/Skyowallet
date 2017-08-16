@@ -75,7 +75,8 @@ public class BankWithdraw implements CommandInterface {
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(taxRate > 0d) {
-			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(wallet - account.getWallet()), new CurrencyNamePlaceholder(wallet - account.getWallet())));
+			final double totalAmount = amount - (wallet - account.getWallet());
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(totalAmount), new CurrencyNamePlaceholder(totalAmount)));
 		}
 		return true;
 	}

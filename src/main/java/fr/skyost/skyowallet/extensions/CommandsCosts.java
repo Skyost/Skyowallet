@@ -46,6 +46,9 @@ public class CommandsCosts extends SkyowalletExtension {
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	private final void onPlayerCommandPreprocessEvent(final PlayerCommandPreprocessEvent event) {
+		if(event.isCancelled()) {
+			return;
+		}
 		final Player player = event.getPlayer();
 		if(!player.hasPermission("commandscosts.bypass")) {
 			return;

@@ -47,6 +47,9 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	
 	@EventHandler
 	private final void onWalletChange(final WalletChangeEvent event) {
+		if(event.isCancelled()) {
+			return;
+		}
 		final Player player = Bukkit.getPlayer(event.getAccount().getUUID());
 		if(player != null) {
 			buildAndSend(player, event.getNewWallet(), null);
@@ -55,6 +58,9 @@ public class ScoreboardInfos extends SkyowalletExtension {
 	
 	@EventHandler
 	private final void onBankBalanceChangeEvent(final BankBalanceChangeEvent event) {
+		if(event.isCancelled()) {
+			return;
+		}
 		final Player player = Bukkit.getPlayer(event.getAccount().getUUID());
 		if(player != null) {
 			buildAndSend(player, null, event.getNewBankBalance());

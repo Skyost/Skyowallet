@@ -78,13 +78,15 @@ public class SkyowalletPay implements CommandInterface {
 		targetAccount.setWallet(targetWallet, taxRate, false);
 		playerAccount.setWallet(wallet, 0d);
 		
+		final double totalAmount = amount - (targetWallet - targetAccount.getWallet());
+		
 		if(player.isOnline()) {
-			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message9, sender, amount, amount));
+			player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(Skyowallet.messages.message9, sender, totalAmount, totalAmount));
 		}
 		sender.sendMessage(Skyowallet.messages.message10);
 		
 		if(taxRate > 0d) {
-			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(targetWallet - targetAccount.getWallet()), new CurrencyNamePlaceholder(targetWallet - targetAccount.getWallet())));
+			sender.sendMessage(PlaceholderFormatter.format(Skyowallet.messages.message49, new Placeholder("/rate/", String.valueOf(taxRate)), new AmountPlaceholder(totalAmount), new CurrencyNamePlaceholder(totalAmount)));
 		}
 		return true;
 	}
