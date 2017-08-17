@@ -14,6 +14,8 @@ public class PluginConfig extends Skyoconfig {
 	public String currencyNamePlural = "skyodollars";
 	@ConfigOptions(name = "economy.default-wallet")
 	public double defaultWallet = 0d;
+	@ConfigOptions(name = "economy.rounding-digits")
+	public int roundingDigits = -1;
 	
 	@ConfigOptions(name = "options.enable-updater")
 	public boolean enableUpdater = true;
@@ -35,8 +37,6 @@ public class PluginConfig extends Skyoconfig {
 	public boolean syncEachModification = false;
 	@ConfigOptions(name = "options.silent-sync")
 	public boolean silentSync = false;
-	@ConfigOptions(name = "options.rounding-digits")
-	public int roundingDigits = -1;
 	
 	@ConfigOptions(name = "taxes.rate.global")
 	public double taxesRateGlobal = 0d;
