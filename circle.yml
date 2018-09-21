@@ -1,3 +1,0 @@
-test:
-  post:
-     - sudo mv /home/ubuntu/Skyowallet/target/Skyowallet.jar $CIRCLE_ARTIFACTS/Skyowallet-SNAPSHOT.jar

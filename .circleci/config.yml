@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/skyowallet
+    docker:
+      - image: circleci/openjdk:8-jdk-browsers
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}
+      - run: chmod +x ./gradlew
+      - run: ./gradlew dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}
+      - run: ./gradlew circleSnapshot
+      - store_artifacts:
+          path: build/release

@@ -1,0 +1,187 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
+    id 'java'
+    id 'maven'
+}
+
+group = 'fr.skyost'
+version = '1.2'
+
+sourceCompatibility = 1.8
+
+bukkit {
+    name = project.name.capitalize()
+    main = 'fr.skyost.skyowallet.Skyowallet'
+    description = 'Simple, lightweight and powerful economy plugin.'
+    author = 'Skyost'
+    website = 'http://dev.bukkit.org/bukkit-plugins/skyowallet/'
+    apiVersion = '1.13'
+    loadBefore = ['Vault']
+
+    commands {
+        skyowallet {
+            description = 'Main command of Skyowallet\'s economy.'
+            aliases = ['wallet', 'economy', 'econ', 'eco', 'money']
+        }
+        bank {
+            description = 'Main command of Skyowallet\'s banks.'
+            aliases = ['ba']
+        }
+        bounty {
+            description = 'Main command of the Bounty extension.'
+            aliases = ['bounties']
+        }
+    }
+
+    permissions {
+        'skyowallet.*' {
+            setDefault('OP')
+            description = 'Gives you all plugin\'s permissions'
+            children = [
+                    'skyowallet.admin',
+                    'skyowallet.info',
+                    'skyowallet.pay',
+                    'skyowallet.set',
+                    'skyowallet.sync',
+                    'skyowallet.top',
+                    'skyowallet.view',
+                    'skyowallet.bank.addowner',
+                    'skyowallet.bank.approve',
+                    'skyowallet.bank.cancel',
+                    'skyowallet.bank.delete',
+                    'skyowallet.bank.deny',
+                    'skyowallet.bank.deposit',
+                    'skyowallet.bank.info',
+                    'skyowallet.bank.join',
+                    'skyowallet.bank.leave',
+                    'skyowallet.bank.list',
+                    'skyowallet.bank.removeowner',
+                    'skyowallet.bank.toggleapprovalneeded',
+                    'skyowallet.bank.withdraw',
+                    'skyowallet.taxes.bypass'
+            ]
+        }
+        'skyowallet.admin' {
+            setDefault('OP')
+            description = 'Allows you to use admin features'
+        }
+        'skyowallet.info' {
+            setDefault('TRUE')
+            description = 'Allows you to use /skyowallet info.'
+        }
+        'skyowallet.pay' {
+            setDefault('TRUE')
+            description = 'Allows you to use /skyowallet pay <amount> <player | uuid>.'
+        }
+        'skyowallet.set' {
+            setDefault('OP')
+            description = 'Allows you to use /skyowallet set <amount> [player | uuid].'
+        }
+        'skyowallet.sync' {
+            setDefault('OP')
+            description = 'Allows you to use /skyowallet sync [players | uuids].'
+        }
+        'skyowallet.top' {
+            setDefault('TRUE')
+            description = 'Allows you to use /skyowallet top [number].'
+        }
+        'skyowallet.view' {
+            setDefault('OP')
+            description = 'Allows you to use /skyowallet view <player | uuid>.'
+        }
+        'skyowallet.bank.addowner' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank addowner <player | uuid> [bank].'
+        }
+        'skyowallet.bank.approve' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank approve [player | uuid].'
+        }
+        'skyowallet.bank.cancel' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank cancel.'
+        }
+        'skyowallet.bank.create' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank create <bank>.'
+        }
+        'skyowallet.bank.delete' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank delete [bank].'
+        }
+        'skyowallet.bank.deny' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank deny [player | uuid] [reason].'
+        }
+        'skyowallet.bank.deposit' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank deposit <amount>.'
+        }
+        'skyowallet.bank.info' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank info [bank].'
+        }
+        'skyowallet.bank.join' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank join <bank>.'
+        }
+        'skyowallet.bank.leave' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank leave.'
+        }
+        'skyowallet.bank.list' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank list.'
+        }
+        'skyowallet.bank.removeowner' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank removeowner <player | uuid> [bank].'
+        }
+        'skyowallet.bank.toggleapprovalneeded' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank toggleapprovalneeded [bank].'
+        }
+        'skyowallet.bank.withdraw' {
+            setDefault('TRUE')
+            description = 'Allows you to use /bank withdraw <amount>.'
+        }
+        'skyowallet.taxes.bypass' {
+            setDefault('OP')
+            description = 'Allows you to bypass taxes.'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = 'http://nexus.hc.to/content/repositories/pub_releases' }
+    maven { url = 'http://repo.bstats.org/content/repositories/releases/' }
+}
+
+dependencies {
+    compileOnly 'org.bukkit:bukkit:1.13-R0.1-SNAPSHOT'
+    compileOnly 'net.milkbowl.vault:VaultAPI:1.6'
+    compile 'org.bstats:bstats-bukkit-lite:1.2'
+    compile 'commons-dbutils:commons-dbutils:1.7'
+}
+
+shadowJar {
+    destinationDir = new File(rootProject.projectDir, 'build/release/')
+    version = project.version
+    configurations = [project.configurations.compile]
+    mergeServiceFiles()
+    relocate 'org.bstats.bukkit', 'fr.skyost.skyowallet.util.bstats'
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile
+}
+
+task circleSnapshot(dependsOn: shadowJar) {
+    doLast {
+        shadowJar.archivePath.renameTo(new File(shadowJar.destinationDir, 'Skyowallet-SNAPSHOT.jar'))
+    }
+}

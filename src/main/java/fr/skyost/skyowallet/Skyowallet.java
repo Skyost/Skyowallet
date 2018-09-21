@@ -1,8 +1,6 @@
 package fr.skyost.skyowallet;
 
-import java.io.File;
-import java.lang.Thread.UncaughtExceptionHandler;
-
+import org.bstats.bukkit.MetricsLite;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
@@ -10,16 +8,56 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.skyost.skyowallet.commands.*;
-import fr.skyost.skyowallet.commands.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.commands.subcommands.skyowallet.*;
-import fr.skyost.skyowallet.commands.subcommands.bank.*;
-import fr.skyost.skyowallet.extensions.*;
-import fr.skyost.skyowallet.hooks.VaultHook;
-import fr.skyost.skyowallet.listeners.GlobalEvents;
-import fr.skyost.skyowallet.tasks.SyncTask;
-import fr.skyost.skyowallet.utils.MetricsLite;
-import fr.skyost.skyowallet.utils.Skyupdater;
+import java.io.File;
+
+import fr.skyost.skyowallet.command.BankCommand;
+import fr.skyost.skyowallet.command.SkyowalletCommand;
+import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.command.subcommands.bank.BankApprove;
+import fr.skyost.skyowallet.command.subcommands.bank.BankCancel;
+import fr.skyost.skyowallet.command.subcommands.bank.BankCreate;
+import fr.skyost.skyowallet.command.subcommands.bank.BankDelete;
+import fr.skyost.skyowallet.command.subcommands.bank.BankDeny;
+import fr.skyost.skyowallet.command.subcommands.bank.BankDeposit;
+import fr.skyost.skyowallet.command.subcommands.bank.BankInfo;
+import fr.skyost.skyowallet.command.subcommands.bank.BankJoin;
+import fr.skyost.skyowallet.command.subcommands.bank.BankLeave;
+import fr.skyost.skyowallet.command.subcommands.bank.BankList;
+import fr.skyost.skyowallet.command.subcommands.bank.BankRemoveOwner;
+import fr.skyost.skyowallet.command.subcommands.bank.BankSetOwner;
+import fr.skyost.skyowallet.command.subcommands.bank.BankToggleApprovalNeeded;
+import fr.skyost.skyowallet.command.subcommands.bank.BankWithdraw;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletInfo;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletPay;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletSet;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletSync;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletTop;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletView;
+import fr.skyost.skyowallet.config.PluginConfig;
+import fr.skyost.skyowallet.config.PluginMessages;
+import fr.skyost.skyowallet.economy.EconomyOperations;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountFactory;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBankFactory;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
+import fr.skyost.skyowallet.extension.Bounty;
+import fr.skyost.skyowallet.extension.CommandCost;
+import fr.skyost.skyowallet.extension.ExtensionManager;
+import fr.skyost.skyowallet.extension.GoodbyeWallet;
+import fr.skyost.skyowallet.extension.KillerIncome;
+import fr.skyost.skyowallet.extension.Mine4Cash;
+import fr.skyost.skyowallet.extension.ScoreboardInfo;
+import fr.skyost.skyowallet.extension.SkyowalletExtension;
+import fr.skyost.skyowallet.hook.VaultHook;
+import fr.skyost.skyowallet.listener.GlobalEvents;
+import fr.skyost.skyowallet.sync.SyncManager;
+import fr.skyost.skyowallet.sync.SyncTask;
+import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
+import fr.skyost.skyowallet.util.Skyupdater;
+
+/**
+ * The plugin's main class.
+ */
 
 public class Skyowallet extends JavaPlugin {
 	
@@ -27,66 +65,109 @@ public class Skyowallet extends JavaPlugin {
 	 * Skyowallet's config.
 	 */
 	
-	protected static PluginConfig config;
+	private PluginConfig config;
 	
 	/**
 	 * Skyowallet's messages.
 	 */
 	
-	public static PluginMessages messages;
+	private PluginMessages messages;
+
+	/**
+	 * The synchronization manager.
+	 */
+
+	private SyncManager syncManager;
+
+	/**
+	 * The extension manager.
+	 */
+
+	private ExtensionManager extensionManager;
+
+	/**
+	 * The account factory.
+	 */
+
+	private SkyowalletAccountFactory accountFactory;
+
+	/**
+	 * The account manager.
+	 */
+
+	private SkyowalletAccountManager accountManager;
+
+	/**
+	 * The bank factory.
+	 */
+
+	private SkyowalletBankFactory bankFactory;
+
+	/**
+	 * The bank manager.
+	 */
+
+	private SkyowalletBankManager bankManager;
+
+	/**
+	 * Economy operations.
+	 */
+
+	private EconomyOperations economyOperations;
 	
 	@Override
 	public final void onEnable() {
 		final PluginManager manager = Bukkit.getPluginManager();
 		try {
-			Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-				@Override
-				public final void uncaughtException(final Thread thread, final Throwable throwable) {
-					Bukkit.getConsoleSender().sendMessage("[" + getName() + "] " + ChatColor.RED + "An uncaught error occured. Don't hesitate to report it here : https://github.com/Skyost/Skyowallet/issues.");
-					throwable.printStackTrace();
-				}
-				
+			Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+				Bukkit.getConsoleSender().sendMessage("[" + getName() + "] " + ChatColor.RED + "An uncaught error occurred. Don't hesitate to report it here : https://github.com/Skyost/Skyowallet/issues.");
+				throwable.printStackTrace();
 			});
-			
-			final File dataFolder = this.getDataFolder();
-			
+
+			final File dataFolder = getDataFolder();
 			config = new PluginConfig(dataFolder);
 			config.load();
 			messages = new PluginMessages(dataFolder);
 			messages.load();
-			
-			final SyncTask syncTask = new SyncTask(config.silentSync ? null : Bukkit.getConsoleSender(), null);
+
+			accountFactory = new SkyowalletAccountFactory(this);
+			accountManager = new SkyowalletAccountManager(this);
+
+			bankFactory = new SkyowalletBankFactory(this);
+			bankManager = new SkyowalletBankManager();
+
+			economyOperations = new EconomyOperations(this);
+
+			syncManager = new SyncManager(this);
+
 			if(config.mySQLEnable) {
-				SkyowalletAPI.getSyncManager().enableMySQL(config.mySQLHost, config.mySQLPort, config.mySQLDB, config.mySQLUser, config.mySQLPassword);
+				syncManager.enableMySQL();
 			}
-			if(config.autoSyncInterval > 0) {
-				Bukkit.getScheduler().scheduleSyncRepeatingTask(this, syncTask, 0L, config.autoSyncInterval * 20L);
+			if(config.syncInterval > 0) {
+				new SyncTask(this, syncManager.getMainSyncQueue()).runTaskTimer(this, config.syncInterval * 20L, config.syncInterval * 20L);
 			}
-			else {
-				syncTask.start();
-				syncTask.join();
-			}
+
+			SyncTask.runDefaultSync(new FullSyncQueue(syncManager, Bukkit.getConsoleSender()));
 			
-			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand();
-			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfos(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletTop(), new SkyowalletView()}) {
+			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand(this);
+			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfo(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletTop(), new SkyowalletView()}) {
 				skyowalletCmd.registerSubCommand(command);
 			}
 			final PluginCommand skyowallet = getCommand("skyowallet");
 			skyowallet.setUsage("/" + skyowallet.getName() + " " + skyowalletCmd.getUsage());
 			skyowallet.setExecutor(skyowalletCmd);
 			
-			final BankCommand bankCmd = new BankCommand();
-			for(final CommandInterface command : new CommandInterface[]{new BankApprove(), new BankCancel(), new BankCreate(), new BankDelete(), new BankDeny(), new BankDeposit(), new BankInfos(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankSetOwner(), new BankToggleApprovalNeeded(), new BankWithdraw()}) {
+			final BankCommand bankCmd = new BankCommand(this);
+			for(final CommandInterface command : new CommandInterface[]{new BankApprove(), new BankCancel(), new BankCreate(), new BankDelete(), new BankDeny(), new BankDeposit(), new BankInfo(), new BankJoin(), new BankLeave(), new BankList(), new BankRemoveOwner(), new BankSetOwner(), new BankToggleApprovalNeeded(), new BankWithdraw()}) {
 				bankCmd.registerSubCommand(command);
 			}
 			final PluginCommand bank = getCommand("bank");
 			bank.setUsage("/" + bank.getName() + " " + bankCmd.getUsage());
 			bank.setExecutor(bankCmd);
-			manager.registerEvents(new GlobalEvents(), this);
+			manager.registerEvents(new GlobalEvents(this), this);
 			
 			if(config.enableUpdater) {
-				new Skyupdater(this, 82182, this.getFile(), true, true);
+				new Skyupdater(this, 82182, getFile(), true, true);
 			}
 			
 			if(config.enableMetrics) {
@@ -106,12 +187,12 @@ public class Skyowallet extends JavaPlugin {
 				console.sendMessage(ChatColor.RED + "!!                                                  !!");
 				console.sendMessage(ChatColor.RED + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
-			
-			loadExtensions();
-			
+
 			if(manager.getPlugin("Vault") != null) {
-				VaultHook.addToVault();
+				new VaultHook(this).register();
 			}
+
+			extensionManager = new ExtensionManager(this, new Mine4Cash(this, this), new CommandCost(this, this), new GoodbyeWallet(this, this), new ScoreboardInfo(this, this), new KillerIncome(this, this), new Bounty(this, this));
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
@@ -122,27 +203,185 @@ public class Skyowallet extends JavaPlugin {
 	@Override
 	public final void onDisable() {
 		try {
-			for(final SkyowalletExtension extension : SkyowalletAPI.getLoadedExtensions()) {
-				SkyowalletAPI.unregisterExtension(extension, true);
+			for(final SkyowalletExtension extension : extensionManager.getLoadedExtensions()) {
+				extensionManager.unregister(extension);
 			}
-			final SyncTask task = new SyncTask(config.silentSync ? null : Bukkit.getConsoleSender(), null);
-			task.start();
-			task.join();
-			SkyowalletAPI.getSyncManager().closeMySQLConnection();
+			new SyncTask(this, new FullSyncQueue(syncManager, Bukkit.getConsoleSender())).run();
+			syncManager.disableMySQL();
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * Loads Skyowallet's extensions.
+	 * Returns the Skyowallet instance.
+	 *
+	 * @return The Skyowallet instance.
 	 */
-	
-	private final void loadExtensions() {
-		for(final SkyowalletExtension extension : new SkyowalletExtension[]{new Mine4Cash(this), new CommandsCosts(this), new GoodbyeWallet(this), new ScoreboardInfos(this), new KillerIncome(this), new Bounties(this)}) {
-			SkyowalletAPI.registerExtension(extension, true, this);
-		}
+
+	public static Skyowallet getInstance() {
+		return (Skyowallet)Bukkit.getPluginManager().getPlugin("Skyowallet");
+	}
+
+	/**
+	 * Returns the plugin config.
+	 *
+	 * @return The plugin config.
+	 */
+
+	public PluginConfig getPluginConfig() {
+		return config;
+	}
+
+	/**
+	 * Sets the plugin config.
+	 *
+	 * @param config The plugin config.
+	 */
+
+	public final void setPluginConfig(final PluginConfig config) {
+		this.config = config;
+	}
+
+	/**
+	 * Returns the plugin messages.
+	 *
+	 * @return The plugin messages.
+	 */
+
+	public PluginMessages getPluginMessages() {
+		return messages;
+	}
+
+	/**
+	 * Sets the plugin messages.
+	 *
+	 * @param messages The plugin messages.
+	 */
+
+	public void setPluginMessages(final PluginMessages messages) {
+		this.messages = messages;
+	}
+
+	/**
+	 * Returns the synchronization manager.
+	 *
+	 * @return The synchronization manager.
+	 */
+
+	public final SyncManager getSyncManager() {
+		return syncManager;
+	}
+
+	/**
+	 * Sets the synchronization manager.
+	 *
+	 * @param syncManager The synchronization manager.
+	 */
+
+	public final void setSyncManager(final SyncManager syncManager) {
+		this.syncManager = syncManager;
+	}
+
+	/**
+	 * Returns the current account factory.
+	 *
+	 * @return The current account factory.
+	 */
+
+	public final SkyowalletAccountFactory getAccountFactory() {
+		return accountFactory;
+	}
+
+	/**
+	 * Sets the account factory.
+	 *
+	 * @param accountFactory The account factory.
+	 */
+
+	public final void setAccountFactory(final SkyowalletAccountFactory accountFactory) {
+		this.accountFactory = accountFactory;
+	}
+
+	/**
+	 * Returns the current account manager.
+	 *
+	 * @return The current account manager.
+	 */
+
+	public final SkyowalletAccountManager getAccountManager() {
+		return accountManager;
+	}
+
+	/**
+	 * Sets the account manager.
+	 *
+	 * @param accountManager The account manager.
+	 */
+
+	public final void setAccountManager(final SkyowalletAccountManager accountManager) {
+		this.accountManager = accountManager;
+	}
+
+	/**
+	 * Returns the current bank factory.
+	 *
+	 * @return The current bank factory.
+	 */
+
+	public final SkyowalletBankFactory getBankFactory() {
+		return bankFactory;
+	}
+
+	/**
+	 * Sets the bank factory.
+	 *
+	 * @param bankFactory The bank factory.
+	 */
+
+	public final void setBankFactory(final SkyowalletBankFactory bankFactory) {
+		this.bankFactory = bankFactory;
+	}
+
+	/**
+	 * Returns the current bank manager.
+	 *
+	 * @return The current bank manager.
+	 */
+
+	public final SkyowalletBankManager getBankManager() {
+		return bankManager;
+	}
+
+	/**
+	 * Sets the bank manager.
+	 *
+	 * @param bankManager The bank manager.
+	 */
+
+	public final void setBankManager(final SkyowalletBankManager bankManager) {
+		this.bankManager = bankManager;
+	}
+
+	/**
+	 * Returns all available economy operations.
+	 *
+	 * @return All available economy operations.
+	 */
+
+	public final EconomyOperations getEconomyOperations() {
+		return economyOperations;
+	}
+
+	/**
+	 * Sets the available economy operations.
+	 *
+	 * @param economyOperations Economy operations.
+	 */
+
+	public final void setEconomyOperations(final EconomyOperations economyOperations) {
+		this.economyOperations = economyOperations;
 	}
 
 }
