@@ -315,6 +315,10 @@ public class SyncManager {
 	 */
 
 	public synchronized final void synchronize(final SyncQueue syncQueue) throws IOException, SQLException {
+		if(syncQueue.size() == 0) {
+			return;
+		}
+
 		openMySQLConnection();
 		syncQueue.synchronize();
 		closeMySQLConnection();

@@ -242,6 +242,10 @@ public class SyncQueue implements Iterable<EconomyObject> {
 		this.sender = sender;
 	}
 
+	public int size() {
+		return accountsQueue.size() + banksQueue.size();
+	}
+
 	@Override
 	public Iterator<EconomyObject> iterator() {
 		final Iterator<SkyowalletAccount> accountsIterator = accountsQueue.values().iterator();
