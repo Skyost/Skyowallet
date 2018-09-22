@@ -62,6 +62,7 @@ public class SkyowalletBank extends EconomyObject {
 	 * @param name The bank's name.
 	 * @param isDeleted Whether this bank will be deleted at the next synchronization.
 	 * @param approvalRequired Whether an approval is required to join this bank.
+	 * @param lastModificationTime The last modification time of the specified bank.
 	 */
 	
 	protected SkyowalletBank(final Skyowallet skyowallet, final String name, final boolean approvalRequired, final boolean isDeleted, final long lastModificationTime) {

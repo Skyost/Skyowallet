@@ -246,6 +246,8 @@ public class SyncManager {
 	 * @param handler The result set handler.
 	 * @param parameters The formatting parameters.
 	 *
+	 * @param <T> Type of the Skyowallet ResultSet handler.
+	 *
 	 * @return The result of the query.
 	 *
 	 * @throws SQLException If any SQL error occurs.
@@ -309,6 +311,8 @@ public class SyncManager {
 
 	/**
 	 * Synchronizes a sync queue.
+	 *
+	 * @param syncQueue The sync queue.
 	 *
 	 * @throws IOException If any I/O exception occurs.
 	 * @throws SQLException If any SQL exception occurs.

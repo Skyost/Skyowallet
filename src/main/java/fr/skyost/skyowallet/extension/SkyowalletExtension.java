@@ -239,6 +239,8 @@ public abstract class SkyowalletExtension implements Listener {
 	/**
 	 * Checks if this extension is enabled (only checks via the configuration).
 	 * <br>If the configuration returned by <i>getConfiguration()</i> is null, this will return <b>false</b>.
+	 *
+	 * @return Whether this extension is enabled.
 	 */
 	
 	public boolean isEnabled() {

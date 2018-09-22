@@ -255,9 +255,7 @@ public abstract class SubCommandsExecutor implements CommandExecutor {
 		 * @param args Arguments specified.
 		 * 
 		 * @return <b>true</b> If the command is valid.
-		 * </b>false</b> If the command is not valid.
-		 * 
-		 * @throws Exception If something wrong occurs.
+		 * <br><b>false</b> If the command is not valid.
 		 */
 		
 		boolean onCommand(final SubCommandsExecutor command, final CommandSender sender, final String... args);

@@ -177,7 +177,6 @@ shadowJar {
 
 javadoc {
     source = sourceSets.main.allJava
-    classpath = configurations.compile
 }
 
 task circleSnapshot(dependsOn: shadowJar) {

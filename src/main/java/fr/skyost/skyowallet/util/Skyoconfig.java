@@ -35,7 +35,7 @@ import java.util.Map.Entry;
  * <p><b>Current version :</b> v0.8.
  * 
  * @author <b>Skyost</b> (<a href="http://www.skyost.eu">www.skyost.eu</a>).
- * <br>Inspired from <a href="https://forums.bukkit.org/threads/lib-supereasyconfig-v1-2-based-off-of-codename_bs-awesome-easyconfig-v2-1.100569/">SuperEasyConfig</a>.</br>
+ * <br>Inspired from <a href="https://forums.bukkit.org/threads/lib-supereasyconfig-v1-2-based-off-of-codename_bs-awesome-easyconfig-v2-1.100569/">SuperEasyConfig</a>.
  */
 
 public class Skyoconfig {

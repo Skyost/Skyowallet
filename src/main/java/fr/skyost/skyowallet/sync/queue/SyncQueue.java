@@ -104,7 +104,8 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	 * @param <T> The economy object class.
 	 */
 
-	public <T extends EconomyObject> void removeFromQueue(final T... objects) {
+	@SafeVarargs
+	public final <T extends EconomyObject> void removeFromQueue(final T... objects) {
 		removeFromQueue(Arrays.asList(objects));
 	}
 
