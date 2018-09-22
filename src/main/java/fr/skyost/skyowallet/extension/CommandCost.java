@@ -61,7 +61,7 @@ public class CommandCost extends SkyowalletExtension {
 			return;
 		}
 		final Player player = event.getPlayer();
-		if(!player.hasPermission("commandcost.bypass")) {
+		if(player.hasPermission("commandcost.bypass")) {
 			return;
 		}
 		final String rawCost = config.commands.get(event.getMessage().substring(1).split(" ")[0]);

@@ -171,7 +171,7 @@ public abstract class SubCommandsExecutor implements CommandExecutor {
 	 */
 
 	public final void sendUsage(final CommandSender sender) {
-		sender.sendMessage(ChatColor.RED + PlaceholderFormatter.format(skyowallet.getPluginMessages().messageCommandUsage, new PlaceholderFormatter.LineBreakPlaceholder(), new PlaceholderFormatter.Placeholder("usage", getUsage(sender))).replace(" or ", ChatColor.ITALIC + " or " + ChatColor.RESET + ChatColor.RED));
+		sender.sendMessage(ChatColor.RED + PlaceholderFormatter.format(skyowallet.getPluginMessages().messageCommandUsage, new PlaceholderFormatter.LineBreakPlaceholder(), new PlaceholderFormatter.Placeholder("usage", getUsage(sender))).replace(" or ", ChatColor.ITALIC + "\n or " + ChatColor.RESET + ChatColor.RED));
 	}
 	
 	/**
@@ -201,7 +201,7 @@ public abstract class SubCommandsExecutor implements CommandExecutor {
 			final String commandUsage = command.getUsage();
 			subCommands.add("/" + commandName + " " + command.getNames()[0] + (commandUsage == null ? "" : " " + command.getUsage()));
 		}
-		return Joiner.on("\nor ").join(subCommands) + ".";
+		return Joiner.on(" or ").join(subCommands) + ".";
 	}
 	
 	public interface CommandInterface {

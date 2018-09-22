@@ -111,7 +111,7 @@ public class ExtensionManager {
 			}
 			extensions.add(extension);
 			if(log) {
-				logger.log(Level.INFO, name + " loaded !");
+				logger.log(Level.INFO, name + " loaded and registered !");
 			}
 		}
 		catch(final Exception ex) {

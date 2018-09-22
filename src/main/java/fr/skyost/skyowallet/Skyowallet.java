@@ -9,6 +9,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.HashSet;
 
 import fr.skyost.skyowallet.command.BankCommand;
 import fr.skyost.skyowallet.command.SkyowalletCommand;
@@ -203,7 +204,7 @@ public class Skyowallet extends JavaPlugin {
 	@Override
 	public final void onDisable() {
 		try {
-			for(final SkyowalletExtension extension : extensionManager.getLoadedExtensions()) {
+			for(final SkyowalletExtension extension : new HashSet<>(extensionManager.getLoadedExtensions())) {
 				extensionManager.unregister(extension);
 			}
 			new SyncTask(this, new FullSyncQueue(syncManager, Bukkit.getConsoleSender())).run();

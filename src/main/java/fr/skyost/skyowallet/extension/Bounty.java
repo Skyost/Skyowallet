@@ -142,7 +142,7 @@ public class Bounty extends SkyowalletExtension {
 				killer.sendMessage(PlaceholderFormatter.defaultFormat(config.messageNoAccount, (OfflinePlayer)player));
 				return;
 			}
-			final SkyowalletAccount account = accountManager.get(player);
+			final SkyowalletAccount account = accountManager.get(killer);
 			account.getWallet().addAmount(amount);
 			if(config.bountyNotify) {
 				killer.sendMessage(PlaceholderFormatter.defaultFormat(config.messageBountyAwarded, (OfflinePlayer)player, amount));
@@ -292,7 +292,7 @@ public class Bounty extends SkyowalletExtension {
 				bounties.put(uuid, bountyTarget);
 			}
 			bountyTarget.setBounty(account.getUUID(), amount);
-			sender.sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.messageBountyValidated, new Placeholder("bountyTarget", String.valueOf(bountyTarget.getTotalBounty()))), player, amount));
+			sender.sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.messageBountyValidated, new Placeholder("bounty", String.valueOf(bountyTarget.getTotalBounty()))), player, amount));
 			if(config.bountyNotify && player.isOnline()) {
 				player.getPlayer().sendMessage(PlaceholderFormatter.defaultFormat(config.messagePlayerBountyPut, sender, amount));
 			}
@@ -397,7 +397,7 @@ public class Bounty extends SkyowalletExtension {
 			}
 			final BountyTarget bountyTarget = getBounty(player.getUniqueId());
 			if(bountyTarget.getTotalBounty() == 0d) {
-				sender.sendMessage(config.messagePlayerNoBounty);
+				sender.sendMessage(PlaceholderFormatter.defaultFormat(config.messagePlayerNoBounty, player));
 				return true;
 			}
 			if(config.bountyGiveBackIfDeleted) {
@@ -578,7 +578,7 @@ public class Bounty extends SkyowalletExtension {
 		@ConfigOptions(name = "messages.player-no-bounty")
 		public String messagePlayerNoBounty = ChatColor.RED + "/player/ did not have any bounty on his head.";
 		@ConfigOptions(name = "messages.bounties-removed")
-		public String messageBountiesRemoved = ChatColor.GREEN + "You just removed the bounties that target /player/.";
+		public String messageBountiesRemoved = ChatColor.GREEN + "You just removed the bounties that were targeting /player/.";
 		@ConfigOptions(name = "messages.player-bounties-removed")
 		public String messagePlayerBountiesRemoved = ChatColor.DARK_GREEN + "/player/ just removed all bounties on your head.";
 		@ConfigOptions(name = "messages.bounties-cleared")
@@ -588,7 +588,7 @@ public class Bounty extends SkyowalletExtension {
 		@ConfigOptions(name = "messages.no-bounty-server")
 		public String messageNoBountyServer = ChatColor.RED + "There is currently no bounty on this server.";
 		@ConfigOptions(name = "messages.bounty-ranking")
-		public String messageBountyRanking = ChatColor.GOLD + "¤ /player/" + ChatColor.RESET + " wanted for " + ChatColor.GOLD + "/amount/ /currency-name/" + ChatColor.RESET + ".";
+		public String messageBountyRanking = ChatColor.GOLD + "- /player/" + ChatColor.RESET + " is wanted for " + ChatColor.GOLD + "/amount/ /currency-name/" + ChatColor.RESET + ".";
 		@ConfigOptions(name = "messages.available-bounties")
 		public String messageAvailableBounties = "There are currently " + ChatColor.GOLD + "/bounties/" + ChatColor.RESET +  " available bounties on this server.";
 		@ConfigOptions(name = "messages.bounty-awarded")
