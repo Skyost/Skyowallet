@@ -35,6 +35,8 @@ public class PluginConfig extends Skyoconfig {
 	public int syncInterval = 900;
 	@ConfigOptions(name = "options.synchronization.silent")
 	public boolean syncSilent = false;
+	@ConfigOptions(name = "options.synchronization.smart")
+	public boolean syncSmart = true;
 	@ConfigOptions(name = "options.banks-default-require-approval")
 	public boolean banksRequireApproval = true;
 	@ConfigOptions(name = "options.warn-offline-mode")

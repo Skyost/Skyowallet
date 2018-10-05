@@ -2,6 +2,7 @@ package fr.skyost.skyowallet.sync;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -17,6 +18,7 @@ import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.sync.handler.SkyowalletAccountHandler;
 import fr.skyost.skyowallet.sync.handler.SkyowalletBankHandler;
 import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
+import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
 import fr.skyost.skyowallet.sync.queue.SyncQueue;
 
 /**
@@ -130,7 +132,10 @@ public class SyncManager {
 	public SyncManager(final Skyowallet skyowallet) {
 		this.skyowallet = skyowallet;
 
-		mainQueue = new SyncQueue(this, skyowallet.getPluginConfig().syncSilent ? null : Bukkit.getConsoleSender());
+		final PluginConfig config = skyowallet.getPluginConfig();
+		final CommandSender sender = config.syncSilent ? null : Bukkit.getConsoleSender();
+
+		mainQueue = config.syncSmart ? new SyncQueue(this, sender) : new FullSyncQueue(this, sender);
 	}
 
 	/**

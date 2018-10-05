@@ -34,9 +34,15 @@ public class FullSyncQueue extends SyncQueue {
 
 	public FullSyncQueue(final SyncManager syncManager, final CommandSender sender) {
 		super(syncManager, sender);
+	}
 
+	@Override
+	public void synchronize() throws IOException, SQLException {
+		final SyncManager syncManager = this.getSyncManager();
 		addToQueue(syncManager.getSkyowallet().getAccountManager().list());
 		addToQueue(syncManager.getSkyowallet().getBankManager().list());
+
+		super.synchronize();
 	}
 
 	@Override
