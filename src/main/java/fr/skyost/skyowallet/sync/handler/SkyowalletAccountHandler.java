@@ -1,15 +1,15 @@
 package fr.skyost.skyowallet.sync.handler;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-
 import fr.skyost.skyowallet.economy.SkyowalletManager;
 import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
 import fr.skyost.skyowallet.economy.account.SkyowalletAccountFactory;
 import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.sync.SyncManager;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * Represents a result set handler that can return accounts.
@@ -41,7 +41,7 @@ public class SkyowalletAccountHandler extends SkyowalletResultSetHandler<Skyowal
 
 	@Override
 	public final SkyowalletAccount handleLine(final ResultSet resultSet) throws SQLException {
-		final UUID uuid = Utils.uuidTryParse(Utils.uuidAddDashes(resultSet.getString("uuid")));
+		final UUID uuid = Util.uuidTryParse(Util.uuidAddDashes(resultSet.getString("uuid")));
 		if(uuid == null) {
 			return null;
 		}

@@ -1,5 +1,10 @@
 package fr.skyost.skyowallet.economy;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -9,12 +14,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 import java.util.UUID;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * Represents all available economy operations like taxes, rounding money, ...
@@ -88,13 +87,13 @@ public class EconomyOperations {
 		final SkyowalletAccountManager accountManager = skyowallet.getAccountManager();
 
 		for(final Map.Entry<String, String> entry : skyowallet.getPluginConfig().taxesAccounts.entrySet()) {
-			final UUID uuid = Utils.uuidTryParse(entry.getKey());
+			final UUID uuid = Util.uuidTryParse(entry.getKey());
 
 			if(uuid == null) {
 				console.sendMessage("[" + skyowallet.getName() + "] " + ChatColor.RED + "Unable to give tax to \"" + entry.getKey() + "\" because it is not a valid UUID.");
 				continue;
 			}
-			final Double accountRate = Utils.doubleTryParse(entry.getValue());
+			final Double accountRate = Util.doubleTryParse(entry.getValue());
 			if(accountRate == null) {
 				console.sendMessage("[" + skyowallet.getName() + "] " + ChatColor.RED + "Unable to give tax to \"" + uuid + "\" because the specified rate " + entry.getValue() + " is invalid.");
 				continue;

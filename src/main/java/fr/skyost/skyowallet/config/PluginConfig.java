@@ -1,10 +1,10 @@
 package fr.skyost.skyowallet.config;
 
+import fr.skyost.skyowallet.util.Skyoconfig;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
-
-import fr.skyost.skyowallet.util.Skyoconfig;
 
 /**
  * Represents the plugin configuration.
@@ -25,12 +25,10 @@ public class PluginConfig extends Skyoconfig {
 	public boolean enableUpdater = true;
 	@ConfigOptions(name = "options.enable-metrics")
 	public boolean enableMetrics = true;
-	@ConfigOptions(name = "options.directory.accounts")
-	public String directoryAccounts;
-	@ConfigOptions(name = "options.directory.banks")
-	public String directoryBanks;
-	@ConfigOptions(name = "options.directory.extension")
-	public String directoryExtensions;
+	@ConfigOptions(name = "options.file.database")
+	public String databaseFile;
+	@ConfigOptions(name = "options.file.extensions-directory")
+	public String extensionsDirectory;
 	@ConfigOptions(name = "options.synchronization.interval")
 	public int syncInterval = 900;
 	@ConfigOptions(name = "options.synchronization.silent")
@@ -70,6 +68,16 @@ public class PluginConfig extends Skyoconfig {
 	@ConfigOptions(name = "mysql.password")
 	public String mySQLPassword = "password";
 
+	@Deprecated
+	@ConfigOptions(name = "options.directory.accounts")
+	public String directoryAccounts;
+	@Deprecated
+	@ConfigOptions(name = "options.directory.banks")
+	public String directoryBanks;
+	@Deprecated
+	@ConfigOptions(name = "options.directory.extension")
+	public String directoryExtensions;
+
 	/**
 	 * Creates a new plugin configuration instance.
 	 *
@@ -78,13 +86,16 @@ public class PluginConfig extends Skyoconfig {
 
 	public PluginConfig(final File dataFolder) {
 		super(new File(dataFolder, "config.yml"), Collections.singletonList("Skyowallet Configuration"));
-
-		directoryAccounts = new File(dataFolder + File.separator + "accounts").getPath();
-		directoryBanks = new File(dataFolder + File.separator + "banks").getPath();
-		directoryExtensions = new File(dataFolder + File.separator + "extensions").getPath();
 		
 		taxesAccounts.put("2a74ab4f-8294-46af-af5b-0a9cd65fc1aa", "60.5");
 		taxesAccounts.put("4f3b1387-6967-403d-a648-5feb796ec997", "39.5");
+
+		databaseFile = new File(dataFolder, "data.db").getPath();
+		extensionsDirectory = new File(dataFolder, "extensions").getPath();
+
+		directoryAccounts = new File(dataFolder, "accounts").getPath();
+		directoryBanks = new File(dataFolder, "banks").getPath();
+		directoryExtensions = new File(dataFolder, "extensions").getPath();
 	}
 
 	/**
@@ -100,12 +111,43 @@ public class PluginConfig extends Skyoconfig {
 	}
 
 	/**
+	 * Returns the database file (where the plugin stores the accounts and banks).
+	 * <br><b>NOTE :</b> if the parent directory does not exist, this method will try to create it.
+	 *
+	 * @return The database file.
+	 */
+
+	public File getDatabaseFile() {
+		final File databaseFile = new File(this.databaseFile);
+		if(!databaseFile.getParentFile().exists()) {
+			databaseFile.getParentFile().mkdirs();
+		}
+		return databaseFile;
+	}
+
+	/**
+	 * Returns the extensions directory (where the plugin stores the banks).
+	 * <br><b>NOTE :</b> if the directory does not exist, this method will try to create it.
+	 *
+	 * @return The extensions directory.
+	 */
+
+	public File getExtensionsDirectory() {
+		final File extensionsDir = new File(this.extensionsDirectory);
+		if(!extensionsDir.exists()) {
+			extensionsDir.mkdirs();
+		}
+		return extensionsDir;
+	}
+
+	/**
 	 * Returns the accounts directory (where the plugin stores the accounts).
 	 * <br><b>NOTE :</b> if the directory does not exist, this method will try to create it.
 	 *
 	 * @return The accounts directory.
 	 */
 
+	@Deprecated
 	public File getAccountsDirectory() {
 		final File accountsDir = new File(this.directoryAccounts);
 		if(!accountsDir.exists()) {
@@ -121,27 +163,13 @@ public class PluginConfig extends Skyoconfig {
 	 * @return The banks directory.
 	 */
 
+	@Deprecated
 	public File getBanksDirectory() {
 		final File banksDir = new File(this.directoryBanks);
 		if(!banksDir.exists()) {
 			banksDir.mkdirs();
 		}
 		return banksDir;
-	}
-
-	/**
-	 * Returns the extensions directory (where the plugin stores the banks).
-	 * <br><b>NOTE :</b> if the directory does not exist, this method will try to create it.
-	 *
-	 * @return The extensions directory.
-	 */
-
-	public File getExtensionsDirectory() {
-		final File extensionsDir = new File(this.directoryExtensions);
-		if(!extensionsDir.exists()) {
-			extensionsDir.mkdirs();
-		}
-		return extensionsDir;
 	}
 
 }

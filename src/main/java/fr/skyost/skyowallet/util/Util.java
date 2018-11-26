@@ -1,7 +1,7 @@
 package fr.skyost.skyowallet.util;
 
 import com.google.common.base.Charsets;
-
+import fr.skyost.skyowallet.Skyowallet;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -9,13 +9,11 @@ import org.bukkit.OfflinePlayer;
 import java.io.File;
 import java.util.UUID;
 
-import fr.skyost.skyowallet.Skyowallet;
-
 /**
  * Utilities methods.
  */
 
-public class Utils {
+public class Util {
 
 	/**
 	 * The default chat separator.
@@ -73,7 +71,7 @@ public class Utils {
 	}
 
 	/**
-	 * Try to parse a double.
+	 * Tries to parse a double.
 	 *
 	 * @param string The String.
 	 *
@@ -89,7 +87,7 @@ public class Utils {
 	}
 
 	/**
-	 * Try to parse an integer.
+	 * Tries to parse an integer.
 	 *
 	 * @param string The String.
 	 *
@@ -105,7 +103,7 @@ public class Utils {
 	}
 
 	/**
-	 * Try to parse an UUID.
+	 * Tries to parse an UUID.
 	 *
 	 * @param string The String.
 	 *

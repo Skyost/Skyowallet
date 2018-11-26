@@ -1,5 +1,13 @@
 package fr.skyost.skyowallet.sync.queue;
 
+import fr.skyost.skyowallet.economy.EconomyObject;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
+import fr.skyost.skyowallet.event.sync.SyncBeginEvent;
+import fr.skyost.skyowallet.event.sync.SyncEndEvent;
+import fr.skyost.skyowallet.sync.SyncManager;
+import fr.skyost.skyowallet.sync.synchronizer.SkyowalletAccountSynchronizer;
+import fr.skyost.skyowallet.sync.synchronizer.SkyowalletBankSynchronizer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -11,15 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import fr.skyost.skyowallet.economy.EconomyObject;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
-import fr.skyost.skyowallet.event.sync.SyncBeginEvent;
-import fr.skyost.skyowallet.event.sync.SyncEndEvent;
-import fr.skyost.skyowallet.sync.SyncManager;
-import fr.skyost.skyowallet.sync.synchronizer.SkyowalletAccountSynchronizer;
-import fr.skyost.skyowallet.sync.synchronizer.SkyowalletBankSynchronizer;
 
 /**
  * Represents a synchronization queue.
@@ -153,8 +152,10 @@ public class SyncQueue implements Iterable<EconomyObject> {
 			return;
 		}
 
-		createBankSynchronizer().synchronizeQueue(syncManager, banksQueue);
-		createAccountSynchronizer().synchronizeQueue(syncManager, accountsQueue);
+		if(size() > 0) {
+			createBankSynchronizer().synchronizeQueue(syncManager, banksQueue);
+			createAccountSynchronizer().synchronizeQueue(syncManager, accountsQueue);
+		}
 
 		logMessage(ChatColor.GOLD + "Synchronization finished.");
 		Bukkit.getPluginManager().callEvent(new SyncEndEvent(this));
@@ -242,6 +243,12 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	public final void setSender(final CommandSender sender) {
 		this.sender = sender;
 	}
+
+	/**
+	 * Returns the queue size.
+	 *
+	 * @return The queue size.
+	 */
 
 	public int size() {
 		return accountsQueue.size() + banksQueue.size();

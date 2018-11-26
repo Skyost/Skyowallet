@@ -1,13 +1,12 @@
 package fr.skyost.skyowallet.util;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.UUID;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 
 /**
  * Little utility class that allows to format <b>Strings</b>.
@@ -313,11 +312,11 @@ public class PlaceholderFormatter {
 		}
 		
 		public PlayerPlaceholder(final OfflinePlayer player) {
-			super("player", Utils.getName(player));
+			super("player", Util.getName(player));
 		}
 		
 		public PlayerPlaceholder(final UUID uuid) {
-			super("player", Bukkit.getOfflinePlayer(uuid) == null ? uuid.toString() : Utils.getName(Bukkit.getOfflinePlayer(uuid)));
+			super("player", Bukkit.getOfflinePlayer(uuid) == null ? uuid.toString() : Util.getName(Bukkit.getOfflinePlayer(uuid)));
 		}
 		
 	}

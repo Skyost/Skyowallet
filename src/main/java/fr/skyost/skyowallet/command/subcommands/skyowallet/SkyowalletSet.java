@@ -1,16 +1,15 @@
 package fr.skyost.skyowallet.command.subcommands.skyowallet;
 
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
 import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 /**
  * Represents the <em>/skyowallet set</em> command.
@@ -60,14 +59,14 @@ public class SkyowalletSet implements CommandInterface {
 			}
 		}
 		else {
-			player = Utils.getPlayerByArgument(args[1]);
+			player = Util.getPlayerByArgument(args[1]);
 			if(player == null || !skyowallet.getAccountManager().has(player)) {
 				sender.sendMessage(skyowallet.getPluginMessages().messagePlayerNoAccount);
 				return true;
 			}
 		}
 		
-		final Double parsedDouble = Utils.doubleTryParse(args[0]);
+		final Double parsedDouble = Util.doubleTryParse(args[0]);
 		if(parsedDouble == null || parsedDouble < 0d) {
 			sender.sendMessage(skyowallet.getPluginMessages().messageInvalidAmount);
 			return true;

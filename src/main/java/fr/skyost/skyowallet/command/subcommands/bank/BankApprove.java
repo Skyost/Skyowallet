@@ -1,11 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -15,7 +9,12 @@ import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.PlayerPlaceholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 /**
  * Represents the <em>/bank approve</em> command.
@@ -61,7 +60,7 @@ public class BankApprove implements CommandInterface {
 
 		final SkyowalletAccountManager accountManager = skyowallet.getAccountManager();
 
-		final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+		final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 		if(player == null || !accountManager.has(player)) {
 			sender.sendMessage(skyowallet.getPluginMessages().messagePlayerNoAccount);
 			return true;
@@ -95,7 +94,7 @@ public class BankApprove implements CommandInterface {
 	 */
 
 	static boolean playerTests(final Skyowallet skyowallet, final Player player, final String... args) {
-		return playerTests(skyowallet, player, args.length == 0 ? null : Utils.getPlayerByArgument(args[0]));
+		return playerTests(skyowallet, player, args.length == 0 ? null : Util.getPlayerByArgument(args[0]));
 	}
 
 	/**
@@ -124,9 +123,9 @@ public class BankApprove implements CommandInterface {
 		if(target == null) {
 			for(final SkyowalletAccount pendingAccount : account.getBank().getPendingMembers()) {
 				final OfflinePlayer pending = Bukkit.getOfflinePlayer(pendingAccount.getUUID());
-				player.sendMessage(ChatColor.AQUA + (pending == null ? pendingAccount.getUUID().toString() : Utils.getName(pending)));
+				player.sendMessage(ChatColor.AQUA + (pending == null ? pendingAccount.getUUID().toString() : Util.getName(pending)));
 			}
-			player.sendMessage(Utils.SEPARATOR);
+			player.sendMessage(Util.SEPARATOR);
 			player.sendMessage(skyowallet.getPluginMessages().messageBankRequestCount);
 			return false;
 		}

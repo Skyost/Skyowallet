@@ -1,5 +1,15 @@
 package fr.skyost.skyowallet.extension;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.command.SubCommandsExecutor;
+import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.PlayerPlaceholder;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -18,24 +28,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.UUID;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.command.SubCommandsExecutor;
-import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.PlayerPlaceholder;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * Bounty extension class.
@@ -179,7 +173,7 @@ public class Bounty extends SkyowalletExtension {
 		if(target == null) {
 			throw new NullPointerException("Target player is null.");
 		}
-		target = Utils.uuidTryParse(target.toString());
+		target = Util.uuidTryParse(target.toString());
 		if(target == null) {
 			throw new IllegalArgumentException("This is not a true UUID !");
 		}
@@ -194,7 +188,7 @@ public class Bounty extends SkyowalletExtension {
 			if(uuid == null) {
 				throw new NullPointerException("BountyTarget UUID is null.");
 			}
-			uuid = Utils.uuidTryParse(uuid.toString());
+			uuid = Util.uuidTryParse(uuid.toString());
 			if(uuid == null) {
 				throw new IllegalArgumentException("This is not a true UUID !");
 			}
@@ -266,13 +260,13 @@ public class Bounty extends SkyowalletExtension {
 
 		@Override
 		public boolean onCommand(final SubCommandsExecutor command, final CommandSender sender, final String[] args) {
-			final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+			final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 			if(player == null) {
 				sender.sendMessage(config.messageUnexistingPlayer);
 				return true;
 			}
 			final UUID uuid = player.getUniqueId();
-			final Double amount = Utils.doubleTryParse(args[1]);
+			final Double amount = Util.doubleTryParse(args[1]);
 			if(amount == null) {
 				sender.sendMessage(getSkyowallet().getPluginMessages().messageInvalidAmount);
 				return true;
@@ -334,7 +328,7 @@ public class Bounty extends SkyowalletExtension {
 
 		@Override
 		public boolean onCommand(final SubCommandsExecutor command, final CommandSender sender, final String[] args) {
-			final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+			final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 			if(player == null) {
 				sender.sendMessage(config.messageUnexistingPlayer);
 				return true;
@@ -390,7 +384,7 @@ public class Bounty extends SkyowalletExtension {
 
 		@Override
 		public boolean onCommand(final SubCommandsExecutor command, final CommandSender sender, final String[] args) {
-			final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+			final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 			if(player == null) {
 				sender.sendMessage(config.messageUnexistingPlayer);
 				return true;
@@ -410,7 +404,7 @@ public class Bounty extends SkyowalletExtension {
 					final double amount = entry.getValue();
 					account.getWallet().addAmount(amount);
 					if(offline.isOnline()) {
-						((Player)offline).sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.messageBountiesCleared, new Placeholder("target", Utils.getName(player))), sender, amount));
+						((Player)offline).sendMessage(PlaceholderFormatter.defaultFormat(PlaceholderFormatter.format(config.messageBountiesCleared, new Placeholder("target", Util.getName(player))), sender, amount));
 					}
 				}
 			}
@@ -463,7 +457,7 @@ public class Bounty extends SkyowalletExtension {
 					sender.sendMessage(command.getSkyowallet().getPluginMessages().messageNoPermission);
 					return true;
 				}
-				player = Utils.getPlayerByArgument(args[0]);
+				player = Util.getPlayerByArgument(args[0]);
 				if(player == null) {
 					sender.sendMessage(config.messageUnexistingPlayer);
 					return true;
@@ -532,7 +526,7 @@ public class Bounty extends SkyowalletExtension {
 					sender.sendMessage(PlaceholderFormatter.defaultFormat(config.messageBountyRanking, player, amount));
 				}
 			}
-			sender.sendMessage(Utils.SEPARATOR);
+			sender.sendMessage(Util.SEPARATOR);
 			sender.sendMessage(PlaceholderFormatter.format(config.messageAvailableBounties, new Placeholder("bounties", String.valueOf(bounties.size()))));
 			return true;
 		}

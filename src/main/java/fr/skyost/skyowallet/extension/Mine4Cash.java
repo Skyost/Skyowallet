@@ -1,5 +1,9 @@
 package fr.skyost.skyowallet.extension;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -12,11 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * Mine4Cash extension class.
@@ -68,7 +67,7 @@ public class Mine4Cash extends SkyowalletExtension {
 		if(rawReward == null) {
 			return;
 		}
-		final Double reward = Utils.doubleTryParse(rawReward);
+		final Double reward = Util.doubleTryParse(rawReward);
 		if(reward == null) {
 			return;
 		}

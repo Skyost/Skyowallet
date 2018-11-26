@@ -1,17 +1,16 @@
 package fr.skyost.skyowallet.command.subcommands.skyowallet;
 
-import org.bukkit.command.CommandSender;
-
-import java.util.Arrays;
-import java.util.List;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
 import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
 import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents the <em>/skyowallet top</em> command.
@@ -50,7 +49,7 @@ public class SkyowalletTop implements CommandInterface {
 
 		Integer number = 10;
 		if(args.length > 0) {
-			number = Utils.integerTryParse(args[0]);
+			number = Util.integerTryParse(args[0]);
 			if(number == null || number < 1) {
 				sender.sendMessage(skyowallet.getPluginMessages().messageInvalidInteger);
 				return true;
@@ -64,7 +63,7 @@ public class SkyowalletTop implements CommandInterface {
 			final double amount = account.getWallet().getAmount() + account.getBankBalance().getAmount();
 			sender.sendMessage(PlaceholderFormatter.defaultFormat(skyowallet.getPluginMessages().messageAccountRanking, account.getUUID(), amount));
 		}
-		sender.sendMessage(Utils.SEPARATOR);
+		sender.sendMessage(Util.SEPARATOR);
 		sender.sendMessage(PlaceholderFormatter.format(skyowallet.getPluginMessages().messagePlayerCount, new Placeholder("players", String.valueOf(size))));
 		return true;
 	}

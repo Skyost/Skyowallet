@@ -1,10 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.skyowallet;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-
-import java.util.HashSet;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -13,7 +8,11 @@ import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
 import fr.skyost.skyowallet.sync.SyncTask;
 import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
 import fr.skyost.skyowallet.sync.queue.SyncQueue;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+
+import java.util.HashSet;
 
 /**
  * Represents the <em>/skyowallet sync</em> command.
@@ -54,7 +53,7 @@ public class SkyowalletSync implements CommandInterface {
 		final HashSet<SkyowalletAccount> accounts = new HashSet<>();
 		if(args != null) {
 			for(final String arg : args) {
-				final OfflinePlayer player = Utils.getPlayerByArgument(arg);
+				final OfflinePlayer player = Util.getPlayerByArgument(arg);
 				if(accountManager.has(player)) {
 					accounts.add(accountManager.get(player));
 				}

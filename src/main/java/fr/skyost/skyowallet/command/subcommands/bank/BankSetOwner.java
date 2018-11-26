@@ -1,9 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -12,7 +8,10 @@ import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
 import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.BankPlaceholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 /**
  * Represents the <em>/bank setowner</em> command.
@@ -50,7 +49,7 @@ public class BankSetOwner implements CommandInterface {
 		final Skyowallet skyowallet = command.getSkyowallet();
 		final SkyowalletAccountManager accountManager = skyowallet.getAccountManager();
 
-		final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+		final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 		if(player == null || !accountManager.has(player)) {
 			sender.sendMessage(skyowallet.getPluginMessages().messagePlayerNoAccount);
 			return true;

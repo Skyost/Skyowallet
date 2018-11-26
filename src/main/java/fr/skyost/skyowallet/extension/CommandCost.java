@@ -1,5 +1,13 @@
 package fr.skyost.skyowallet.extension;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,15 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * CommandCost extension class.
@@ -68,7 +67,7 @@ public class CommandCost extends SkyowalletExtension {
 		if(rawCost == null) {
 			return;
 		}
-		final Double cost = Utils.doubleTryParse(rawCost);
+		final Double cost = Util.doubleTryParse(rawCost);
 		if(cost == null) {
 			return;
 		}

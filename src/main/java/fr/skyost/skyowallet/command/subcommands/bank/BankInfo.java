@@ -1,5 +1,13 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.command.SubCommandsExecutor;
+import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
+import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -9,15 +17,6 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.command.SubCommandsExecutor;
-import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * Represents the <em>/bank info</em> command.
@@ -86,9 +85,9 @@ public class BankInfo implements CommandInterface {
 				final UUID uuid = entry.getKey().getUUID();
 				final OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
 				final Double balance = entry.getValue();
-				sender.sendMessage((player == null ? uuid.toString() : Utils.getName(player)) + " " + ChatColor.AQUA + balance + " " + skyowallet.getPluginConfig().getCurrencyName(balance));
+				sender.sendMessage((player == null ? uuid.toString() : Util.getName(player)) + " " + ChatColor.AQUA + balance + " " + skyowallet.getPluginConfig().getCurrencyName(balance));
 			}
-			sender.sendMessage(Utils.SEPARATOR);
+			sender.sendMessage(Util.SEPARATOR);
 			sender.sendMessage(PlaceholderFormatter.format(args.length < 1 ? skyowallet.getPluginMessages().messageOwnBankMembers : skyowallet.getPluginMessages().messageBankMembers, new Placeholder("members", String.valueOf(members.size()))));
 		}
 		else {

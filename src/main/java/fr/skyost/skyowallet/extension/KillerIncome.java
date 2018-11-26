@@ -1,5 +1,9 @@
 package fr.skyost.skyowallet.extension;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
+import fr.skyost.skyowallet.util.Util;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -12,11 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.holder.WalletHolder;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
-import fr.skyost.skyowallet.util.Utils;
 
 /**
  * KillerIncome extension class.
@@ -61,7 +60,7 @@ public class KillerIncome extends SkyowalletExtension {
 		if(rawAmount == null) {
 			return;
 		}
-		final Double amount = Utils.doubleTryParse(rawAmount);
+		final Double amount = Util.doubleTryParse(rawAmount);
 		if(amount == null) {
 			return;
 		}

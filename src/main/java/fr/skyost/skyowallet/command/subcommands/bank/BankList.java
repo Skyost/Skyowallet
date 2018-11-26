@@ -1,11 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
-import org.bukkit.command.CommandSender;
-
-import java.util.Collection;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -16,7 +10,12 @@ import fr.skyost.skyowallet.util.PlaceholderFormatter.AmountPlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.command.CommandSender;
+
+import java.util.Collection;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * Represents the <em>/bank list</em> command.
@@ -68,7 +67,7 @@ public class BankList implements CommandInterface {
 			final double amount = entry.getKey();
 			sender.sendMessage(PlaceholderFormatter.format(skyowallet.getPluginMessages().messageBankRanking, new AmountPlaceholder(amount), new CurrencyNamePlaceholder(amount), new BankPlaceholder((SkyowalletBank)data[0]), new Placeholder("accounts", data[1].toString())));
 		}
-		sender.sendMessage(Utils.SEPARATOR);
+		sender.sendMessage(Util.SEPARATOR);
 		sender.sendMessage(skyowallet.getPluginMessages().messageBankCount.replace("/banks/", String.valueOf(banksData.size())));
 		return true;
 	}

@@ -1,8 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.skyowallet;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -13,7 +10,9 @@ import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.AmountPlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.CurrencyNamePlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 /**
  * Represents the <em>/skyowallet pay</em> command.
@@ -56,13 +55,13 @@ public class SkyowalletPay implements CommandInterface {
 			return true;
 		}
 		
-		final OfflinePlayer player = Utils.getPlayerByArgument(args[1]);
+		final OfflinePlayer player = Util.getPlayerByArgument(args[1]);
 		if(player == null || !accountManager.has(player)) {
 			sender.sendMessage(skyowallet.getPluginMessages().messagePlayerNoAccount);
 			return true;
 		}
 		
-		final Double amount = skyowallet.getEconomyOperations().round(Utils.doubleTryParse(args[0]));
+		final Double amount = skyowallet.getEconomyOperations().round(Util.doubleTryParse(args[0]));
 		if(amount == null || amount < 0d) {
 			sender.sendMessage(skyowallet.getPluginMessages().messageInvalidAmount);
 			return true;

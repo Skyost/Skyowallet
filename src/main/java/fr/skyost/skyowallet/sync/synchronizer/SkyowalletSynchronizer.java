@@ -1,21 +1,20 @@
 package fr.skyost.skyowallet.sync.synchronizer;
 
-import com.google.common.io.Files;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Function;
-
 import fr.skyost.skyowallet.economy.EconomyObject;
 import fr.skyost.skyowallet.economy.SkyowalletFactory;
 import fr.skyost.skyowallet.economy.SkyowalletManager;
 import fr.skyost.skyowallet.sync.SyncManager;
+import fr.skyost.skyowallet.sync.connection.DatabaseConnection;
+import fr.skyost.skyowallet.sync.connection.MySQLConnection;
+import fr.skyost.skyowallet.sync.connection.SQLiteConnection;
 import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a synchronizer that allows to synchronize a certain type of objects.
@@ -24,36 +23,6 @@ import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
  */
 
 public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
-
-	/**
-	 * The local objects directory.
-	 */
-
-	private File directory;
-
-	/**
-	 * The identifier handler.
-	 */
-
-	private Function<T, String> identifierHandler;
-
-	/**
-	 * The SELECT query builder.
-	 */
-
-	private Function<Set<String>, String> selectQueryBuilder;
-
-	/**
-	 * The UPDATE query builder.
-	 */
-
-	private Function<T, MySQLQuery> updateQueryBuilder;
-
-	/**
-	 * The DELETE query builder.
-	 */
-
-	private Function<Set<String>, MySQLQuery> deleteQueryBuilder;
 
 	/**
 	 * The result set handler.
@@ -76,22 +45,12 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	/**
 	 * Creates a new Skyowallet synchronizer instance.
 	 *
-	 * @param directory The local objects directory.
-	 * @param identifierHandler The identifier handler.
-	 * @param selectQueryBuilder The SELECT query builder.
-	 * @param updateQueryBuilder The UPDATE query builder.
-	 * @param deleteQueryBuilder The DELETE query builder.
 	 * @param resultSetHandler The result set handler.
 	 * @param manager The manager.
 	 * @param factory The factory.
 	 */
 
-	public SkyowalletSynchronizer(final File directory, final Function<T, String> identifierHandler, final Function<Set<String>, String> selectQueryBuilder, final Function<T, MySQLQuery> updateQueryBuilder, final Function<Set<String>, MySQLQuery> deleteQueryBuilder, final SkyowalletResultSetHandler<T> resultSetHandler, final SkyowalletManager<T> manager, final SkyowalletFactory<T, ?> factory) {
-		this.directory = directory;
-		this.identifierHandler = identifierHandler;
-		this.selectQueryBuilder = selectQueryBuilder;
-		this.updateQueryBuilder = updateQueryBuilder;
-		this.deleteQueryBuilder = deleteQueryBuilder;
+	public SkyowalletSynchronizer(final SkyowalletResultSetHandler<T> resultSetHandler, final SkyowalletManager<T> manager, final SkyowalletFactory<T, ?> factory) {
 		this.resultSetHandler = resultSetHandler;
 		this.manager = manager;
 		this.factory = factory;
@@ -108,59 +67,46 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	 */
 
 	public void synchronizeQueue(final SyncManager syncManager, final HashMap<String, T> queue) throws IOException, SQLException {
-		loadObjectsFromFiles(queue);
-		if(syncManager.getSkyowallet().getPluginConfig().mySQLEnable) {
-			syncObjectsWithMySQL(syncManager, queue);
+		final MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
+		final SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
+
+		mySQLConnection.open();
+		sqLiteConnection.open();
+
+		syncObjectsWithDatabase(sqLiteConnection, queue);
+		if(mySQLConnection.isEnabled()) {
+			syncObjectsWithDatabase(mySQLConnection, queue);
+			syncObjectsWithDatabase(sqLiteConnection, queue);
+			deleteRemovedObjects(mySQLConnection, queue);
 		}
-		deleteRemovedObjects(syncManager, queue);
-		saveObjectsToFiles(queue);
+		deleteRemovedObjects(sqLiteConnection, queue);
+
+		mySQLConnection.close();
+		sqLiteConnection.close();
 	}
 
 	/**
-	 * Loads objects from the files.
+	 * Synchronizes objects with a database.
 	 *
-	 * @param queue The queue of objects.
-	 *
-	 * @throws IOException If any I/O exception occurs.
-	 */
-
-	protected void loadObjectsFromFiles(final HashMap<String, T> queue) throws IOException {
-		for(final T object : queue.values()) {
-			final File file = new File(directory, object.getIdentifier());
-			if(file.isFile()) {
-				final EconomyObject localObject = factory.createFromJSON(file);
-				if(localObject.getLastModificationTime() > object.getLastModificationTime()) {
-					object.applyFromObject(localObject);
-				}
-			}
-			else {
-				file.delete();
-			}
-		}
-	}
-
-	/**
-	 * Synchronizes objects with MySQL.
-	 *
-	 * @param syncManager The synchronization manager.
+	 * @param connection The database connection.
 	 * @param queue The queue of objects.
 	 *
 	 * @throws SQLException If any SQL exception occurs.
 	 */
 
-	protected void syncObjectsWithMySQL(final SyncManager syncManager, final HashMap<String, T> queue) throws SQLException {
+	protected void syncObjectsWithDatabase(final DatabaseConnection connection, final HashMap<String, T> queue) throws SQLException {
 		final HashMap<String, T> queueCopy = new HashMap<>(queue);
 
 		final HashSet<String> whereClause = new HashSet<>();
 		for(final T object : queue.values()) {
-			whereClause.add(identifierHandler.apply(object));
+			whereClause.add(handleIdentifier(connection, object));
 		}
 
 		if(whereClause.isEmpty()) {
 			return;
 		}
 
-		final Set<T> objects = syncManager.executeQuery(selectQueryBuilder.apply(whereClause), resultSetHandler);
+		final Set<T> objects = connection.executeQuery(buildSelectQuery(connection, whereClause), resultSetHandler);
 		for(final T mySQLObject : objects) {
 			final T memoryObject = queue.get(mySQLObject.getIdentifier());
 			queueCopy.remove(memoryObject.getIdentifier());
@@ -172,165 +118,90 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 				memoryObject.applyFromObject(mySQLObject);
 			}
 			else {
-				final MySQLQuery update = updateQueryBuilder.apply(memoryObject);
-				syncManager.executeUpdate(update.query, update.arguments);
+				final DatabaseQuery update = buildUpdateQuery(connection, memoryObject);
+				connection.executeUpdate(update.query, update.arguments);
 			}
 		}
 
 		for(final T object : queueCopy.values()) {
-			final MySQLQuery update = updateQueryBuilder.apply(object);
-			syncManager.executeUpdate(update.query, update.arguments);
+			final DatabaseQuery update = buildUpdateQuery(connection, object);
+			connection.executeUpdate(update.query, update.arguments);
 		}
 	}
 
 	/**
 	 * Deletes the removed objects.
 	 *
-	 * @param syncManager The synchronization manager.
+	 * @param connection The database connection.
 	 * @param queue The queue of objects.
 	 *
 	 * @throws SQLException If any SQL exception occurs.
 	 */
 
-	protected void deleteRemovedObjects(final SyncManager syncManager, final HashMap<String, T> queue) throws SQLException {
+	protected void deleteRemovedObjects(final DatabaseConnection connection, final HashMap<String, T> queue) throws SQLException {
 		final HashSet<String> whereClause = new HashSet<>();
-		for(final T object : queue.values()) {
+		for(final Map.Entry<String, T> entry : queue.entrySet()) {
+			final T object = entry.getValue();
 			if(!object.isDeleted()) {
 				continue;
 			}
 
-			whereClause.add(identifierHandler.apply(object));
+			whereClause.add(handleIdentifier(connection, object));
 			manager.getData().remove(object.getIdentifier());
-			queue.remove(object);
-
-			final File accountFile = new File(directory, object.getIdentifier());
-			if(accountFile.exists() && accountFile.isFile()) {
-				accountFile.delete();
-			}
+			queue.remove(entry.getKey());
 		}
 
-		if(!syncManager.getSkyowallet().getPluginConfig().mySQLEnable || whereClause.isEmpty()) {
+		if(whereClause.isEmpty()) {
 			return;
 		}
 
-		final MySQLQuery delete = deleteQueryBuilder.apply(whereClause);
-		syncManager.executeUpdate(delete.query, delete.arguments);
+		final DatabaseQuery delete = buildDeleteQuery(connection, whereClause);
+		connection.executeUpdate(delete.query, delete.arguments);
 	}
 
 	/**
-	 * Saves objects to the files.
+	 * Handles an identifier.
 	 *
-	 * @param queue The objects queue.
+	 * @param connection The database connection.
+	 * @param object The current object.
 	 *
-	 * @throws IOException If any I/O exception occurs.
+	 * @return The handled identifier.
 	 */
 
-	protected void saveObjectsToFiles(final HashMap<String, T> queue) throws IOException {
-		for(final T object : queue.values()) {
-			final File file = new File(directory, object.getIdentifier());
-			Files.write(object.toString(), file, StandardCharsets.UTF_8);
-		}
-	}
+	public abstract String handleIdentifier(final DatabaseConnection connection, final T object);
 
 	/**
-	 * Returns the directory.
+	 * Builds a SELECT query.
 	 *
-	 * @return The directory.
+	 * @param connection The database connection.
+	 * @param whereClause The WHERE clause.
+	 *
+	 * @return The SELECT query.
 	 */
 
-	public File getDirectory() {
-		return directory;
-	}
+	public abstract String buildSelectQuery(final DatabaseConnection connection, final Set<String> whereClause);
 
 	/**
-	 * Sets the directory.
+	 * Builds a UPDATE query.
 	 *
-	 * @param directory The directory.
+	 * @param connection The database connection.
+	 * @param object The current object.
+	 *
+	 * @return The UPDATE query.
 	 */
 
-	public void setDirectory(final File directory) {
-		this.directory = directory;
-	}
+	public abstract DatabaseQuery buildUpdateQuery(final DatabaseConnection connection, final T object);
 
 	/**
-	 * Returns the identifier handler.
+	 * Builds a DELETE query.
 	 *
-	 * @return The identifier handler.
+	 * @param connection The database connection.
+	 * @param whereClause The WHERE clause.
+	 *
+	 * @return The DELETE query.
 	 */
 
-	public Function<T, String> getIdentifierHandler() {
-		return identifierHandler;
-	}
-
-	/**
-	 * Sets the identifier handler.
-	 *
-	 * @param identifierHandler The identifier handler.
-	 */
-
-	public void setIdentifierHandler(final Function<T, String> identifierHandler) {
-		this.identifierHandler = identifierHandler;
-	}
-
-	/**
-	 * Returns the SELECT query builder.
-	 *
-	 * @return The SELECT query builder.
-	 */
-
-	public Function<Set<String>, String> getSelectQueryBuilder() {
-		return selectQueryBuilder;
-	}
-
-	/**
-	 * Sets the SELECT query builder.
-	 *
-	 * @param selectQueryBuilder The SELECT query builder.
-	 */
-
-	public void setSelectQueryBuilder(final Function<Set<String>, String> selectQueryBuilder) {
-		this.selectQueryBuilder = selectQueryBuilder;
-	}
-
-	/**
-	 * Returns the UPDATE query builder.
-	 *
-	 * @return The UPDATE query builder.
-	 */
-
-	public Function<T, MySQLQuery> getUpdateQueryBuilder() {
-		return updateQueryBuilder;
-	}
-
-	/**
-	 * Sets the UPDATE query builder.
-	 *
-	 * @param updateQueryBuilder The UPDATE query builder.
-	 */
-
-	public void setUpdateQueryBuilder(final Function<T, MySQLQuery> updateQueryBuilder) {
-		this.updateQueryBuilder = updateQueryBuilder;
-	}
-
-	/**
-	 * Returns the DELETE query builder.
-	 *
-	 * @return The DELETE query builder.
-	 */
-
-	public Function<Set<String>, MySQLQuery> getDeleteQueryBuilder() {
-		return deleteQueryBuilder;
-	}
-
-	/**
-	 * Sets the DELETE query builder.
-	 *
-	 * @param deleteQueryBuilder The DELETE query builder.
-	 */
-
-	public void setDeleteQueryBuilder(final Function<Set<String>, MySQLQuery> deleteQueryBuilder) {
-		this.deleteQueryBuilder = deleteQueryBuilder;
-	}
+	public abstract DatabaseQuery buildDeleteQuery(final DatabaseConnection connection, final Set<String> whereClause);
 
 	/**
 	 * Returns the result set handler.
@@ -393,10 +264,10 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	}
 
 	/**
-	 * Represents a MySQL query with arguments.
+	 * Represents a SQL query with arguments.
 	 */
 
-	public static class MySQLQuery {
+	public static class DatabaseQuery {
 
 		/**
 		 * The query.
@@ -411,13 +282,13 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 		private final Object[] arguments;
 
 		/**
-		 * Creates a new MySQL query instance.
+		 * Creates a new SQL query instance.
 		 *
 		 * @param query The query.
 		 * @param arguments The arguments.
 		 */
 
-		public MySQLQuery(final String query, final Object... arguments) {
+		public DatabaseQuery(final String query, final Object... arguments) {
 			this.query = query;
 			this.arguments = arguments;
 		}

@@ -1,14 +1,6 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
 import com.google.common.base.Joiner;
-
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import java.util.Arrays;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -19,7 +11,13 @@ import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.BankPlaceholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.PlayerPlaceholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.Arrays;
 
 /**
  * Represents the <em>/bank deny</em> command.
@@ -65,7 +63,7 @@ public class BankDeny implements CommandInterface {
 
 		final SkyowalletAccountManager accountManager = skyowallet.getAccountManager();
 
-		final OfflinePlayer player = Utils.getPlayerByArgument(args[0]);
+		final OfflinePlayer player = Util.getPlayerByArgument(args[0]);
 		if(player == null || !accountManager.has(player)) {
 			sender.sendMessage(skyowallet.getPluginMessages().messagePlayerNoAccount);
 			return true;

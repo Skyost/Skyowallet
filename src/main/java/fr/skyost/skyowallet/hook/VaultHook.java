@@ -1,15 +1,19 @@
 package fr.skyost.skyowallet.hook;
 
 import com.google.common.base.Charsets;
-
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
+import fr.skyost.skyowallet.util.Util;
 import net.milkbowl.vault.economy.AbstractEconomy;
+import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
+import org.bukkit.plugin.ServicePriority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +21,11 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccount;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
-import fr.skyost.skyowallet.util.Utils;
-
 /**
  * Allows to hook into Vault.
  */
 
-public class VaultHook extends AbstractEconomy implements Listener {
+public class VaultHook extends AbstractEconomy {
 
 	/**
 	 * The Skyowallet instance.
@@ -73,20 +70,12 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	public void register() {
 		final Logger logger = skyowallet.getLogger();
 		logger.log(Level.INFO, "Registering the Vault hook...");
-		Bukkit.getPluginManager().registerEvents(this, skyowallet);
+		Bukkit.getServicesManager().register(Economy.class, this, skyowallet, ServicePriority.Highest);
 		logger.log(Level.INFO, "Finished ! Vault will now support Skyowallet !");
 
 		/*final Method hookEconomy = vault.getClass().getDeclaredMethod("hookEconomy", String.class, Class.class, ServicePriority.class, String[].class);
 		hookEconomy.setAccessible(true);
 		hookEconomy.invoke(vault, "Skyowallet", VaultHook.class, ServicePriority.Normal, new String[]{"fr.skyost.skyowallet.Skyowallet"});*/
-	}
-
-	/**
-	 * Unregisters the hook.
-	 */
-
-	public void unregister() {
-		HandlerList.unregisterAll(this);
 	}
 	
 	@Override
@@ -186,7 +175,7 @@ public class VaultHook extends AbstractEconomy implements Listener {
 	
 	@Override
 	public final EconomyResponse createBank(final String bankName, final String playerName) {
-		if(!Utils.isValidFileName(bankName)) {
+		if(!Util.isValidFileName(bankName)) {
 			return new EconomyResponse(0d, 0d, ResponseType.FAILURE, "This is not a valid bank name.");
 		}
 		if(!hasAccount(playerName)) {

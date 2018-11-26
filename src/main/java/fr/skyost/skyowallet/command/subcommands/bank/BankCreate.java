@@ -1,8 +1,5 @@
 package fr.skyost.skyowallet.command.subcommands.bank;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.command.SubCommandsExecutor;
 import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
@@ -12,7 +9,9 @@ import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
 import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import fr.skyost.skyowallet.util.PlaceholderFormatter.Placeholder;
-import fr.skyost.skyowallet.util.Utils;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 /**
  * Represents the <em>/bank create</em> command.
@@ -59,7 +58,7 @@ public class BankCreate implements CommandInterface {
 			sender.sendMessage(skyowallet.getPluginMessages().messageBankAlreadyExists);
 			return true;
 		}
-		if(!Utils.isValidFileName(args[0])) {
+		if(!Util.isValidFileName(args[0])) {
 			sender.sendMessage(PlaceholderFormatter.format(skyowallet.getPluginMessages().messageInvalidName, new Placeholder("name", args[0])));
 			return true;
 		}

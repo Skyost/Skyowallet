@@ -1,5 +1,24 @@
 package fr.skyost.skyowallet;
 
+import fr.skyost.skyowallet.command.BankCommand;
+import fr.skyost.skyowallet.command.SkyowalletCommand;
+import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
+import fr.skyost.skyowallet.command.subcommands.bank.*;
+import fr.skyost.skyowallet.command.subcommands.skyowallet.*;
+import fr.skyost.skyowallet.config.PluginConfig;
+import fr.skyost.skyowallet.config.PluginMessages;
+import fr.skyost.skyowallet.economy.EconomyOperations;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountFactory;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBankFactory;
+import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
+import fr.skyost.skyowallet.extension.*;
+import fr.skyost.skyowallet.hook.VaultHook;
+import fr.skyost.skyowallet.listener.GlobalEvents;
+import fr.skyost.skyowallet.sync.SyncManager;
+import fr.skyost.skyowallet.sync.SyncTask;
+import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
+import fr.skyost.skyowallet.util.Skyupdater;
 import org.bstats.bukkit.MetricsLite;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,51 +29,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.HashSet;
-
-import fr.skyost.skyowallet.command.BankCommand;
-import fr.skyost.skyowallet.command.SkyowalletCommand;
-import fr.skyost.skyowallet.command.SubCommandsExecutor.CommandInterface;
-import fr.skyost.skyowallet.command.subcommands.bank.BankApprove;
-import fr.skyost.skyowallet.command.subcommands.bank.BankCancel;
-import fr.skyost.skyowallet.command.subcommands.bank.BankCreate;
-import fr.skyost.skyowallet.command.subcommands.bank.BankDelete;
-import fr.skyost.skyowallet.command.subcommands.bank.BankDeny;
-import fr.skyost.skyowallet.command.subcommands.bank.BankDeposit;
-import fr.skyost.skyowallet.command.subcommands.bank.BankInfo;
-import fr.skyost.skyowallet.command.subcommands.bank.BankJoin;
-import fr.skyost.skyowallet.command.subcommands.bank.BankLeave;
-import fr.skyost.skyowallet.command.subcommands.bank.BankList;
-import fr.skyost.skyowallet.command.subcommands.bank.BankRemoveOwner;
-import fr.skyost.skyowallet.command.subcommands.bank.BankSetOwner;
-import fr.skyost.skyowallet.command.subcommands.bank.BankToggleApprovalNeeded;
-import fr.skyost.skyowallet.command.subcommands.bank.BankWithdraw;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletInfo;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletPay;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletSet;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletSync;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletTop;
-import fr.skyost.skyowallet.command.subcommands.skyowallet.SkyowalletView;
-import fr.skyost.skyowallet.config.PluginConfig;
-import fr.skyost.skyowallet.config.PluginMessages;
-import fr.skyost.skyowallet.economy.EconomyOperations;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountFactory;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBankFactory;
-import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
-import fr.skyost.skyowallet.extension.Bounty;
-import fr.skyost.skyowallet.extension.CommandCost;
-import fr.skyost.skyowallet.extension.ExtensionManager;
-import fr.skyost.skyowallet.extension.GoodbyeWallet;
-import fr.skyost.skyowallet.extension.KillerIncome;
-import fr.skyost.skyowallet.extension.Mine4Cash;
-import fr.skyost.skyowallet.extension.ScoreboardInfo;
-import fr.skyost.skyowallet.extension.SkyowalletExtension;
-import fr.skyost.skyowallet.hook.VaultHook;
-import fr.skyost.skyowallet.listener.GlobalEvents;
-import fr.skyost.skyowallet.sync.SyncManager;
-import fr.skyost.skyowallet.sync.SyncTask;
-import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
-import fr.skyost.skyowallet.util.Skyupdater;
 
 /**
  * The plugin's main class.
@@ -140,9 +114,10 @@ public class Skyowallet extends JavaPlugin {
 			economyOperations = new EconomyOperations(this);
 
 			syncManager = new SyncManager(this);
+			syncManager.getSQLiteConnection().formatDatabase();
 
 			if(config.mySQLEnable) {
-				syncManager.enableMySQL();
+				syncManager.getMySQLConnection().enableMySQL();
 			}
 			if(config.syncInterval > 0) {
 				new SyncTask(this, syncManager.getMainSyncQueue()).runTaskTimer(this, config.syncInterval * 20L, config.syncInterval * 20L);
@@ -208,7 +183,7 @@ public class Skyowallet extends JavaPlugin {
 				extensionManager.unregister(extension);
 			}
 			new SyncTask(this, new FullSyncQueue(syncManager, Bukkit.getConsoleSender())).run();
-			syncManager.disableMySQL();
+			syncManager.getMySQLConnection().disableMySQL();
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
