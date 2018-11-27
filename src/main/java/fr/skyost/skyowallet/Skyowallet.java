@@ -15,6 +15,7 @@ import fr.skyost.skyowallet.economy.bank.SkyowalletBankManager;
 import fr.skyost.skyowallet.extension.*;
 import fr.skyost.skyowallet.hook.VaultHook;
 import fr.skyost.skyowallet.listener.GlobalEvents;
+import fr.skyost.skyowallet.sync.LegacyImportTask;
 import fr.skyost.skyowallet.sync.SyncManager;
 import fr.skyost.skyowallet.sync.SyncTask;
 import fr.skyost.skyowallet.sync.queue.FullSyncQueue;
@@ -123,7 +124,12 @@ public class Skyowallet extends JavaPlugin {
 				new SyncTask(this, syncManager.getMainSyncQueue()).runTaskTimer(this, config.syncInterval * 20L, config.syncInterval * 20L);
 			}
 
-			SyncTask.runDefaultSync(new FullSyncQueue(syncManager, Bukkit.getConsoleSender()));
+			if(new File(config.directoryAccounts).exists() || new File(config.directoryBanks).exists()) {
+				new LegacyImportTask(this).runTask(this);
+			}
+			else {
+				SyncTask.runDefaultSync(new FullSyncQueue(syncManager, Bukkit.getConsoleSender()));
+			}
 			
 			final SkyowalletCommand skyowalletCmd = new SkyowalletCommand(this);
 			for(final CommandInterface command : new CommandInterface[]{new SkyowalletInfo(), new SkyowalletPay(), new SkyowalletSet(), new SkyowalletSync(), new SkyowalletTop(), new SkyowalletView()}) {

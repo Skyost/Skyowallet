@@ -29,7 +29,16 @@ public class SyncManager {
 
 	private Skyowallet skyowallet;
 
+	/**
+	 * MySQL connection instance.
+	 */
+
 	private MySQLConnection mySQLConnection;
+
+	/**
+	 * SQLite connection instance.
+	 */
+
 	private SQLiteConnection sqLiteConnection;
 
 	/**
