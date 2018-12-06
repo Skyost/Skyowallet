@@ -2,6 +2,8 @@ package fr.skyost.skyowallet.util;
 
 import com.google.common.base.Charsets;
 import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.util.function.ThrowingConsumer;
+import fr.skyost.skyowallet.util.function.ThrowingFunction;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -128,6 +130,42 @@ public class Util {
 	
 	public static String uuidAddDashes(final String uuid) {
 		return uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
+	}
+
+	/**
+	 * Executes a function according to the nullity of the specified argument.
+	 *
+	 * @param argument The argument.
+	 * @param ifNotNull The function to trigger if the argument is not null.
+	 *
+	 * @param <A> Argument type.
+	 *
+	 * @return The function value.
+	 */
+
+	public static <A> void ifNotNull(final A argument, final ThrowingConsumer<A> ifNotNull) {
+		ifNotNull(argument, null, arg -> {
+			ifNotNull.accept(arg);
+			return null;
+		}, arg -> null);
+	}
+
+	/**
+	 * Executes a function according to the nullity of the specified argument.
+	 *
+	 * @param argument The argument.
+	 * @param returnType The return type.
+	 * @param ifNotNull The function to trigger if the argument is not null.
+	 * @param ifNull The function to trigger if the argument is null.
+	 *
+	 * @param <A> Argument type.
+	 * @param <V> Return value type.
+	 *
+	 * @return The function value.
+	 */
+
+	public static <A, V> V ifNotNull(final A argument, Class<? extends V> returnType, final ThrowingFunction<A, V> ifNotNull, final ThrowingFunction<A, V> ifNull) {
+		return argument == null ? ifNull.apply(argument) : ifNotNull.apply(argument);
 	}
 	
 }

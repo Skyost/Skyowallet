@@ -115,10 +115,10 @@ public class Skyowallet extends JavaPlugin {
 			economyOperations = new EconomyOperations(this);
 
 			syncManager = new SyncManager(this);
-			syncManager.getSQLiteConnection().formatDatabase();
+			syncManager.getSQLiteConnection().enable();
 
 			if(config.mySQLEnable) {
-				syncManager.getMySQLConnection().enableMySQL();
+				syncManager.getMySQLConnection().enable();
 			}
 			if(config.syncInterval > 0) {
 				new SyncTask(this, syncManager.getMainSyncQueue()).runTaskTimer(this, config.syncInterval * 20L, config.syncInterval * 20L);
@@ -189,7 +189,8 @@ public class Skyowallet extends JavaPlugin {
 				extensionManager.unregister(extension);
 			}
 			new SyncTask(this, new FullSyncQueue(syncManager, Bukkit.getConsoleSender())).run();
-			syncManager.getMySQLConnection().disableMySQL();
+			syncManager.getSQLiteConnection().disable();
+			syncManager.getMySQLConnection().disable();
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();

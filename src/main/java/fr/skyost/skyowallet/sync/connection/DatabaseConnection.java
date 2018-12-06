@@ -52,6 +52,12 @@ public abstract class DatabaseConnection {
 	private Connection connection;
 
 	/**
+	 * Whether this kind of connection is enabled.
+	 */
+
+	private boolean enabled = false;
+
+	/**
 	 * Creates a new database connection instance.
 	 *
 	 * @param url The database URL.
@@ -82,6 +88,10 @@ public abstract class DatabaseConnection {
 	 */
 
 	public void open() throws SQLException {
+		if(!enabled) {
+			return;
+		}
+
 		connection = username != null && password != null ? DriverManager.getConnection(url, username, password) : DriverManager.getConnection(url);
 	}
 
@@ -104,11 +114,46 @@ public abstract class DatabaseConnection {
 	 */
 
 	public void close() throws SQLException {
-		if(isClosed()) {
+		if(!enabled || isClosed()) {
 			return;
 		}
 		connection.close();
 		connection = null;
+	}
+
+	/**
+	 * Returns whether this kind of connection is enabled.
+	 *
+	 * @return Whether this kind of connection is enabled.
+	 */
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * Enables this kind of connection.
+	 *
+	 * @throws SQLException If an exception occurs while creating required tables.
+	 */
+
+	public void enable() throws SQLException {
+		enabled = true;
+		open();
+		executeUpdate(getCreateAccountsTableRequest());
+		executeUpdate(getCreateBanksTableRequest());
+		close();
+	}
+
+	/**
+	 * Disables this kind of connection.
+	 *
+	 * @throws SQLException If an exception occurs while closing the connection.
+	 */
+
+	public void disable() throws SQLException {
+		close();
+		enabled = false;
 	}
 
 	/**
@@ -207,6 +252,14 @@ public abstract class DatabaseConnection {
 	}
 
 	/**
+	 * Returns the CREATE TABLE accounts request.
+	 *
+	 * @return The CREATE TABLE accounts request.
+	 */
+
+	public abstract String getCreateAccountsTableRequest();
+
+	/**
 	 * Returns the SELECT accounts request.
 	 *
 	 * @return The SELECT accounts request.
@@ -229,6 +282,14 @@ public abstract class DatabaseConnection {
 	 */
 
 	public abstract String getDeleteAccountsRequest();
+
+	/**
+	 * Returns the CREATE TABLE banks request.
+	 *
+	 * @return The CREATE TABLE banks request.
+	 */
+
+	public abstract String getCreateBanksTableRequest();
 
 	/**
 	 * Returns the SELECT banks request.

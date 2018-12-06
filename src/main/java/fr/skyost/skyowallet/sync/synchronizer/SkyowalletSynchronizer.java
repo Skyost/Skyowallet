@@ -8,6 +8,9 @@ import fr.skyost.skyowallet.sync.connection.DatabaseConnection;
 import fr.skyost.skyowallet.sync.connection.MySQLConnection;
 import fr.skyost.skyowallet.sync.connection.SQLiteConnection;
 import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -67,22 +70,40 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	 */
 
 	public void synchronizeQueue(final SyncManager syncManager, final HashMap<String, T> queue) throws IOException, SQLException {
-		final MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
-		final SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
+		MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
+		SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
 
-		mySQLConnection.open();
-		sqLiteConnection.open();
-
-		syncObjectsWithDatabase(sqLiteConnection, queue);
-		if(mySQLConnection.isEnabled()) {
-			syncObjectsWithDatabase(mySQLConnection, queue);
-			syncObjectsWithDatabase(sqLiteConnection, queue);
-			deleteRemovedObjects(mySQLConnection, queue);
+		try {
+			mySQLConnection.open();
 		}
-		deleteRemovedObjects(sqLiteConnection, queue);
+		catch(final Exception ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Could not open a MySQL connection !");
+			ex.printStackTrace();
+			mySQLConnection = null;
+		}
 
-		mySQLConnection.close();
-		sqLiteConnection.close();
+		try {
+			sqLiteConnection.open();
+		}
+		catch(final Exception ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Could not open a SQLite connection !");
+			ex.printStackTrace();
+			sqLiteConnection = null;
+		}
+
+		Util.ifNotNull(sqLiteConnection, connection -> syncObjectsWithDatabase(connection, queue));
+		if(Util.ifNotNull(mySQLConnection, boolean.class, DatabaseConnection::isEnabled, connection -> false)) {
+			Util.ifNotNull(mySQLConnection, connection -> syncObjectsWithDatabase(connection, queue));
+			Util.ifNotNull(sqLiteConnection, connection -> syncObjectsWithDatabase(connection, queue));
+			Util.ifNotNull(mySQLConnection, connection -> deleteRemovedObjects(connection, queue));
+		}
+		else {
+			Util.ifNotNull(sqLiteConnection, connection -> syncObjectsWithDatabase(connection, queue));
+		}
+		Util.ifNotNull(sqLiteConnection, connection -> deleteRemovedObjects(connection, queue));
+
+		Util.ifNotNull(mySQLConnection, DatabaseConnection::close);
+		Util.ifNotNull(sqLiteConnection, DatabaseConnection::close);
 	}
 
 	/**

@@ -2,8 +2,6 @@ package fr.skyost.skyowallet.sync.connection;
 
 import fr.skyost.skyowallet.config.PluginConfig;
 
-import java.sql.SQLException;
-
 /**
  * Represents a MySQL connection.
  */
@@ -59,12 +57,6 @@ public class MySQLConnection extends DatabaseConnection {
 	public static final String MYSQL_DELETE_BANKS = "DELETE FROM `" + SQL_TABLE_BANKS + "`";
 
 	/**
-	 * Whether MySQL is enabled.
-	 */
-
-	private boolean enabled = false;
-
-	/**
 	 * Creates a new MySQL connection instance.
 	 *
 	 * @param config The plugin configuration.
@@ -74,47 +66,9 @@ public class MySQLConnection extends DatabaseConnection {
 		super("jdbc:mysql://" + config.mySQLHost + ":" + config.mySQLPort + "/" + config.mySQLDB + "?useSSL=false", config.mySQLUser, config.mySQLPassword);
 	}
 
-	/**
-	 * Enables MySQL.
-	 *
-	 * @throws SQLException If an exception occurs while creating required tables.
-	 */
-
-	public void enableMySQL() throws SQLException {
-		enabled = true;
-		open();
-		executeUpdate(MYSQL_CREATE_TABLE_ACCOUNTS);
-		executeUpdate(MYSQL_CREATE_TABLE_BANKS);
-		close();
-	}
-
-	/**
-	 * Disables MySQL.
-	 *
-	 * @throws SQLException If an exception occurs while closing the connection.
-	 */
-
-	public void disableMySQL() throws SQLException {
-		close();
-		enabled = false;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
-	}
-
 	@Override
-	public void open() throws SQLException {
-		if(enabled) {
-			super.open();
-		}
-	}
-
-	@Override
-	public void close() throws SQLException {
-		if(enabled) {
-			super.close();
-		}
+	public String getCreateAccountsTableRequest() {
+		return MYSQL_CREATE_TABLE_ACCOUNTS;
 	}
 
 	@Override
@@ -130,6 +84,11 @@ public class MySQLConnection extends DatabaseConnection {
 	@Override
 	public String getDeleteAccountsRequest() {
 		return MYSQL_DELETE_ACCOUNTS;
+	}
+
+	@Override
+	public String getCreateBanksTableRequest() {
+		return MYSQL_CREATE_TABLE_BANKS;
 	}
 
 	@Override

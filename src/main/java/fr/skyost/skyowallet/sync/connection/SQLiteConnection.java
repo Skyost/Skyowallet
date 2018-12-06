@@ -2,8 +2,6 @@ package fr.skyost.skyowallet.sync.connection;
 
 import fr.skyost.skyowallet.config.PluginConfig;
 
-import java.sql.SQLException;
-
 /**
  * Represents a SQLite connection.
  */
@@ -68,16 +66,9 @@ public class SQLiteConnection extends DatabaseConnection {
 		super("jdbc:sqlite:" + config.getDatabaseFile().getPath());
 	}
 
-	/**
-	 * Formats the current database.
-	 *
-	 * @throws SQLException If an exception occurs while creating required tables.
-	 */
-
-	public void formatDatabase() throws SQLException {
-		executeUpdate(SQLITE_CREATE_TABLE_ACCOUNTS);
-		executeUpdate(SQLITE_CREATE_TABLE_BANKS);
-		close();
+	@Override
+	public String getCreateAccountsTableRequest() {
+		return SQLITE_CREATE_TABLE_ACCOUNTS;
 	}
 
 	@Override
@@ -93,6 +84,11 @@ public class SQLiteConnection extends DatabaseConnection {
 	@Override
 	public String getDeleteAccountsRequest() {
 		return SQLITE_DELETE_ACCOUNTS;
+	}
+
+	@Override
+	public String getCreateBanksTableRequest() {
+		return SQLITE_CREATE_TABLE_BANKS;
 	}
 
 	@Override
