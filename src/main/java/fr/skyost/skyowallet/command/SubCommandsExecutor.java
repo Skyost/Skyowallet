@@ -1,7 +1,8 @@
 package fr.skyost.skyowallet.command;
 
 import com.google.common.base.Joiner;
-
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.util.PlaceholderFormatter;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,9 +12,6 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.util.PlaceholderFormatter;
 
 /**
  * A command executor that allows to execute sub-commands.
@@ -157,7 +155,7 @@ public abstract class SubCommandsExecutor implements CommandExecutor {
 		}
 		catch(final Exception ex) {
 			ex.printStackTrace();
-			sender.sendMessage(ChatColor.RED + ex.getClass().getName());
+			sender.sendMessage(ChatColor.DARK_RED + ex.getClass().getName());
 			return true;
 		}
 		sendUsage(sender);

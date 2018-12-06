@@ -9,6 +9,8 @@ import fr.skyost.skyowallet.sync.connection.SQLiteConnection;
 import fr.skyost.skyowallet.sync.synchronizer.SkyowalletAccountSynchronizer;
 import fr.skyost.skyowallet.sync.synchronizer.SkyowalletBankSynchronizer;
 import fr.skyost.skyowallet.sync.synchronizer.SkyowalletSynchronizer;
+import fr.skyost.skyowallet.util.Util;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -39,21 +41,36 @@ public class FullSyncQueue extends SyncQueue {
 		addToQueue(syncManager.getSkyowallet().getAccountManager().list());
 		addToQueue(syncManager.getSkyowallet().getBankManager().list());
 
-		final MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
-		final SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
+		MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
+		SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
 
-		mySQLConnection.open();
-		sqLiteConnection.open();
+		try {
+			mySQLConnection.open();
+		}
+		catch(final Exception ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a MySQL connection !");
+			ex.printStackTrace();
+			mySQLConnection = null;
+		}
+
+		try {
+			sqLiteConnection.open();
+		}
+		catch(final Exception ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a SQLite connection !");
+			ex.printStackTrace();
+			sqLiteConnection = null;
+		}
 
 		final SkyowalletAccountSynchronizer accountSynchronizer = createAccountSynchronizer();
 		final SkyowalletBankSynchronizer bankSynchronizer = createBankSynchronizer();
 
-		loadNewObjectsFromDatabase(sqLiteConnection, accountSynchronizer, sqLiteConnection.getSelectAccountsRequest());
-		loadNewObjectsFromDatabase(sqLiteConnection, bankSynchronizer, sqLiteConnection.getSelectBanksRequest());
+		Util.ifNotNull(sqLiteConnection, connection -> loadNewObjectsFromDatabase(connection, accountSynchronizer, connection.getSelectAccountsRequest()));
+		Util.ifNotNull(sqLiteConnection, connection -> loadNewObjectsFromDatabase(connection, bankSynchronizer, connection.getSelectBanksRequest()));
 
-		if(mySQLConnection.isEnabled()) {
-			loadNewObjectsFromDatabase(mySQLConnection, accountSynchronizer, mySQLConnection.getSelectAccountsRequest());
-			loadNewObjectsFromDatabase(mySQLConnection, bankSynchronizer, mySQLConnection.getSelectBanksRequest());
+		if(Util.ifNotNull(mySQLConnection, boolean.class, DatabaseConnection::isEnabled, connection -> false)) {
+			Util.ifNotNull(mySQLConnection, connection -> loadNewObjectsFromDatabase(connection, accountSynchronizer, connection.getSelectAccountsRequest()));
+			Util.ifNotNull(mySQLConnection, connection -> loadNewObjectsFromDatabase(connection, bankSynchronizer, connection.getSelectBanksRequest()));
 		}
 
 		super.synchronize();

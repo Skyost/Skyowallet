@@ -12,7 +12,6 @@ import fr.skyost.skyowallet.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,12 +63,9 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	 *
 	 * @param syncManager The synchronization manager.
 	 * @param queue The queue of objects.
-	 *
-	 * @throws IOException If any I/O exception occurs.
-	 * @throws SQLException If any SQL exception occurs.
 	 */
 
-	public void synchronizeQueue(final SyncManager syncManager, final HashMap<String, T> queue) throws IOException, SQLException {
+	public void synchronizeQueue(final SyncManager syncManager, final HashMap<String, T> queue) {
 		MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
 		SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
 
@@ -77,7 +73,7 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 			mySQLConnection.open();
 		}
 		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Could not open a MySQL connection !");
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a MySQL connection !");
 			ex.printStackTrace();
 			mySQLConnection = null;
 		}
@@ -86,7 +82,7 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 			sqLiteConnection.open();
 		}
 		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Could not open a SQLite connection !");
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a SQLite connection !");
 			ex.printStackTrace();
 			sqLiteConnection = null;
 		}

@@ -3,6 +3,8 @@ package fr.skyost.skyowallet.sync.connection;
 import fr.skyost.skyowallet.economy.EconomyObject;
 import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
 import org.apache.commons.dbutils.QueryRunner;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -133,27 +135,41 @@ public abstract class DatabaseConnection {
 
 	/**
 	 * Enables this kind of connection.
-	 *
-	 * @throws SQLException If an exception occurs while creating required tables.
 	 */
 
-	public void enable() throws SQLException {
-		enabled = true;
-		open();
-		executeUpdate(getCreateAccountsTableRequest());
-		executeUpdate(getCreateBanksTableRequest());
-		close();
+	public void enable() {
+		try {
+			enabled = true;
+
+			open();
+			executeUpdate(getCreateAccountsTableRequest());
+			executeUpdate(getCreateBanksTableRequest());
+			close();
+		}
+		catch(final SQLException ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Unable to enable " + getClass().getName() + " !");
+			ex.printStackTrace();
+
+			enabled = false;
+		}
 	}
 
 	/**
 	 * Disables this kind of connection.
-	 *
-	 * @throws SQLException If an exception occurs while closing the connection.
 	 */
 
-	public void disable() throws SQLException {
-		close();
-		enabled = false;
+	public void disable() {
+		try {
+			close();
+
+			enabled = false;
+		}
+		catch(final SQLException ex) {
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Unable to disable " + getClass().getName() + " !");
+			ex.printStackTrace();
+
+			enabled = true;
+		}
 	}
 
 	/**

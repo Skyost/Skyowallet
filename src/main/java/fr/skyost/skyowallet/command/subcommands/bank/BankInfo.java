@@ -75,7 +75,7 @@ public class BankInfo implements CommandInterface {
 		}
 		
 		if(bank == null) {
-			sender.sendMessage(ChatColor.RED + (args.length < 1 ? skyowallet.getPluginMessages().messageNoBankAccount : skyowallet.getPluginMessages().messageUnexistingBank));
+			sender.sendMessage(ChatColor.DARK_RED + (args.length < 1 ? skyowallet.getPluginMessages().messageNoBankAccount : skyowallet.getPluginMessages().messageUnexistingBank));
 			return true;
 		}
 		
