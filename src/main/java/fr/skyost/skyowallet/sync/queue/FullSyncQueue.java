@@ -1,22 +1,17 @@
 package fr.skyost.skyowallet.sync.queue;
 
-import fr.skyost.skyowallet.economy.EconomyObject;
-import fr.skyost.skyowallet.economy.SkyowalletManager;
 import fr.skyost.skyowallet.sync.SyncManager;
 import fr.skyost.skyowallet.sync.connection.DatabaseConnection;
 import fr.skyost.skyowallet.sync.connection.MySQLConnection;
 import fr.skyost.skyowallet.sync.connection.SQLiteConnection;
 import fr.skyost.skyowallet.sync.synchronizer.SkyowalletAccountSynchronizer;
 import fr.skyost.skyowallet.sync.synchronizer.SkyowalletBankSynchronizer;
-import fr.skyost.skyowallet.sync.synchronizer.SkyowalletSynchronizer;
 import fr.skyost.skyowallet.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Set;
 
 /**
  * Represents a full synchronization queue.
@@ -38,39 +33,23 @@ public class FullSyncQueue extends SyncQueue {
 	@Override
 	public void synchronize() throws IOException, SQLException {
 		final SyncManager syncManager = this.getSyncManager();
-		addToQueue(syncManager.getSkyowallet().getAccountManager().list());
-		addToQueue(syncManager.getSkyowallet().getBankManager().list());
+		enqueue(syncManager.getSkyowallet().getAccountManager().list());
+		enqueue(syncManager.getSkyowallet().getBankManager().list());
 
-		MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
-		SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
-
-		try {
-			mySQLConnection.open();
-		}
-		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a MySQL connection !");
-			ex.printStackTrace();
-			mySQLConnection = null;
-		}
-
-		try {
-			sqLiteConnection.open();
-		}
-		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a SQLite connection !");
-			ex.printStackTrace();
-			sqLiteConnection = null;
-		}
+		final MySQLConnection mySQLConnection = Util.tryOpenConnection(syncManager.getMySQLConnection());
+		final SQLiteConnection sqLiteConnection = Util.tryOpenConnection(syncManager.getSQLiteConnection());
 
 		final SkyowalletAccountSynchronizer accountSynchronizer = createAccountSynchronizer();
 		final SkyowalletBankSynchronizer bankSynchronizer = createBankSynchronizer();
 
-		Util.ifNotNull(sqLiteConnection, connection -> loadNewObjectsFromDatabase(connection, accountSynchronizer, connection.getSelectAccountsRequest()));
-		Util.ifNotNull(sqLiteConnection, connection -> loadNewObjectsFromDatabase(connection, bankSynchronizer, connection.getSelectBanksRequest()));
+		if(sqLiteConnection != null) {
+			accountSynchronizer.loadNewObjectsFromDatabase(this, sqLiteConnection, sqLiteConnection.getSelectAccountsRequest());
+			bankSynchronizer.loadNewObjectsFromDatabase(this, sqLiteConnection, sqLiteConnection.getSelectBanksRequest());
+		}
 
 		if(Util.ifNotNull(mySQLConnection, boolean.class, DatabaseConnection::isEnabled, connection -> false)) {
-			Util.ifNotNull(mySQLConnection, connection -> loadNewObjectsFromDatabase(connection, accountSynchronizer, connection.getSelectAccountsRequest()));
-			Util.ifNotNull(mySQLConnection, connection -> loadNewObjectsFromDatabase(connection, bankSynchronizer, connection.getSelectBanksRequest()));
+			accountSynchronizer.loadNewObjectsFromDatabase(this, mySQLConnection, mySQLConnection.getSelectAccountsRequest());
+			bankSynchronizer.loadNewObjectsFromDatabase(this, mySQLConnection, mySQLConnection.getSelectBanksRequest());
 		}
 
 		super.synchronize();
@@ -81,28 +60,6 @@ public class FullSyncQueue extends SyncQueue {
 		return ChatColor.GOLD + "Full synchronization started...";
 	}
 
-	/**
-	 * Loads all new objects from a database.
-	 *
-	 * @param connection The database connection.
-	 * @param synchronizer The synchronizer.
-	 * @param selectQuery The query that allows to select the objects.
-	 * @param <T> The type of objects to load.
-	 *
-	 * @throws SQLException If any SQL exception occurs.
-	 */
 
-	private <T extends EconomyObject> void loadNewObjectsFromDatabase(final DatabaseConnection connection, final SkyowalletSynchronizer<T> synchronizer, final String selectQuery) throws SQLException {
-		final SkyowalletManager<T> manager = synchronizer.getManager();
-
-		final Set<T> objects = connection.executeQuery(selectQuery, synchronizer.getResultSetHandler());
-		for(final T mySQLObject : objects) {
-			if(manager.has(mySQLObject.getIdentifier())) {
-				continue;
-			}
-			manager.add(mySQLObject);
-			addToQueue(mySQLObject);
-		}
-	}
 
 }

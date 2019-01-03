@@ -2,6 +2,7 @@ package fr.skyost.skyowallet.util;
 
 import com.google.common.base.Charsets;
 import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.sync.connection.DatabaseConnection;
 import fr.skyost.skyowallet.util.function.ThrowingConsumer;
 import fr.skyost.skyowallet.util.function.ThrowingFunction;
 import org.bukkit.Bukkit;
@@ -167,5 +168,28 @@ public class Util {
 	public static <A, V> V ifNotNull(final A argument, Class<? extends V> returnType, final ThrowingFunction<A, V> ifNotNull, final ThrowingFunction<A, V> ifNull) {
 		return argument == null ? ifNull.apply(argument) : ifNotNull.apply(argument);
 	}
-	
+
+	/**
+	 * Tries to open a connection (print a message to the console if fail).
+	 *
+	 * @param connection The connection.
+	 * @param <T> The connection type.
+	 *
+	 * @return The connection object if success, null otherwise.
+	 */
+
+	public static <T extends DatabaseConnection> T tryOpenConnection(final T connection) {
+		try {
+			connection.open();
+			return connection;
+		}
+		catch(final Exception ex) {
+			final String name = connection.getClass().getSimpleName();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a " + (name.isEmpty() ? "SQL" : name.replace("Connection", "")) + " connection !");
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+
 }

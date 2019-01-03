@@ -1,8 +1,7 @@
 package fr.skyost.skyowallet.economy;
 
-import org.json.simple.JSONObject;
-
 import fr.skyost.skyowallet.Skyowallet;
+import org.json.simple.JSONObject;
 
 /**
  * Represents an economy object (bank / account).
@@ -129,7 +128,7 @@ public abstract class EconomyObject {
 	
 	public void updateLastModificationTime() {
 		setLastModificationTime(System.currentTimeMillis());
-		skyowallet.getSyncManager().getMainSyncQueue().addToQueue(this);
+		skyowallet.getSyncManager().getMainSyncQueue().enqueue(this);
 	}
 
 	/**

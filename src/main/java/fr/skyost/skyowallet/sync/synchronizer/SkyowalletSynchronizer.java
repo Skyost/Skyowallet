@@ -8,9 +8,8 @@ import fr.skyost.skyowallet.sync.connection.DatabaseConnection;
 import fr.skyost.skyowallet.sync.connection.MySQLConnection;
 import fr.skyost.skyowallet.sync.connection.SQLiteConnection;
 import fr.skyost.skyowallet.sync.handler.SkyowalletResultSetHandler;
+import fr.skyost.skyowallet.sync.queue.SyncQueue;
 import fr.skyost.skyowallet.util.Util;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -66,26 +65,8 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 	 */
 
 	public void synchronizeQueue(final SyncManager syncManager, final HashMap<String, T> queue) {
-		MySQLConnection mySQLConnection = syncManager.getMySQLConnection();
-		SQLiteConnection sqLiteConnection = syncManager.getSQLiteConnection();
-
-		try {
-			mySQLConnection.open();
-		}
-		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a MySQL connection !");
-			ex.printStackTrace();
-			mySQLConnection = null;
-		}
-
-		try {
-			sqLiteConnection.open();
-		}
-		catch(final Exception ex) {
-			Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "Could not open a SQLite connection !");
-			ex.printStackTrace();
-			sqLiteConnection = null;
-		}
+		final MySQLConnection mySQLConnection = Util.tryOpenConnection(syncManager.getMySQLConnection());
+		final SQLiteConnection sqLiteConnection = Util.tryOpenConnection(syncManager.getSQLiteConnection());
 
 		Util.ifNotNull(sqLiteConnection, connection -> syncObjectsWithDatabase(connection, queue));
 		if(Util.ifNotNull(mySQLConnection, boolean.class, DatabaseConnection::isEnabled, connection -> false)) {
@@ -100,6 +81,27 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 
 		Util.ifNotNull(mySQLConnection, DatabaseConnection::close);
 		Util.ifNotNull(sqLiteConnection, DatabaseConnection::close);
+	}
+
+	/**
+	 * Loads all new objects from a database.
+	 *
+	 * @param syncQueue The synchronization queue.
+	 * @param connection The database connection.
+	 * @param selectQuery The query that allows to select the objects.
+	 *
+	 * @throws SQLException If any SQL exception occurs.
+	 */
+
+	public void loadNewObjectsFromDatabase(final SyncQueue syncQueue, final DatabaseConnection connection, final String selectQuery) throws SQLException {
+		final Set<T> objects = connection.executeQuery(selectQuery, resultSetHandler);
+		for(final T mySQLObject : objects) {
+			if(manager.has(mySQLObject.getIdentifier())) {
+				continue;
+			}
+			manager.add(mySQLObject);
+			syncQueue.enqueue(mySQLObject);
+		}
 	}
 
 	/**

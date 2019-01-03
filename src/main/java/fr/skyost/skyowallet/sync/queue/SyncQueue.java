@@ -70,8 +70,8 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	 */
 
 	@SafeVarargs
-	public final <T extends EconomyObject> void addToQueue(final T... objects) {
-		addToQueue(Arrays.asList(objects));
+	public final <T extends EconomyObject> void enqueue(final T... objects) {
+		enqueue(Arrays.asList(objects));
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	 * @param <T> The economy object class.
 	 */
 
-	public <T extends EconomyObject> void addToQueue(final Collection<T> objects) {
+	public <T extends EconomyObject> void enqueue(final Collection<T> objects) {
 		for(final T object : objects) {
 			if(object == null) {
 				continue;
@@ -104,8 +104,8 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	 */
 
 	@SafeVarargs
-	public final <T extends EconomyObject> void removeFromQueue(final T... objects) {
-		removeFromQueue(Arrays.asList(objects));
+	public final <T extends EconomyObject> void dequeue(final T... objects) {
+		dequeue(Arrays.asList(objects));
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class SyncQueue implements Iterable<EconomyObject> {
 	 * @param <T> The economy object class.
 	 */
 
-	public <T extends EconomyObject> void removeFromQueue(final Collection<T> objects) {
+	public <T extends EconomyObject> void dequeue(final Collection<T> objects) {
 		for(final T object : objects) {
 			if(object instanceof SkyowalletAccount) {
 				accountsQueue.remove(object.getIdentifier());

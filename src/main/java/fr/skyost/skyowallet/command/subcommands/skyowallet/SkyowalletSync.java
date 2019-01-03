@@ -66,7 +66,7 @@ public class SkyowalletSync implements CommandInterface {
 		}
 
 		final SyncQueue syncQueue = new SyncQueue(skyowallet.getSyncManager(), sender);
-		syncQueue.addToQueue(accounts);
+		syncQueue.enqueue(accounts);
 		SyncTask.runDefaultSync(syncQueue);
 		return true;
 	}

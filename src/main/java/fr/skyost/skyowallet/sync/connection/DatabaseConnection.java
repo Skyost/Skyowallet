@@ -90,7 +90,7 @@ public abstract class DatabaseConnection {
 	 */
 
 	public void open() throws SQLException {
-		if(!enabled) {
+		if(!enabled || !isClosed()) {
 			return;
 		}
 
@@ -119,6 +119,7 @@ public abstract class DatabaseConnection {
 		if(!enabled || isClosed()) {
 			return;
 		}
+
 		connection.close();
 		connection = null;
 	}

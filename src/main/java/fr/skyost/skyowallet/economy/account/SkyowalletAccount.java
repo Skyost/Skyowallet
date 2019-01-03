@@ -1,12 +1,5 @@
 package fr.skyost.skyowallet.economy.account;
 
-import org.bukkit.Bukkit;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
-import java.security.InvalidParameterException;
-import java.util.UUID;
-
 import fr.skyost.skyowallet.Skyowallet;
 import fr.skyost.skyowallet.economy.EconomyObject;
 import fr.skyost.skyowallet.economy.account.holder.BankBalanceHolder;
@@ -15,6 +8,12 @@ import fr.skyost.skyowallet.economy.bank.SkyowalletBank;
 import fr.skyost.skyowallet.event.account.StatusChangeEvent;
 import fr.skyost.skyowallet.event.bank.BankChangeEvent;
 import fr.skyost.skyowallet.event.bank.BankRequestEvent;
+import org.bukkit.Bukkit;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import java.security.InvalidParameterException;
+import java.util.UUID;
 
 /**
  * Used to manage players' accounts.
@@ -201,7 +200,7 @@ public class SkyowalletAccount extends EconomyObject {
 			bankBalance.transfer(wallet, balance, 0d, round);
 		}
 
-		getSkyowallet().getSyncManager().getMainSyncQueue().addToQueue(this);
+		getSkyowallet().getSyncManager().getMainSyncQueue().enqueue(this);
 		return round ? getSkyowallet().getEconomyOperations().round(balance) : balance;
 	}
 	

@@ -21,11 +21,11 @@ bukkit {
 
     commands {
         skyowallet {
-            description = 'Main command of Skyowallet\'s economy.'
+            description = 'Main command of Skyowallet economy.'
             aliases = ['wallet', 'economy', 'econ', 'eco', 'money']
         }
         bank {
-            description = 'Main command of Skyowallet\'s banks.'
+            description = 'Main command of Skyowallet banks.'
             aliases = ['ba']
         }
         bounty {
@@ -170,7 +170,6 @@ dependencies {
 
 shadowJar {
     destinationDir = new File(rootProject.projectDir, 'build/release/')
-    version = project.version
     mergeServiceFiles()
     relocate 'org.bstats.bukkit', 'fr.skyost.skyowallet.util.bstats'
 }
