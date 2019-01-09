@@ -159,7 +159,7 @@ public abstract class SkyowalletSynchronizer<T extends EconomyObject> {
 
 	protected void deleteRemovedObjects(final DatabaseConnection connection, final HashMap<String, T> queue) throws SQLException {
 		final HashSet<String> whereClause = new HashSet<>();
-		for(final Map.Entry<String, T> entry : queue.entrySet()) {
+		for(final Map.Entry<String, T> entry : new HashSet<>(queue.entrySet())) {
 			final T object = entry.getValue();
 			if(!object.isDeleted()) {
 				continue;
