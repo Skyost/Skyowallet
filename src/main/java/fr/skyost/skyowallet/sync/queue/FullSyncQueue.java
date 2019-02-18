@@ -39,17 +39,17 @@ public class FullSyncQueue extends SyncQueue {
 		final MySQLConnection mySQLConnection = Util.tryOpenConnection(syncManager.getMySQLConnection());
 		final SQLiteConnection sqLiteConnection = Util.tryOpenConnection(syncManager.getSQLiteConnection());
 
-		final SkyowalletAccountSynchronizer accountSynchronizer = createAccountSynchronizer();
 		final SkyowalletBankSynchronizer bankSynchronizer = createBankSynchronizer();
+		final SkyowalletAccountSynchronizer accountSynchronizer = createAccountSynchronizer();
 
 		if(sqLiteConnection != null) {
-			accountSynchronizer.loadNewObjectsFromDatabase(this, sqLiteConnection, sqLiteConnection.getSelectAccountsRequest());
 			bankSynchronizer.loadNewObjectsFromDatabase(this, sqLiteConnection, sqLiteConnection.getSelectBanksRequest());
+			accountSynchronizer.loadNewObjectsFromDatabase(this, sqLiteConnection, sqLiteConnection.getSelectAccountsRequest());
 		}
 
 		if(Util.ifNotNull(mySQLConnection, boolean.class, DatabaseConnection::isEnabled, connection -> false)) {
-			accountSynchronizer.loadNewObjectsFromDatabase(this, mySQLConnection, mySQLConnection.getSelectAccountsRequest());
 			bankSynchronizer.loadNewObjectsFromDatabase(this, mySQLConnection, mySQLConnection.getSelectBanksRequest());
+			accountSynchronizer.loadNewObjectsFromDatabase(this, mySQLConnection, mySQLConnection.getSelectAccountsRequest());
 		}
 
 		super.synchronize();
