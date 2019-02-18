@@ -1,5 +1,7 @@
 package fr.skyost.skyowallet.extension;
 
+import fr.skyost.skyowallet.Skyowallet;
+import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,14 +11,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import fr.skyost.skyowallet.Skyowallet;
-import fr.skyost.skyowallet.economy.account.SkyowalletAccountManager;
+import java.util.*;
 
 /**
  * GoodbyeWallet extension class.
@@ -64,7 +59,8 @@ public class GoodbyeWallet extends SkyowalletExtension {
 		final Player player = event.getEntity();
 		final SkyowalletAccountManager accountManager = getSkyowallet().getAccountManager();
 		if(!player.hasPermission("goodbyewallet.bypass") && accountManager.has(player)) {
-			accountManager.get(player).getWallet().setAmount(0d, 0d);
+			final double amount = accountManager.get(player).getWallet().getAmount() * (1 - (config.lossPercentage / 100));
+			accountManager.get(player).getWallet().addAmount(amount, 0d);
 			players.add(player.getUniqueId());
 		}
 	}
@@ -89,6 +85,9 @@ public class GoodbyeWallet extends SkyowalletExtension {
 	 */
 
 	public class ExtensionConfig extends SkyowalletExtensionConfig {
+
+		@ConfigOptions(name = "options.loss-percentage")
+		public double lossPercentage = 100d;
 		
 		@ConfigOptions(name = "messages.wallet-lost")
 		public String messageWalletLost = ChatColor.DARK_RED + "You have lost your wallet !";
