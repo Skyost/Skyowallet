@@ -59,8 +59,8 @@ public class GoodbyeWallet extends SkyowalletExtension {
 		final Player player = event.getEntity();
 		final SkyowalletAccountManager accountManager = getSkyowallet().getAccountManager();
 		if(!player.hasPermission("goodbyewallet.bypass") && accountManager.has(player)) {
-			final double amount = accountManager.get(player).getWallet().getAmount() * (1 - (config.lossPercentage / 100));
-			accountManager.get(player).getWallet().addAmount(amount, 0d);
+			final double amount = accountManager.get(player).getWallet().getAmount() * (config.lossPercentage / 100);
+			accountManager.get(player).getWallet().subtractAmount(amount, 0d);
 			players.add(player.getUniqueId());
 		}
 	}
