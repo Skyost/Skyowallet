@@ -15,7 +15,9 @@ fr.skyost.skyowallet.extension
 fr.skyost.skyowallet.hook
 fr.skyost.skyowallet.listener
 fr.skyost.skyowallet.sync
+fr.skyost.skyowallet.sync.connection
 fr.skyost.skyowallet.sync.handler
 fr.skyost.skyowallet.sync.queue
 fr.skyost.skyowallet.sync.synchronizer
 fr.skyost.skyowallet.util
+fr.skyost.skyowallet.util.function

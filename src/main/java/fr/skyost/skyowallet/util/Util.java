@@ -140,8 +140,6 @@ public class Util {
 	 * @param ifNotNull The function to trigger if the argument is not null.
 	 *
 	 * @param <A> Argument type.
-	 *
-	 * @return The function value.
 	 */
 
 	public static <A> void ifNotNull(final A argument, final ThrowingConsumer<A> ifNotNull) {
